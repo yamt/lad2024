@@ -2,8 +2,8 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "wasm4.h"
 #include "defs.h"
+#include "wasm4.h"
 
 /* clang-format off */
 
@@ -169,7 +169,7 @@ struct stage_meta {
         int cur;
         int nbombs;
 
-		int stage_height;
+        int stage_height;
         const char *message;
 } meta;
 
@@ -180,7 +180,7 @@ struct player {
 
 #define max_stages 100
 struct save_data {
-		uint32_t cur_stage;
+        uint32_t cur_stage;
         uint32_t clear_bitmap[(max_stages + 32 - 1) / 32];
 } state;
 
@@ -339,14 +339,13 @@ draw_beam()
 void
 draw_object(int x, int y, uint8_t objidx)
 {
-    const struct obj *obj = &objs[objidx];
-    *DRAW_COLORS = obj->color;
-    int i = 0;
-    if (is_player(objidx) && is_cur_player(x, y)) {
-            i = (frame / 8) % 3;
-    }
-    blit(obj->sprite + i * 8, x * 8, y * 8, 8, 8,
-         obj->flags);
+        const struct obj *obj = &objs[objidx];
+        *DRAW_COLORS = obj->color;
+        int i = 0;
+        if (is_player(objidx) && is_cur_player(x, y)) {
+                i = (frame / 8) % 3;
+        }
+        blit(obj->sprite + i * 8, x * 8, y * 8, 8, 8, obj->flags);
 }
 
 void
@@ -365,46 +364,47 @@ draw_objects()
 void
 digits(unsigned int v, int x, int y)
 {
-    char buf[4];
-    buf[0] = '0' + ((v / 100) % 10);
-    buf[1] = '0' + ((v / 10) % 10);
-    buf[2] = '0' + (v % 10);
-    buf[3] = 0;
-    text(buf, x, y);
+        char buf[4];
+        buf[0] = '0' + ((v / 100) % 10);
+        buf[1] = '0' + ((v / 10) % 10);
+        buf[2] = '0' + (v % 10);
+        buf[3] = 0;
+        text(buf, x, y);
 }
 
 void
 draw_message()
 {
-    *DRAW_COLORS = 0x04;
-    text("STAGE", (20 - 3 - 6) * 8, 19 * 8);
-    if ((state.clear_bitmap[state.cur_stage / 32] & 1 << (state.cur_stage % 32)) == 0) {
-        *DRAW_COLORS = 0x02;
-    }
-    digits(state.cur_stage + 1, (20 - 3) * 8, 19 * 8);
-	
-	if (meta.message == NULL) {
-        return;
-    }
-    int start_y = meta.stage_height + 1;
-    *DRAW_COLORS = 0x04;
-	text(meta.message, 0, start_y * 8);
-	int x = 0;
-    int y = start_y;
-    const uint8_t *p = (const uint8_t *)meta.message;
-    uint8_t ch;
-    while ((ch = *p++) != 0) {
-        if (ch == '\n') {
-            x = 0;
-            y++;
-            continue;
+        *DRAW_COLORS = 0x04;
+        text("STAGE", (20 - 3 - 6) * 8, 19 * 8);
+        if ((state.clear_bitmap[state.cur_stage / 32] &
+             1 << (state.cur_stage % 32)) == 0) {
+                *DRAW_COLORS = 0x02;
         }
-        if (0x90 <= ch && ch <= 0x98) {
-            uint8_t objidx = ch - 0x90;
-            draw_object(x, y, objidx);
+        digits(state.cur_stage + 1, (20 - 3) * 8, 19 * 8);
+
+        if (meta.message == NULL) {
+                return;
         }
-        x++;
-    }
+        int start_y = meta.stage_height + 1;
+        *DRAW_COLORS = 0x04;
+        text(meta.message, 0, start_y * 8);
+        int x = 0;
+        int y = start_y;
+        const uint8_t *p = (const uint8_t *)meta.message;
+        uint8_t ch;
+        while ((ch = *p++) != 0) {
+                if (ch == '\n') {
+                        x = 0;
+                        y++;
+                        continue;
+                }
+                if (0x90 <= ch && ch <= 0x98) {
+                        uint8_t objidx = ch - 0x90;
+                        draw_object(x, y, objidx);
+                }
+                x++;
+        }
 }
 
 void
@@ -434,24 +434,24 @@ calc_stage_meta()
 void
 load_stage()
 {
-    const struct stage *stage = &stages[state.cur_stage];
+        const struct stage *stage = &stages[state.cur_stage];
 
-	memset(map, 0, sizeof(map));
-    int x;
-    int y;
-    x = y = 0;
-    const uint8_t *p = stage->data;
-    uint8_t ch;
-    while ((ch = *p++) != END) {
-        do {
-            map[y][x++] = ch;
-        } while ((ch = *p++) != END);
-        x = 0;
-        y++;
-    }
-    calc_stage_meta();
-    meta.stage_height = y;
-    meta.message = stage->message;
+        memset(map, 0, sizeof(map));
+        int x;
+        int y;
+        x = y = 0;
+        const uint8_t *p = stage->data;
+        uint8_t ch;
+        while ((ch = *p++) != END) {
+                do {
+                        map[y][x++] = ch;
+                } while ((ch = *p++) != END);
+                x = 0;
+                y++;
+        }
+        calc_stage_meta();
+        meta.stage_height = y;
+        meta.message = stage->message;
 }
 
 void
@@ -476,7 +476,7 @@ start()
         PALETTE[3] = 0xa0a0a0;
         *SYSTEM_FLAGS = SYSTEM_PRESERVE_FRAMEBUFFER;
 
-		load_state();
+        load_state();
         load_stage();
 }
 
@@ -507,7 +507,9 @@ update()
 
         if (dx != 0 && (cur & BUTTON_2) != 0) {
                 trace("switch stage");
-                state.cur_stage = (state.cur_stage + nstages + (unsigned int)dx) % nstages;
+                state.cur_stage =
+                        (state.cur_stage + nstages + (unsigned int)dx) %
+                        nstages;
                 load_stage();
                 return;
         }
@@ -563,7 +565,8 @@ update()
 
         if (meta.nbombs == 0) {
                 trace("clear");
-                state.clear_bitmap[state.cur_stage / 32] |= 1 << (state.cur_stage % 32);
+                state.clear_bitmap[state.cur_stage / 32] |=
+                        1 << (state.cur_stage % 32);
                 state.cur_stage = (state.cur_stage + 1) % nstages;
                 save_state();
                 load_stage();
