@@ -2,8 +2,9 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "defs.h"
 #include "wasm4.h"
+
+#include "defs.h"
 
 /* clang-format off */
 
