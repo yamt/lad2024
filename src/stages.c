@@ -43,10 +43,11 @@ const struct stage stages[] = {
             END,
         },
         .message =
+        C_R" emits the beam.\n"
+        "\n"
         C_A" can only move when\n"
         "the beam is hitting\n"
         "it.\n"
-        C_R" emits the beam.\n"
         "\n"
         "\x81 to give up and\n"
         "reset the stage.",
@@ -89,9 +90,9 @@ const struct stage stages[] = {
         C_P" can not collect "C_B".\n"
         C_P" can push "C_A".\n"
         "\n"
-        C_P" can move when the\n"
-        "beam is NOT hitting\n"
-        "it.\n"
+        C_P" can move only\n"
+        "when the beam is NOT\n"
+        "hitting it.\n"
     },
 
     {
