@@ -165,6 +165,20 @@ const struct stage stages[] = {
         "except that it\n"
         "blocks the beam.",
     },
+
+    {
+        .data = (const uint8_t[]){
+            _, _, W, W, W, W, W, END,
+            _, W, _, _, _, _, W, END,
+            _, W, _, W, W, _, W, W, END,
+            W, X, _, A, _, X, _, _, W, END,
+            W, _, X, P, X, _, _, R, L, W, END,
+            _, W, X, _, W, W, _, _, W, END,
+            _, W, _, _, _, _, _, W, END,
+            _, _, W, W, W, W, W, END,
+            END,
+        },
+    },
 };
 
 /* clang-format on */
