@@ -534,6 +534,7 @@ update()
                 state.cur_stage =
                         (state.cur_stage + nstages + (unsigned int)dx) %
                         nstages;
+                save_state();
                 load_stage();
                 return;
         }
