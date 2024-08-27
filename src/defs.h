@@ -6,6 +6,7 @@ enum block {
         D,     /* light down */
         L,     /* light left */
         B,     /* bomb */
+        X,     /* big bomb */
         P,     /* person */
         A,     /* robot */
         END,

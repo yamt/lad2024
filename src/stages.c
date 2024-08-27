@@ -2,6 +2,13 @@
 
 #include "defs.h"
 
+#define	C_R "\x93"
+
+#define	C_B "\x96"
+#define	C_X "\x97"
+#define	C_P "\x98"
+#define	C_A "\x99"
+
 /* clang-format off */
 
 const struct stage stages[] = {
@@ -20,8 +27,8 @@ const struct stage stages[] = {
             END,
         },
         .message =
-        "Move \x98 with \x84\x85\x86\x87 and\n"
-        "collect all \x96.\n"
+        "Move "C_A" with \x84\x85\x86\x87 and\n"
+        "collect all "C_B".\n"
     },
 
     {
@@ -36,10 +43,10 @@ const struct stage stages[] = {
             END,
         },
         .message =
-        "\x98 can only move when\n"
+        C_A" can only move when\n"
         "the beam is hitting\n"
         "it.\n"
-        "\x93 emits the beam.\n"
+        C_R" emits the beam.\n"
         "\n"
         "\x81 to give up and\n"
         "reset the stage.",
@@ -59,10 +66,10 @@ const struct stage stages[] = {
         },
         .message =
         "\x80 to switch between\n"
-        "\x98.\n"
+        C_A".\n"
         "\n"
-        "\x98 can push objects\n"
-        "like \x93 and other \x98.",
+        C_A" can push objects\n"
+        "like "C_R" and other "C_A".",
     },
 
     {
@@ -77,12 +84,12 @@ const struct stage stages[] = {
         },
         .message =
         "\x80 to switch between\n"
-        "\x97 and \x98.\n"
+        C_A" and "C_P".\n"
         "\n"
-        "\x97 can not collect \x96.\n"
-        "\x97 can push \x96.\n"
+        C_P" can not collect "C_B".\n"
+        C_P" can push "C_A".\n"
         "\n"
-        "\x97 can move when the\n"
+        C_P" can move when the\n"
         "beam is NOT hitting\n"
         "it.\n"
     },
@@ -140,6 +147,22 @@ const struct stage stages[] = {
             W, W, W, END,
             END,
         },
+    },
+
+    {
+        .data = (const uint8_t[]){
+            _, W, W, W, W, END,
+            W, _, _, D, P, W, END,
+            W, _, A, X, B, W, END,
+            W, _, X, _, _, W, END,
+            _, W, W, _, W, END,
+            _, _, _, W, END,
+            END,
+        },
+        .message =
+        C_X" is same as "C_B"\n"
+        "except that it\n"
+        "blocks the beam.",
     },
 };
 

@@ -77,6 +77,17 @@ const uint8_t bomb[] = {
         0b00000000,
 };
 
+const uint8_t bigbomb[] = {
+        0b00111100,
+        0b01011010,
+        0b01111110,
+        0b01111110,
+        0b01111110,
+        0b01111110,
+        0b01011010,
+        0b00111100,
+};
+
 const uint8_t light[] = {
         0b11111000,
         0b01111110,
@@ -143,6 +154,12 @@ const struct obj {
         [B] =
                 {
                         .sprite = bomb,
+                        .color = 0x20,
+                        .flags = 0,
+                },
+        [X] =
+                {
+                        .sprite = bigbomb,
                         .color = 0x20,
                         .flags = 0,
                 },
@@ -236,9 +253,15 @@ switch_player()
 }
 
 bool
+is_bomb(uint8_t objidx)
+{
+        return objidx == B || objidx == X;
+}
+
+bool
 can_push(uint8_t objidx)
 {
-        return is_light(objidx) || is_player(objidx) || objidx == B;
+        return is_light(objidx) || is_player(objidx) || is_bomb(objidx);
 }
 
 int
@@ -272,7 +295,7 @@ const struct dir {
 bool
 block_beam(uint8_t objidx)
 {
-        return is_light(objidx) || objidx == W;
+        return is_light(objidx) || objidx == W || objidx == X;
 }
 
 bool
@@ -400,7 +423,7 @@ draw_message()
                         y++;
                         continue;
                 }
-                if (0x90 <= ch && ch <= 0x98) {
+                if (0x90 <= ch && ch <= 0x99) {
                         uint8_t objidx = ch - 0x90;
                         draw_object(x, y, objidx);
                 }
@@ -422,7 +445,7 @@ calc_stage_meta()
                                 struct player *p = &players[nplayers++];
                                 p->x = x;
                                 p->y = y;
-                        } else if (objidx == B) {
+                        } else if (is_bomb(objidx)) {
                                 nbombs++;
                         }
                 }
@@ -524,7 +547,7 @@ update()
                         if (in_map(x, y)) {
                                 bool can_move = false;
                                 uint8_t objidx = map[y][x];
-                                if (is_robot && objidx == B) {
+                                if (is_robot && is_bomb(objidx)) {
                                         can_move = true;
                                         meta.nbombs--;
                                 } else if (objidx == _) {
