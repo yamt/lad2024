@@ -5,7 +5,7 @@
 /* clang-format off */
 
 const struct stage stages[] = {
-	{
+    {
         .data = (const uint8_t[]){
             _, _, W, W, W, END,
             _, _, W, B, W, END,
@@ -18,13 +18,13 @@ const struct stage stages[] = {
             _, _, W, U, W, END,
             _, _, W, W, W, END,
             END,
-    	},
+        },
         .message =
         "Move \x98 with \x84\x85\x86\x87 and\n"
         "collect all \x96.\n"
     },
 
-	{
+    {
         .data = (const uint8_t[]){
             _, _, W, W, W, END,
             _, W, _, _, A, W, END,
@@ -34,7 +34,7 @@ const struct stage stages[] = {
             _, W, _, _, U, W, END,
             _, _, W, W, W, END,
             END,
-    	},
+        },
         .message =
         "\x98 can only move when\n"
         "the beam is hitting\n"
@@ -45,7 +45,7 @@ const struct stage stages[] = {
         "reset the stage.",
     },
 
-	{
+    {
         .data = (const uint8_t[]){
             _, W, W, W, W, W, END,
             W, _, _, _, A, _, W, END,
@@ -56,7 +56,7 @@ const struct stage stages[] = {
             W, _, _, _, _, U, W, END,
             _, W, W, W, W, W, END,
             END,
-    	},
+        },
         .message =
         "\x80 to switch between\n"
         "\x98.\n"
@@ -65,7 +65,7 @@ const struct stage stages[] = {
         "like \x93 and other \x98.",
     },
 
-	{
+    {
         .data = (const uint8_t[]){
             _, W, W, W, W, END,
             W, _, R, _, _, W, END,
@@ -74,7 +74,7 @@ const struct stage stages[] = {
             _, W, W, _, _, W, END,
             _, _, _, W, W, END,
             END,
-    	},
+        },
         .message =
         "\x80 to switch between\n"
         "\x97 and \x98.\n"
@@ -87,7 +87,7 @@ const struct stage stages[] = {
         "it.\n"
     },
 
-	{
+    {
         .data = (const uint8_t[]){
             _, W, W, W, W, END,
             W, _, _, _, _, W, END,
@@ -98,14 +98,14 @@ const struct stage stages[] = {
             W, _, _, _, _, W, END,
             _, W, W, W, W, END,
             END,
-    	},
+        },
         .message =
         "You can select a\n"
         "stage to play with\n"
         "\x81+\x85 and \x81+\x84.",
     },
 
-	{
+    {
         .data = (const uint8_t[]){
             W, W, W, W, W, END,
             W, D, _, A, _, W, END,
@@ -115,7 +115,7 @@ const struct stage stages[] = {
             W, _, _, _, W, END,
             _, W, W, W, W, END,
             END,
-    	},
+        },
         .message =
         "The color of the\n"
         "stage number at\n"
@@ -125,7 +125,7 @@ const struct stage stages[] = {
         "stage."
     },
 
-	{
+    {
         .data = (const uint8_t[]){
             _, _, W, W, W, W, W, W, END,
             _, _, W, _, _, _, _, _, W, END,
@@ -139,7 +139,7 @@ const struct stage stages[] = {
             W, _, _, W, W, W, W, W, END,
             W, W, W, END,
             END,
-    	},
+        },
     },
 };
 
