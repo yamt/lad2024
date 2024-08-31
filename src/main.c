@@ -66,18 +66,18 @@ const uint8_t robot[] = {
         0b01111110,
 };
 
-const uint8_t bomb[] = {
+const uint8_t box[] = {
         0b00000000,
-        0b00111100,
-        0b01011010,
-        0b01111110,
-        0b01111110,
-        0b01011010,
-        0b00111100,
+        0b01110110,
+        0b11110111,
+        0b10001001,
+        0b11110111,
+        0b11110111,
+        0b01110110,
         0b00000000,
 };
 
-const uint8_t bigbomb[] = {
+const uint8_t bomb[] = {
         0b00111100,
         0b01011010,
         0b01111110,
@@ -153,13 +153,13 @@ const struct obj {
                 },
         [B] =
                 {
-                        .sprite = bomb,
+                        .sprite = box,
                         .color = 0x20,
                         .flags = 0,
                 },
         [X] =
                 {
-                        .sprite = bigbomb,
+                        .sprite = bomb,
                         .color = 0x20,
                         .flags = 0,
                 },
@@ -255,13 +255,13 @@ switch_player()
 bool
 is_bomb(uint8_t objidx)
 {
-        return objidx == B || objidx == X;
+        return objidx == X;
 }
 
 bool
 can_push(uint8_t objidx)
 {
-        return is_light(objidx) || is_player(objidx) || is_bomb(objidx);
+        return is_light(objidx) || is_player(objidx) || is_bomb(objidx) || objidx == B;
 }
 
 int
@@ -295,7 +295,7 @@ const struct dir {
 bool
 block_beam(uint8_t objidx)
 {
-        return is_light(objidx) || objidx == W || objidx == X;
+        return is_light(objidx) || objidx == W || objidx == X || objidx == B;
 }
 
 bool

@@ -16,29 +16,27 @@ const struct stage stages[] = {
     {
         .data = (const uint8_t[]){
             _, _, W, W, W, END,
-            _, _, W, B, W, END,
-            _, _, W, _, W, END,
+            W, W, W, D, W, W, W, END,
+            W, X, _, A, _, L, W, END,
             W, W, W, _, W, W, W, END,
-            W, B, _, A, _, L, W, END,
-            W, W, W, _, W, W, W, END,
-            _, _, W, B, W, END,
             _, _, W, _, W, END,
-            _, _, W, U, W, END,
+            _, _, W, _, W, END,
+            _, _, W, X, W, END,
             _, _, W, W, W, END,
             END,
         },
         .message =
         "Move "C_A" with \x84\x85\x86\x87 and\n"
-        "collect all "C_B".\n"
+        "collect all "C_X".\n"
     },
 
     {
         .data = (const uint8_t[]){
             _, _, W, W, W, END,
-            _, W, _, _, A, W, END,
-            W, R, B, _, B, _, W, END,
-            W, _, B, _, B, _, W, END,
-            W, _, B, _, B, L, W, END,
+            _, W, _, _, X, W, END,
+            W, R, _, X, _, X, W, END,
+            W, _, X, _, A, _, W, END,
+            W, X, _, X, _, L, W, END,
             _, W, _, _, U, W, END,
             _, _, W, W, W, END,
             END,
@@ -60,7 +58,7 @@ const struct stage stages[] = {
             W, _, _, _, A, _, W, END,
             W, _, R, _, _, L, W, END,
             W, _, _, _, _, _, W, END,
-            W, _, B, _, _, _, W, END,
+            W, _, X, _, _, _, W, END,
             W, _, _, _, _, A, W, END,
             W, _, _, _, _, U, W, END,
             _, W, W, W, W, W, END,
@@ -79,7 +77,7 @@ const struct stage stages[] = {
             _, W, W, W, W, END,
             W, _, R, _, _, W, END,
             W, _, A, P, _, W, END,
-            W, _, _, B, _, W, END,
+            W, _, _, X, _, W, END,
             _, W, W, _, _, W, END,
             _, _, _, W, W, END,
             END,
@@ -88,8 +86,9 @@ const struct stage stages[] = {
         "\x80 to switch between\n"
         C_A" and "C_P".\n"
         "\n"
-        C_P" can not collect "C_B".\n"
-        C_P" can push "C_A".\n"
+        C_P" can not collect "C_X".\n"
+        C_P" can push objects\n"
+        "including "C_A" and "C_X".\n"
         "\n"
         C_P" can move only\n"
         "when the beam is NOT\n"
@@ -100,9 +99,9 @@ const struct stage stages[] = {
         .data = (const uint8_t[]){
             _, W, W, W, W, END,
             W, _, _, _, _, W, END,
-            W, B, _, B, _, W, END,
-            W, _, B, _, _, W, END,
-            W, B, P, B, W, W, END,
+            W, X, _, X, _, W, END,
+            W, _, X, _, _, W, END,
+            W, X, P, X, W, W, END,
             W, _, A, L, _, W, END,
             W, _, _, _, _, W, END,
             _, W, W, W, W, END,
@@ -118,7 +117,7 @@ const struct stage stages[] = {
         .data = (const uint8_t[]){
             W, W, W, W, W, END,
             W, D, _, A, _, W, END,
-            W, B, _, L, _, W, END,
+            W, X, _, L, _, W, END,
             W, _, _, P, _, W, END,
             W, U, R, P, _, W, END,
             W, _, _, _, W, END,
@@ -139,12 +138,12 @@ const struct stage stages[] = {
             _, _, W, W, W, W, W, W, END,
             _, _, W, _, _, _, _, _, W, END,
             W, W, W, _, _, L, _, _, W, END,
-            W, _, _, B, _, _, _, _, W, END,
-            W, _, _, B, P, U, D, _, W, END,
+            W, _, _, X, _, _, _, _, W, END,
+            W, _, _, X, P, U, D, _, W, END,
             W, _, D, _, W, _, _, _, W, END,
             W, _, _, _, L, A, _, _, W, END,
-            W, B, R, _, _, _, _, _, W, END,
-            W, _, _, _, _, _, _, B, W, END,
+            W, X, R, _, _, _, _, _, W, END,
+            W, _, _, _, _, _, _, X, W, END,
             W, _, _, W, W, W, W, W, END,
             W, W, W, END,
             END,
@@ -154,17 +153,36 @@ const struct stage stages[] = {
     {
         .data = (const uint8_t[]){
             _, W, W, W, W, END,
+            W, _, _, _, W, W, END,
+            W, _, D, _, P, W, END,
+            W, _, _, X, _, W, END,
+            W, W, B, _, _, W, END,
+            W, W, _, X, _, W, END,
+            W, W, B, _, _, W, END,
+            _, W, _, _, W, END,
+            _, W, _, _, W, END,
+            _, W, B, _, W, END,
+            _, W, _, _, W, END,
+            _, W, _, _, W, END,
+            _, W, A, X, W, END,
+            _, _, W, W, _, END,
+            END,
+        },
+        .message =
+        C_B" blocks the beam.\n"
+        C_A" and "C_P" can push "C_B".",
+    },
+
+    {
+        .data = (const uint8_t[]){
+            _, W, W, W, W, END,
             W, _, _, D, P, W, END,
-            W, _, A, X, B, W, END,
+            W, _, A, X, X, W, END,
             W, _, X, _, _, W, END,
             _, W, W, _, W, END,
             _, _, _, W, END,
             END,
         },
-        .message =
-        C_X" is same as "C_B"\n"
-        "except that it\n"
-        "blocks the beam.",
     },
 
     {
