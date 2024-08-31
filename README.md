@@ -10,7 +10,7 @@ A puzzle game for the [WASM-4] fantasy console.
 
 Maybe it's easier to run it on the [browser].
 
-[browser]: https://wasm4.org/embed/#?url=https://yamt.github.io/lad2024/lad2024.wasm
+[browser]: https://yamt.github.io/lad2024/
 
 ## History
 
