@@ -1,26 +1,12 @@
-# lad
+# lad 2024
 
-A game written in C for the [WASM-4](https://wasm4.org) fantasy console.
+A puzzle game for the [WASM-4] fantasy console.
 
-## Building
+[WASM-4]: https://wasm4.org
 
-Build the cart by running:
+## History
 
-```shell
-make
-```
+The original version of this game was written in
+x86 assembler for the NEC PC-9800 series. (in 1994)
 
-Then run it with:
-
-```shell
-w4 run build/cart.wasm
-```
-
-For more info about setting up WASM-4, see the [quickstart guide](https://wasm4.org/docs/getting-started/setup?code-lang=c#quickstart).
-
-## Links
-
-- [Documentation](https://wasm4.org/docs): Learn more about WASM-4.
-- [Snake Tutorial](https://wasm4.org/docs/tutorials/snake/goal): Learn how to build a complete game
-  with a step-by-step tutorial.
-- [GitHub](https://github.com/aduros/wasm4): Submit an issue or PR. Contributions are welcome!
+This is a port to the [WASM-4] fantasy console.
