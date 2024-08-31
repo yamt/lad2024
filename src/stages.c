@@ -15,14 +15,14 @@
 const struct stage stages[] = {
     {
         .data = (const uint8_t[]){
-            _, _, W, W, W, END,
-            W, W, W, D, W, W, W, END,
-            W, X, _, A, _, L, W, END,
-            W, W, W, _, W, W, W, END,
-            _, _, W, _, W, END,
-            _, _, W, _, W, END,
-            _, _, W, X, W, END,
-            _, _, W, W, W, END,
+            W, W, W, END,
+            W, D, W, END,
+            W, A, W, END,
+            W, _, W, _, _, _, _, R, _, _, D, _, _, W, W, W, W, _, END,
+            W, _, W, _, _, _, _, _, _, _, _, _, _, W, _, _, _, W, END,
+            W, _, W, W, W, W, _, D, _, L, P, _, _, W, _, P, _, W, END,
+            W, X, X, _, L, W, _, _, _, _, _, _, _, W, _, _, _, W, END,
+            W, W, W, W, W, W, _, R, _, _, U, L, _, W, W, W, W, END,
             END,
         },
         .message =
