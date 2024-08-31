@@ -197,8 +197,11 @@ struct player {
 } players[max_players];
 
 #define max_stages 100
+#define save_data_version 1
 struct save_data {
+        uint32_t version;
         uint32_t cur_stage;
+        uint32_t cleared_stages;
         uint32_t clear_bitmap[(max_stages + 32 - 1) / 32];
 } state;
 
@@ -261,7 +264,8 @@ is_bomb(uint8_t objidx)
 bool
 can_push(uint8_t objidx)
 {
-        return is_light(objidx) || is_player(objidx) || is_bomb(objidx) || objidx == B;
+        return is_light(objidx) || is_player(objidx) || is_bomb(objidx) ||
+               objidx == B;
 }
 
 int
@@ -400,12 +404,20 @@ void
 draw_message()
 {
         *DRAW_COLORS = 0x04;
-        text("STAGE", (20 - 3 - 6) * 8, 19 * 8);
+        text("STAGE     (   %)", (20 - 7 - 3 - 6) * 8, 19 * 8);
         if ((state.clear_bitmap[state.cur_stage / 32] &
              1 << (state.cur_stage % 32)) == 0) {
                 *DRAW_COLORS = 0x02;
         }
-        digits(state.cur_stage + 1, (20 - 3) * 8, 19 * 8);
+        digits(state.cur_stage + 1, (20 - 7 - 3) * 8, 19 * 8);
+        unsigned int percent =
+                (unsigned int)(100.0 * state.cleared_stages / nstages);
+        if (percent == 100) {
+                *DRAW_COLORS = 0x03;
+        } else {
+                *DRAW_COLORS = 0x04;
+        }
+        digits(percent, (20 - 2 - 3) * 8, 19 * 8);
 
         if (meta.message == NULL) {
                 return;
@@ -483,11 +495,15 @@ load_state()
 {
         memset(&state, 0, sizeof(state));
         diskr(&state, sizeof(state));
+        if (state.version != save_data_version) {
+                memset(&state, 0, sizeof(state));
+        }
 }
 
 void
 save_state()
 {
+        state.version = save_data_version;
         diskw(&state, sizeof(state));
 }
 
@@ -590,8 +606,11 @@ update()
 
         if (meta.nbombs == 0) {
                 // trace("clear");
-                state.clear_bitmap[state.cur_stage / 32] |=
-                        1 << (state.cur_stage % 32);
+                uint32_t mask = 1 << (state.cur_stage % 32);
+                if ((state.clear_bitmap[state.cur_stage / 32] & mask) == 0) {
+                        state.cleared_stages++;
+                }
+                state.clear_bitmap[state.cur_stage / 32] |= mask;
                 state.cur_stage = (state.cur_stage + 1) % nstages;
                 save_state();
                 load_stage();
