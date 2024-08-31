@@ -18,3 +18,5 @@ to the [WASM-4] fantasy console.
 
 * Please document your domain-specific compression format
   for the stage data.
+
+* I couldn't even figure out what "LAD" stands for.
