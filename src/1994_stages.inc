@@ -9,11 +9,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0001 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -26,11 +24,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0002 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -46,11 +42,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0003 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -69,11 +63,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0004 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -87,11 +79,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0005 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -106,11 +96,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0006 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -126,11 +114,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0007 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -143,11 +129,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0008 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -162,11 +146,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0009 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -181,11 +163,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0010 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -201,11 +181,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0011 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -221,11 +199,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0012 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -244,11 +220,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0013 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -262,11 +236,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0014 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -281,11 +253,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0015 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -298,11 +268,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0016 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -318,11 +286,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0017 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -340,11 +306,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0018 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -358,11 +322,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0019 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -379,11 +341,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0020 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -399,11 +359,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0021 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -420,11 +378,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0022 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -439,11 +395,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0023 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -456,11 +410,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0024 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -477,11 +429,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0025 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -502,11 +452,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0026 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -523,11 +471,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0027 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -543,11 +489,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0028 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -563,11 +507,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0029 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -585,11 +527,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0030 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -604,11 +544,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0031 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -622,11 +560,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0032 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -639,11 +575,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0033 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -659,11 +593,9 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0034 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
     {
         .data = (const uint8_t[]){
@@ -680,9 +612,7 @@
             END,
         },
         .message =
-        "This stage was\n"
-        "converted from\n"
+        "Converted from\n"
         "stage 0035 of\n"
-        "the original 1994\n"
-        "version of the game."
+        "the 1994 version.\n"
     },
