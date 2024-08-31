@@ -6,6 +6,12 @@ A puzzle game for the [WASM-4] fantasy console.
 
 [WASM-4]: https://wasm4.org
 
+## How to play
+
+Maybe it's easier to run it on the [browser].
+
+[browser]: https://wasm4.org/embed/#?url=https://yamt.github.io/lad2024/lad2024.wasm
+
 ## History
 
 In 1994, I've written [the original version] of this game.
