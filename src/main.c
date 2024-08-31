@@ -524,13 +524,13 @@ update()
         } else if ((gamepad & BUTTON_1) != 0) {
                 switch_player();
         } else if ((gamepad & BUTTON_2) != 0) {
-                trace("reset");
+                // trace("reset");
                 load_stage();
                 return;
         }
 
         if (dx != 0 && (cur & BUTTON_2) != 0) {
-                trace("switch stage");
+                // trace("switch stage");
                 state.cur_stage =
                         (state.cur_stage + nstages + (unsigned int)dx) %
                         nstages;
@@ -589,7 +589,7 @@ update()
         draw_message();
 
         if (meta.nbombs == 0) {
-                trace("clear");
+                // trace("clear");
                 state.clear_bitmap[state.cur_stage / 32] |=
                         1 << (state.cur_stage % 32);
                 state.cur_stage = (state.cur_stage + 1) % nstages;
