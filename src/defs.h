@@ -1,12 +1,12 @@
 enum block {
         _ = 0, /* floor */
         W,     /* wall */
-        U,     /* light up */
-        R,     /* light right */
-        D,     /* light down */
-        L,     /* light left */
         B,     /* bomb */
         X,     /* big bomb */
+        L,     /* light left */
+        D,     /* light down */
+        R,     /* light right */
+        U,     /* light up */
         P,     /* person */
         A,     /* robot */
         END,

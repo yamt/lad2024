@@ -2,12 +2,13 @@
 
 #include "defs.h"
 
-#define	C_R "\x93"
+#define C_B "\x92"
+#define C_X "\x93"
 
-#define	C_B "\x96"
-#define	C_X "\x97"
-#define	C_P "\x98"
-#define	C_A "\x99"
+#define C_R "\x96"
+
+#define C_P "\x98"
+#define C_A "\x99"
 
 /* clang-format off */
 

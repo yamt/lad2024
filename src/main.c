@@ -267,7 +267,7 @@ can_push(uint8_t objidx)
 int
 light_dir(uint8_t objidx)
 {
-        return objidx - U;
+        return objidx - L;
 }
 
 const struct dir {
@@ -275,11 +275,7 @@ const struct dir {
         int dy;
 } dirs[] = {
         {
-                0,
                 -1,
-        },
-        {
-                1,
                 0,
         },
         {
@@ -287,8 +283,12 @@ const struct dir {
                 1,
         },
         {
-                -1,
+                1,
                 0,
+        },
+        {
+                0,
+                -1,
         },
 };
 
