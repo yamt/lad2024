@@ -198,6 +198,9 @@ const struct stage stages[] = {
             END,
         },
     },
+
+#include "1994_stages.inc"
+
 };
 
 /* clang-format on */
