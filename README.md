@@ -1,4 +1,4 @@
-# lad 2024
+# Lad 2024
 
 A puzzle game for the [WASM-4] fantasy console.
 
