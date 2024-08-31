@@ -8,7 +8,7 @@ A puzzle game for the [WASM-4] fantasy console.
 
 ## How to play
 
-Maybe it's easier to run it on the [browser].
+Maybe it's simplest to run it on your [browser].
 
 [browser]: https://yamt.github.io/lad2024/
 
