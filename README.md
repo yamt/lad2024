@@ -2,6 +2,8 @@
 
 A puzzle game for the [WASM-4] fantasy console.
 
+![screenshot](img/screenshot.png)
+
 [WASM-4]: https://wasm4.org
 
 ## History
