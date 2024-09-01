@@ -8,9 +8,15 @@ A puzzle game for the [WASM-4] fantasy console.
 
 ## How to play
 
-Maybe it's simplest to run it on your [browser].
+Maybe it's simplest to run it on your browser.
 
-[browser]: https://yamt.github.io/lad2024/
+* [On wasm4.org]
+
+* An alternative hosting [on my GitHub pages]
+
+[On wasm4.org]: https://wasm4.org/play/lad2024
+
+[on my GitHub pages]: https://yamt.github.io/lad2024/
 
 ## History
 
