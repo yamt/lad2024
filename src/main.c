@@ -476,14 +476,24 @@ load_stage()
         int x;
         int y;
         x = y = 0;
+        int xmax = 0;
         const uint8_t *p = stage->data;
         uint8_t ch;
         while ((ch = *p++) != END) {
                 do {
                         map[y][x++] = ch;
+                        if (xmax < x) {
+                                xmax = x;
+                        }
                 } while ((ch = *p++) != END);
                 x = 0;
                 y++;
+        }
+        /* move to the center of the screen */
+        int d = (width - xmax) / 2;
+        if (d > 0) {
+                memmove(&map[0][d], map, (size_t)(width * height - d));
+                memset(map, 0, (size_t)d);
         }
         calc_stage_meta();
         meta.stage_height = y;
