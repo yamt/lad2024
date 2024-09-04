@@ -518,6 +518,67 @@ save_state()
 }
 
 void
+move(int dx, int dy)
+{
+        struct player *p = cur_player();
+        bool is_robot = map[p->y][p->x] == A;
+        if ((beam[p->y][p->x] != 0) == is_robot) {
+                int x = p->x + dx;
+                int y = p->y + dy;
+                if (in_map(x, y)) {
+                        bool can_move = false;
+                        uint8_t objidx = map[y][x];
+                        if (is_robot && is_bomb(objidx)) {
+                                can_move = true;
+                                meta.nbombs--;
+                        } else if (objidx == _) {
+                                can_move = true;
+                        } else if (can_push(objidx)) {
+                                int nx = x + dx;
+                                int ny = y + dy;
+                                if (in_map(nx, ny) && map[ny][nx] == _) {
+                                        if (is_player(objidx)) {
+                                                struct player *p2 =
+                                                        player_at(x, y);
+                                                p2->x = nx;
+                                                p2->y = ny;
+                                        }
+                                        move_object(nx, ny, x, y);
+                                        can_move = true;
+                                }
+                        }
+                        if (can_move) {
+                                move_object(x, y, p->x, p->y);
+                                p->x = x;
+                                p->y = y;
+                        }
+                }
+        }
+}
+
+void
+update_palette()
+{
+        unsigned int phase = frame / 8;
+        unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
+        PALETTE[2] = 0x111100 * (v + 2);
+}
+
+void
+stage_clear()
+{
+        // trace("clear");
+        uint32_t mask = 1 << (state.cur_stage % 32);
+        if ((state.clear_bitmap[state.cur_stage / 32] & mask) == 0) {
+                state.cleared_stages++;
+        }
+        state.clear_bitmap[state.cur_stage / 32] |= mask;
+        state.cur_stage = (state.cur_stage + 1) % nstages;
+        save_state();
+        load_stage();
+}
+
+void
 start()
 {
         PALETTE[0] = 0x000030;
@@ -566,63 +627,17 @@ update()
         }
 
         if (dx != 0 || dy != 0) {
-                struct player *p = cur_player();
-                bool is_robot = map[p->y][p->x] == A;
-                if ((beam[p->y][p->x] != 0) == is_robot) {
-                        int x = p->x + dx;
-                        int y = p->y + dy;
-                        if (in_map(x, y)) {
-                                bool can_move = false;
-                                uint8_t objidx = map[y][x];
-                                if (is_robot && is_bomb(objidx)) {
-                                        can_move = true;
-                                        meta.nbombs--;
-                                } else if (objidx == _) {
-                                        can_move = true;
-                                } else if (can_push(objidx)) {
-                                        int nx = x + dx;
-                                        int ny = y + dy;
-                                        if (in_map(nx, ny) &&
-                                            map[ny][nx] == _) {
-                                                if (is_player(objidx)) {
-                                                        struct player *p2 =
-                                                                player_at(x,
-                                                                          y);
-                                                        p2->x = nx;
-                                                        p2->y = ny;
-                                                }
-                                                move_object(nx, ny, x, y);
-                                                can_move = true;
-                                        }
-                                }
-                                if (can_move) {
-                                        move_object(x, y, p->x, p->y);
-                                        p->x = x;
-                                        p->y = y;
-                                }
-                        }
-                }
+                move(dx, dy);
         }
 
         frame++;
-        unsigned int phase = frame / 8;
-        unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
-        PALETTE[2] = 0x111100 * (v + 2);
-
+        update_palette();
         calc_beam();
         draw_beam();
         draw_objects();
         draw_message();
 
         if (meta.nbombs == 0) {
-                // trace("clear");
-                uint32_t mask = 1 << (state.cur_stage % 32);
-                if ((state.clear_bitmap[state.cur_stage / 32] & mask) == 0) {
-                        state.cleared_stages++;
-                }
-                state.clear_bitmap[state.cur_stage / 32] |= mask;
-                state.cur_stage = (state.cur_stage + 1) % nstages;
-                save_state();
-                load_stage();
+                stage_clear();
         }
 }
