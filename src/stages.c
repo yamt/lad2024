@@ -201,6 +201,39 @@ const struct stage stages[] = {
 
 #include "1994_stages.inc"
 
+    {
+        .data = (const uint8_t[]){
+            _, _, _, _, _, _, _, _, W, W, W, END,
+            _, _, _, _, _, _, _, W, _, _, W, END,
+            _, _, _, _, _, _, W, _, _, L, W, END,
+            _, _, _, _, _, W, _, _, P, _, W, END,
+            _, _, _, _, W, _, _, B, _, W, END,
+            _, _, _, W, _, _, B, _, W, END,
+            _, _, W, _, _, B, _, W, END,
+            _, W, _, _, A, _, W, END,
+            W, _, _, X, _, W, END,
+            W, _, X, _, W, END,
+            W, _, _, W, END,
+            W, W, W, END,
+            END,
+        },
+        .message =
+        "Welcome back to 2024",
+    },
+    {
+        .data = (const uint8_t[]){
+            _, _, W, W, W, W, W, END,
+            _, _, W, X, X, X, W, END,
+            W, W, W, _, _, _, W, W, W, END,
+            W, X, _, R, _, D, _, X, W, END,
+            W, X, _, _, A, _, _, X, W, END,
+            W, X, _, U, _, L, _, X, W, END,
+            W, W, W, _, P, _, W, W, W, END,
+            _, _, W, X, X, X, W, END,
+            _, _, W, W, W, W, W, END,
+            END,
+        },
+    },
 };
 
 /* clang-format on */
