@@ -610,20 +610,23 @@ update()
                 dy = 1;
         } else if ((gamepad & BUTTON_1) != 0) {
                 switch_player();
-        } else if ((gamepad & BUTTON_2) != 0) {
-                // trace("reset");
-                load_stage();
-                return;
         }
 
-        if (dx != 0 && (cur & BUTTON_2) != 0) {
-                // trace("switch stage");
-                state.cur_stage =
-                        (state.cur_stage + nstages + (unsigned int)dx) %
-                        nstages;
-                save_state();
-                load_stage();
-                return;
+        if ((cur & BUTTON_2) != 0) {
+                if (dx != 0) {
+                        // trace("switch stage");
+                        state.cur_stage = (state.cur_stage + nstages +
+                                           (unsigned int)dx) %
+                                          nstages;
+                        save_state();
+                        load_stage();
+                        return;
+                }
+                if (dy == -1) {
+                        // trace("reset");
+                        load_stage();
+                        return;
+                }
         }
 
         if (dx != 0 || dy != 0) {
