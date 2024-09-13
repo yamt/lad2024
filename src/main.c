@@ -182,6 +182,17 @@ const struct obj {
 static uint8_t prev_gamepad = 0;
 static unsigned int frame = 0;
 
+#define BEAM 1
+#define MESSAGE 4
+#define ALL 7
+static unsigned int need_redraw;
+static struct redraw_rect {
+        int xmin;
+        int ymin;
+        int xmax;
+        int ymax;
+} redraw_rect;
+
 struct stage_meta {
         int nplayers;
         int cur;
@@ -309,8 +320,50 @@ in_map(int x, int y)
 }
 
 void
+mark_redraw_object(int x, int y)
+{
+        if (redraw_rect.xmin > x) {
+                redraw_rect.xmin = x;
+        }
+        if (redraw_rect.xmax <= x) {
+                redraw_rect.xmax = x + 1;
+        }
+        if (redraw_rect.ymin > y) {
+                redraw_rect.ymin = y;
+        }
+        if (redraw_rect.ymax <= y) {
+                redraw_rect.ymax = y + 1;
+        }
+}
+
+void
+mark_redraw_cur_player()
+{
+        struct player *p = cur_player();
+        mark_redraw_object(p->x, p->y);
+}
+
+void
+mark_redraw_all_objects()
+{
+        /* XXX this assumes how mark_redraw_object is implemented */
+        mark_redraw_object(0, 0);
+        mark_redraw_object(width - 1, meta.stage_height - 1);
+}
+
+void
+mark_redraw_all()
+{
+        need_redraw = ALL;
+        mark_redraw_all_objects();
+        redraw_rect.ymax = height;
+}
+
+void
 move_object(int nx, int ny, int ox, int oy)
 {
+        mark_redraw_object(ox, oy);
+        mark_redraw_object(nx, ny);
         map[ny][nx] = map[oy][ox];
         map[oy][ox] = _;
 }
@@ -345,6 +398,7 @@ calc_beam()
                         }
                 }
         }
+        mark_redraw_all_objects();
 }
 
 void
@@ -352,8 +406,8 @@ draw_beam()
 {
         int x;
         int y;
-        for (y = 0; y < height; y++) {
-                for (x = 0; x < width; x++) {
+        for (y = redraw_rect.ymin; y < redraw_rect.ymax; y++) {
+                for (x = redraw_rect.xmin; x < redraw_rect.xmax; x++) {
                         if (beam[y][x]) {
                                 *DRAW_COLORS = 3;
                         } else {
@@ -381,8 +435,8 @@ draw_objects()
 {
         int x;
         int y;
-        for (y = 0; y < height; y++) {
-                for (x = 0; x < width; x++) {
+        for (y = redraw_rect.ymin; y < redraw_rect.ymax; y++) {
+                for (x = redraw_rect.xmin; x < redraw_rect.xmax; x++) {
                         uint8_t objidx = map[y][x];
                         draw_object(x, y, objidx);
                 }
@@ -498,6 +552,7 @@ load_stage()
         calc_stage_meta();
         meta.stage_height = y;
         meta.message = stage->message;
+        mark_redraw_all();
 }
 
 void
@@ -531,6 +586,7 @@ move(int dx, int dy)
                         if (is_robot && is_bomb(objidx)) {
                                 can_move = true;
                                 meta.nbombs--;
+                                need_redraw |= BEAM;
                         } else if (objidx == _) {
                                 can_move = true;
                         } else if (can_push(objidx)) {
@@ -545,6 +601,9 @@ move(int dx, int dy)
                                         }
                                         move_object(nx, ny, x, y);
                                         can_move = true;
+                                        if (block_beam(objidx)) {
+                                                need_redraw |= BEAM;
+                                        }
                                 }
                         }
                         if (can_move) {
@@ -609,6 +668,7 @@ update()
         } else if ((gamepad & BUTTON_DOWN) != 0) {
                 dy = 1;
         } else if ((gamepad & BUTTON_1) != 0) {
+                mark_redraw_cur_player();
                 switch_player();
         }
 
@@ -632,13 +692,23 @@ update()
         if (dx != 0 || dy != 0) {
                 move(dx, dy);
         }
+        mark_redraw_cur_player();
 
         frame++;
         update_palette();
-        calc_beam();
+        if ((need_redraw & BEAM) != 0) {
+                calc_beam();
+        }
         draw_beam();
         draw_objects();
-        draw_message();
+        if ((need_redraw & MESSAGE) != 0) {
+                draw_message();
+        }
+        need_redraw = 0;
+        redraw_rect.xmin = width;
+        redraw_rect.xmax = 0;
+        redraw_rect.ymin = height;
+        redraw_rect.ymax = 0;
 
         if (meta.nbombs == 0) {
                 stage_clear();
