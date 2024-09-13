@@ -267,8 +267,9 @@ struct save_data {
 #define width 20
 #define height 20
 
-uint8_t map[height][width];
-uint8_t beam[2][height][width];
+typedef uint8_t map_t[height][width];
+map_t map;
+map_t beam[2];
 
 bool
 is_light(uint8_t objidx)
@@ -411,15 +412,13 @@ move_object(int nx, int ny, int ox, int oy)
 }
 
 void
-calc_beam()
+calc_beam(const map_t map, map_t beam_map)
 {
-        beamidx = 1 - beamidx;
-        unsigned int idx = beamidx;
         int x;
         int y;
         for (y = 0; y < height; y++) {
                 for (x = 0; x < width; x++) {
-                        beam[idx][y][x] = 0;
+                        beam_map[y][x] = 0;
                 }
         }
         for (y = 0; y < height; y++) {
@@ -438,10 +437,17 @@ calc_beam()
                                     block_beam(map[by][bx])) {
                                         break;
                                 }
-                                beam[idx][by][bx] = 1;
+                                beam_map[by][bx] = 1;
                         }
                 }
         }
+}
+
+void
+update_beam()
+{
+        beamidx = 1 - beamidx;
+        calc_beam(map, beam[beamidx]);
         mark_redraw_all_objects();
 }
 
@@ -658,7 +664,7 @@ load_stage()
         meta.message = stage->message;
         mark_redraw_all();
         moving_step = 0;
-        calc_beam();
+        update_beam();
 }
 
 void
@@ -816,7 +822,7 @@ update()
         frame++;
         update_palette();
         if ((need_redraw & CALC_BEAM) != 0) {
-                calc_beam();
+                update_beam();
                 need_redraw &= ~CALC_BEAM;
         }
         draw_beam();
