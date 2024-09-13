@@ -177,14 +177,62 @@ const struct obj {
                 },
 };
 
+enum diridx {
+        NONE = -1,
+        LEFT = 0,
+        DOWN = 1,
+        RIGHT = 2,
+        UP = 3,
+};
+
+const struct dir {
+        int dx;
+        int dy;
+} dirs[] = {
+        [LEFT] =
+                {
+                        -1,
+                        0,
+                },
+        [DOWN] =
+                {
+                        0,
+                        1,
+                },
+        [RIGHT] =
+                {
+                        1,
+                        0,
+                },
+        [UP] =
+                {
+                        0,
+                        -1,
+                },
+};
+
+#define ASSERT(cond)                                                          \
+        do {                                                                  \
+                if (!(cond)) {                                                \
+                        __builtin_trap();                                     \
+                }                                                             \
+        } while (0)
+
 #define max_players 4
 
 static uint8_t prev_gamepad = 0;
 static unsigned int frame = 0;
 
-#define BEAM 1
-#define MESSAGE 4
-#define ALL 7
+#define moving_nsteps 4
+static unsigned int beamidx = 0;
+static unsigned int moving_step = 0;
+static enum diridx moving_dir = 0;
+static bool moving_pushing = false;
+static bool moving_beam = false;
+
+#define CALC_BEAM 1U
+#define MESSAGE 4U
+#define ALL 7U
 static unsigned int need_redraw;
 static struct redraw_rect {
         int xmin;
@@ -220,7 +268,7 @@ struct save_data {
 #define height 20
 
 uint8_t map[height][width];
-uint8_t beam[height][width];
+uint8_t beam[2][height][width];
 
 bool
 is_light(uint8_t objidx)
@@ -285,28 +333,6 @@ light_dir(uint8_t objidx)
         return objidx - L;
 }
 
-const struct dir {
-        int dx;
-        int dy;
-} dirs[] = {
-        {
-                -1,
-                0,
-        },
-        {
-                0,
-                1,
-        },
-        {
-                1,
-                0,
-        },
-        {
-                0,
-                -1,
-        },
-};
-
 bool
 block_beam(uint8_t objidx)
 {
@@ -317,6 +343,22 @@ bool
 in_map(int x, int y)
 {
         return 0 <= x && x < width && 0 <= y && y < height;
+}
+
+bool
+is_moving(int x, int y)
+{
+        if (moving_step == 0) {
+                return false;
+        }
+        if (is_cur_player(x, y)) {
+                return true;
+        }
+        if (!moving_pushing) {
+                return false;
+        }
+        const struct dir *d = &dirs[moving_dir];
+        return is_cur_player(x - d->dx, y - d->dy);
 }
 
 void
@@ -371,11 +413,13 @@ move_object(int nx, int ny, int ox, int oy)
 void
 calc_beam()
 {
+        beamidx = 1 - beamidx;
+        unsigned int idx = beamidx;
         int x;
         int y;
         for (y = 0; y < height; y++) {
                 for (x = 0; x < width; x++) {
-                        beam[y][x] = 0;
+                        beam[idx][y][x] = 0;
                 }
         }
         for (y = 0; y < height; y++) {
@@ -394,7 +438,7 @@ calc_beam()
                                     block_beam(map[by][bx])) {
                                         break;
                                 }
-                                beam[by][bx] = 1;
+                                beam[idx][by][bx] = 1;
                         }
                 }
         }
@@ -404,16 +448,68 @@ calc_beam()
 void
 draw_beam()
 {
+        unsigned int curidx = beamidx;
+        unsigned int altidx = beamidx;
+        bool horizontal;
+        int dx = 0;
+        int dy = 0;
+        if (moving_step && moving_beam) {
+                ASSERT(moving_dir != NONE);
+                const struct dir *d = &dirs[moving_dir];
+                int prop;
+                dx = d->dx;
+                dy = d->dy;
+                horizontal = dx != 0;
+                if (dx < 0 || dy < 0) {
+                        prop = 8 * (moving_nsteps - moving_step) /
+                               moving_nsteps;
+                        dx = -dx;
+                        dy = -dy;
+                        curidx = 1 - curidx;
+                } else {
+                        prop = 8 * moving_step / moving_nsteps;
+                        altidx = 1 - curidx;
+                }
+                dx = dx * prop;
+                dy = dy * prop;
+        }
         int x;
         int y;
         for (y = redraw_rect.ymin; y < redraw_rect.ymax; y++) {
                 for (x = redraw_rect.xmin; x < redraw_rect.xmax; x++) {
-                        if (beam[y][x]) {
-                                *DRAW_COLORS = 3;
+                        uint8_t cur = beam[curidx][y][x];
+                        uint8_t alt = beam[altidx][y][x];
+                        if (cur == alt) {
+                                if (cur) {
+                                        *DRAW_COLORS = 3;
+                                } else {
+                                        *DRAW_COLORS = 1;
+                                }
+                                rect(x * 8, y * 8, 8, 8);
                         } else {
-                                *DRAW_COLORS = 1;
+                                if (alt) {
+                                        *DRAW_COLORS = 3;
+                                } else {
+                                        *DRAW_COLORS = 1;
+                                }
+                                if (horizontal) {
+                                        rect(x * 8 + dx, y * 8,
+                                             (uint32_t)(8 - dx), 8);
+                                } else {
+                                        rect(x * 8, y * 8 + dy, 8,
+                                             (uint32_t)(8 - dy));
+                                }
+                                if (cur) {
+                                        *DRAW_COLORS = 3;
+                                } else {
+                                        *DRAW_COLORS = 1;
+                                }
+                                if (horizontal) {
+                                        rect(x * 8, y * 8, (uint32_t)dx, 8);
+                                } else {
+                                        rect(x * 8, y * 8, 8, (uint32_t)dy);
+                                }
                         }
-                        rect(x * 8, y * 8, 8, 8);
                 }
         }
 }
@@ -424,10 +520,18 @@ draw_object(int x, int y, uint8_t objidx)
         const struct obj *obj = &objs[objidx];
         *DRAW_COLORS = obj->color;
         int i = 0;
+        int dx = 0;
+        int dy = 0;
         if (is_player(objidx) && is_cur_player(x, y)) {
                 i = (frame / 8) % 3;
         }
-        blit(obj->sprite + i * 8, x * 8, y * 8, 8, 8, obj->flags);
+        if ((is_player(objidx) || can_push(objidx)) && is_moving(x, y)) {
+                const struct dir *dir = &dirs[moving_dir];
+                int prop = 8 * (moving_nsteps - moving_step) / moving_nsteps;
+                dx = -dir->dx * prop;
+                dy = -dir->dy * prop;
+        }
+        blit(obj->sprite + i * 8, x * 8 + dx, y * 8 + dy, 8, 8, obj->flags);
 }
 
 void
@@ -553,6 +657,8 @@ load_stage()
         meta.stage_height = y;
         meta.message = stage->message;
         mark_redraw_all();
+        moving_step = 0;
+        calc_beam();
 }
 
 void
@@ -573,20 +679,26 @@ save_state()
 }
 
 void
-move(int dx, int dy)
+move(enum diridx dir)
 {
+        ASSERT(moving_dir != NONE);
         struct player *p = cur_player();
         bool is_robot = map[p->y][p->x] == A;
-        if ((beam[p->y][p->x] != 0) == is_robot) {
+        const struct dir *d = &dirs[dir];
+        int dx = d->dx;
+        int dy = d->dy;
+        if ((beam[beamidx][p->y][p->x] != 0) == is_robot) {
                 int x = p->x + dx;
                 int y = p->y + dy;
                 if (in_map(x, y)) {
                         bool can_move = false;
                         uint8_t objidx = map[y][x];
+                        moving_pushing = false;
+                        moving_beam = false;
                         if (is_robot && is_bomb(objidx)) {
                                 can_move = true;
                                 meta.nbombs--;
-                                need_redraw |= BEAM;
+                                need_redraw |= CALC_BEAM;
                         } else if (objidx == _) {
                                 can_move = true;
                         } else if (can_push(objidx)) {
@@ -601,8 +713,10 @@ move(int dx, int dy)
                                         }
                                         move_object(nx, ny, x, y);
                                         can_move = true;
+                                        moving_pushing = true;
                                         if (block_beam(objidx)) {
-                                                need_redraw |= BEAM;
+                                                need_redraw |= CALC_BEAM;
+                                                moving_beam = true;
                                         }
                                 }
                         }
@@ -610,6 +724,9 @@ move(int dx, int dy)
                                 move_object(x, y, p->x, p->y);
                                 p->x = x;
                                 p->y = y;
+                                ASSERT(moving_step == 0);
+                                moving_step++;
+                                moving_dir = dir;
                         }
                 }
         }
@@ -657,60 +774,72 @@ update()
         uint8_t cur = gamepad;
         gamepad &= ~prev_gamepad;
         prev_gamepad = cur;
-        int dx = 0;
-        int dy = 0;
-        if ((gamepad & BUTTON_LEFT) != 0) {
-                dx = -1;
-        } else if ((gamepad & BUTTON_RIGHT) != 0) {
-                dx = 1;
-        } else if ((gamepad & BUTTON_UP) != 0) {
-                dy = -1;
-        } else if ((gamepad & BUTTON_DOWN) != 0) {
-                dy = 1;
-        } else if ((gamepad & BUTTON_1) != 0) {
+        if (moving_step == 0) {
+                enum diridx dir = NONE;
+                if ((gamepad & BUTTON_LEFT) != 0) {
+                        dir = LEFT;
+                } else if ((gamepad & BUTTON_RIGHT) != 0) {
+                        dir = RIGHT;
+                } else if ((gamepad & BUTTON_UP) != 0) {
+                        dir = UP;
+                } else if ((gamepad & BUTTON_DOWN) != 0) {
+                        dir = DOWN;
+                } else if ((gamepad & BUTTON_1) != 0) {
+                        mark_redraw_cur_player();
+                        switch_player();
+                }
+
+                if ((cur & BUTTON_2) != 0) {
+                        if (dir == RIGHT || dir == LEFT) {
+                                // trace("switch stage");
+                                state.cur_stage =
+                                        (state.cur_stage + nstages +
+                                         (unsigned int)dirs[dir].dx) %
+                                        nstages;
+                                save_state();
+                                load_stage();
+                                return;
+                        }
+                        if (dir == UP) {
+                                // trace("reset");
+                                load_stage();
+                                return;
+                        }
+                }
+
+                if (dir != NONE) {
+                        move(dir);
+                }
                 mark_redraw_cur_player();
-                switch_player();
         }
-
-        if ((cur & BUTTON_2) != 0) {
-                if (dx != 0) {
-                        // trace("switch stage");
-                        state.cur_stage = (state.cur_stage + nstages +
-                                           (unsigned int)dx) %
-                                          nstages;
-                        save_state();
-                        load_stage();
-                        return;
-                }
-                if (dy == -1) {
-                        // trace("reset");
-                        load_stage();
-                        return;
-                }
-        }
-
-        if (dx != 0 || dy != 0) {
-                move(dx, dy);
-        }
-        mark_redraw_cur_player();
 
         frame++;
         update_palette();
-        if ((need_redraw & BEAM) != 0) {
+        if ((need_redraw & CALC_BEAM) != 0) {
                 calc_beam();
+                need_redraw &= ~CALC_BEAM;
         }
         draw_beam();
         draw_objects();
         if ((need_redraw & MESSAGE) != 0) {
                 draw_message();
         }
-        need_redraw = 0;
-        redraw_rect.xmin = width;
-        redraw_rect.xmax = 0;
-        redraw_rect.ymin = height;
-        redraw_rect.ymax = 0;
 
-        if (meta.nbombs == 0) {
-                stage_clear();
+        if (moving_step) {
+                moving_step++;
+                if (moving_step == moving_nsteps) {
+                        moving_step = 0;
+                        mark_redraw_all_objects();
+                }
+        } else {
+                need_redraw = 0;
+                redraw_rect.xmin = width;
+                redraw_rect.xmax = 0;
+                redraw_rect.ymin = height;
+                redraw_rect.ymax = 0;
+
+                if (meta.nbombs == 0) {
+                        stage_clear();
+                }
         }
 }
