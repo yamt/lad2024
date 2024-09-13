@@ -222,6 +222,20 @@ const struct stage stages[] = {
     },
     {
         .data = (const uint8_t[]){
+            W, W, W, W, W, W, W, W, END,
+            W, _, _, _, _, _, X, W, END,
+            W, _, _, W, W, _, W, W, END,
+            W, _, R, A, L, _, W, END,
+            W, W, _, W, B, _, W, END,
+            W, _, P, _, _, _, W, END,
+            W, _, B, X, _, W, W, END,
+            W, _, _, W, W, W, END,
+            W, W, W, W, END,
+            END,
+        },
+    },
+    {
+        .data = (const uint8_t[]){
             _, _, W, W, W, W, W, END,
             _, _, W, X, X, X, W, END,
             W, W, W, _, _, _, W, W, W, END,
