@@ -48,7 +48,7 @@ const struct stage stages[] = {
         "the beam is hitting\n"
         "it.\n"
         "\n"
-        "\x81 to give up and\n"
+        "\x81+\x86 to give up and\n"
         "reset the stage.",
     },
 
