@@ -3,6 +3,7 @@
 #include "rule.h"
 
 #include "loader.h"
+#include "stages.h"
 
 #include <string.h>
 

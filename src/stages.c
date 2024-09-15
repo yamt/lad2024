@@ -2,6 +2,8 @@
 
 #include "defs.h"
 
+#include "stages.h"
+
 #define C_B "\x92"
 #define C_X "\x93"
 

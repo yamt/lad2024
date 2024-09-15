@@ -14,10 +14,4 @@ enum block {
         END,
 };
 
-struct stage {
-        const uint8_t *data;
-        const char *message;
-};
-
-extern const struct stage stages[];
 extern const unsigned int nstages;
