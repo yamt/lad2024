@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 enum block {
         _ = 0, /* floor */
         W,     /* wall */
