@@ -5,7 +5,10 @@
 #include "wasm4.h"
 
 #include "defs.h"
+
 #include "rule.h"
+
+#include "loader.h"
 
 /* clang-format off */
 
@@ -522,34 +525,17 @@ calc_stage_meta()
 void
 load_stage()
 {
-        const struct stage *stage = &stages[state.cur_stage];
-
-        memset(map, 0, sizeof(map));
-        int x;
-        int y;
-        x = y = 0;
-        int xmax = 0;
-        const uint8_t *p = stage->data;
-        uint8_t ch;
-        while ((ch = *p++) != END) {
-                do {
-                        map[y][x++] = ch;
-                        if (xmax < x) {
-                                xmax = x;
-                        }
-                } while ((ch = *p++) != END);
-                x = 0;
-                y++;
-        }
+        struct map_info info;
+        decode_stage(state.cur_stage, map, &info);
         /* move to the center of the screen */
-        int d = (width - xmax) / 2;
+        int d = (width - info.w) / 2;
         if (d > 0) {
                 memmove(&map[0][d], map, (size_t)(width * height - d));
                 memset(map, 0, (size_t)d);
         }
         calc_stage_meta();
-        meta.stage_height = y;
-        meta.message = stage->message;
+        meta.stage_height = info.h;
+        meta.message = info.message;
         mark_redraw_all();
         moving_step = 0;
         update_beam();
