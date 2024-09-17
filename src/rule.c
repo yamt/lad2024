@@ -1,5 +1,7 @@
-#include "rule.h"
+#include <stddef.h>
+
 #include "defs.h"
+#include "rule.h"
 
 const struct dir dirs[] = {
         [LEFT] =
@@ -85,4 +87,71 @@ calc_beam(const map_t map, map_t beam_map)
                         beam_map[bloc] = 1;
                 }
         }
+}
+
+void
+move_object(map_t map, loc_t nloc, loc_t oloc)
+{
+        map[nloc] = map[oloc];
+        map[oloc] = _;
+}
+
+struct player *
+player_at(struct stage_meta *meta, loc_t loc)
+{
+        int i;
+        for (i = 0; i < meta->nplayers; i++) {
+                struct player *p = &meta->players[i];
+                if (p->loc == loc) {
+                        return p;
+                }
+        }
+        return NULL;
+}
+
+unsigned int
+player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
+            map_t map, const map_t beam_map, bool commit)
+{
+        bool is_robot = map[p->loc] == A;
+        const struct dir *d = &dirs[dir];
+        int loc_diff = d->loc_diff;
+        if ((beam_map[p->loc] != 0) != is_robot) {
+                return 0;
+        }
+        int loc = p->loc + loc_diff;
+        if (!in_map(loc)) {
+                return 0;
+        }
+        unsigned int flags = 0;
+        uint8_t objidx = map[loc];
+        if (is_robot && is_bomb(objidx)) {
+                flags |= MOVE_OK | MOVE_BEAM | MOVE_GET_BOMB;
+                if (commit) {
+                        meta->nbombs--;
+                }
+        } else if (objidx == _) {
+                flags |= MOVE_OK;
+        } else if (can_push(objidx)) {
+                int nloc = loc + loc_diff;
+                if (in_map(nloc) && map[nloc] == _) {
+                        flags |= MOVE_OK | MOVE_PUSH;
+                        if (commit) {
+                                if (is_player(objidx)) {
+                                        struct player *p2 =
+                                                player_at(meta, loc);
+                                        p2->loc = nloc;
+                                }
+                                move_object(map, nloc, loc);
+                        }
+                        if (block_beam(objidx)) {
+                                flags |= MOVE_BEAM;
+                        }
+                }
+        }
+        if ((flags & MOVE_OK) != 0 && commit) {
+                move_object(map, loc, p->loc);
+                p->loc = loc;
+        }
+        return flags;
 }
