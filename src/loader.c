@@ -21,7 +21,8 @@ decode_stage(uint32_t stage_number, map_t map, struct map_info *info)
         uint8_t ch;
         while ((ch = *p++) != END) {
                 do {
-                        map[y][x++] = ch;
+                        map[genloc(x, y)] = ch;
+                        x++;
                         if (xmax < x) {
                                 xmax = x;
                         }

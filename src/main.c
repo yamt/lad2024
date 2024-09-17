@@ -221,8 +221,7 @@ struct stage_meta {
 } meta;
 
 struct player {
-        int x;
-        int y;
+        loc_t loc;
 } players[max_players];
 
 #define max_stages 100
@@ -238,10 +237,10 @@ map_t map;
 map_t beam[2];
 
 bool
-is_cur_player(int x, int y)
+is_cur_player(loc_t loc)
 {
         const struct player *p = &players[meta.cur];
-        return p->x == x && p->y == y;
+        return p->loc == loc;
 }
 
 struct player *
@@ -251,12 +250,12 @@ cur_player()
 }
 
 struct player *
-player_at(int x, int y)
+player_at(loc_t loc)
 {
         int i;
         for (i = 0; i < meta.nplayers; i++) {
                 struct player *p = &players[i];
-                if (p->x == x && p->y == y) {
+                if (p->loc == loc) {
                         return p;
                 }
         }
@@ -270,24 +269,26 @@ switch_player()
 }
 
 bool
-is_moving(int x, int y)
+is_moving(loc_t loc)
 {
         if (moving_step == 0) {
                 return false;
         }
-        if (is_cur_player(x, y)) {
+        if (is_cur_player(loc)) {
                 return true;
         }
         if (!moving_pushing) {
                 return false;
         }
         const struct dir *d = &dirs[moving_dir];
-        return is_cur_player(x - d->dx, y - d->dy);
+        return is_cur_player(loc - d->loc_diff);
 }
 
 void
-mark_redraw_object(int x, int y)
+mark_redraw_object(loc_t loc)
 {
+        int x = loc_x(loc);
+        int y = loc_y(loc);
         if (redraw_rect.xmin > x) {
                 redraw_rect.xmin = x;
         }
@@ -306,15 +307,15 @@ void
 mark_redraw_cur_player()
 {
         struct player *p = cur_player();
-        mark_redraw_object(p->x, p->y);
+        mark_redraw_object(p->loc);
 }
 
 void
 mark_redraw_all_objects()
 {
         /* XXX this assumes how mark_redraw_object is implemented */
-        mark_redraw_object(0, 0);
-        mark_redraw_object(width - 1, meta.stage_height - 1);
+        mark_redraw_object(0);
+        mark_redraw_object(width * meta.stage_height - 1);
 }
 
 void
@@ -326,12 +327,12 @@ mark_redraw_all()
 }
 
 void
-move_object(int nx, int ny, int ox, int oy)
+move_object(loc_t nloc, loc_t oloc)
 {
-        mark_redraw_object(ox, oy);
-        mark_redraw_object(nx, ny);
-        map[ny][nx] = map[oy][ox];
-        map[oy][ox] = _;
+        mark_redraw_object(oloc);
+        mark_redraw_object(nloc);
+        map[nloc] = map[oloc];
+        map[oloc] = _;
 }
 
 void
@@ -354,28 +355,28 @@ draw_beam()
                 ASSERT(moving_dir != NONE);
                 const struct dir *d = &dirs[moving_dir];
                 int prop;
-                dx = d->dx;
-                dy = d->dy;
-                horizontal = dx != 0;
-                if (dx < 0 || dy < 0) {
+                int loc_diff = d->loc_diff;
+                horizontal = loc_diff == -1 || loc_diff == 1;
+                if (loc_diff < 0) {
                         prop = 8 * (moving_nsteps - moving_step) /
                                moving_nsteps;
-                        dx = -dx;
-                        dy = -dy;
+                        loc_diff = -loc_diff;
                         curidx = 1 - curidx;
                 } else {
                         prop = 8 * moving_step / moving_nsteps;
                         altidx = 1 - curidx;
                 }
-                dx = dx * prop;
-                dy = dy * prop;
+                loc_diff = loc_diff * prop;
+                dx = loc_x(loc_diff);
+                dy = loc_y(loc_diff);
         }
         int x;
         int y;
         for (y = redraw_rect.ymin; y < redraw_rect.ymax; y++) {
                 for (x = redraw_rect.xmin; x < redraw_rect.xmax; x++) {
-                        uint8_t cur = beam[curidx][y][x];
-                        uint8_t alt = beam[altidx][y][x];
+                        loc_t bloc = genloc(x, y);
+                        uint8_t cur = beam[curidx][bloc];
+                        uint8_t alt = beam[altidx][bloc];
                         if (cur == alt) {
                                 if (cur) {
                                         *DRAW_COLORS = 3;
@@ -416,17 +417,19 @@ draw_object(int x, int y, uint8_t objidx)
 {
         const struct obj *obj = &objs[objidx];
         *DRAW_COLORS = obj->color;
+        loc_t loc = x + y * width;
         int i = 0;
         int dx = 0;
         int dy = 0;
-        if (is_player(objidx) && is_cur_player(x, y)) {
+        if (is_player(objidx) && is_cur_player(loc)) {
                 i = (frame / 8) % 3;
         }
-        if ((is_player(objidx) || can_push(objidx)) && is_moving(x, y)) {
+        if ((is_player(objidx) || can_push(objidx)) && is_moving(loc)) {
                 const struct dir *dir = &dirs[moving_dir];
                 int prop = 8 * (moving_nsteps - moving_step) / moving_nsteps;
-                dx = -dir->dx * prop;
-                dy = -dir->dy * prop;
+                int loc_diff = -dir->loc_diff * prop;
+                dx = loc_x(loc_diff);
+                dy = loc_y(loc_diff);
         }
         blit(obj->sprite + i * 8, x * 8 + dx, y * 8 + dy, 8, 8, obj->flags);
 }
@@ -438,7 +441,7 @@ draw_objects()
         int y;
         for (y = redraw_rect.ymin; y < redraw_rect.ymax; y++) {
                 for (x = redraw_rect.xmin; x < redraw_rect.xmax; x++) {
-                        uint8_t objidx = map[y][x];
+                        uint8_t objidx = map[genloc(x, y)];
                         draw_object(x, y, objidx);
                 }
         }
@@ -501,20 +504,16 @@ draw_message()
 void
 calc_stage_meta()
 {
-        int x;
-        int y;
         int nplayers = 0;
         int nbombs = 0;
-        for (y = 0; y < height; y++) {
-                for (x = 0; x < width; x++) {
-                        uint8_t objidx = map[y][x];
-                        if (is_player(objidx)) {
-                                struct player *p = &players[nplayers++];
-                                p->x = x;
-                                p->y = y;
-                        } else if (is_bomb(objidx)) {
-                                nbombs++;
-                        }
+        int loc;
+        for (loc = 0; loc < width * height; loc++) {
+                uint8_t objidx = map[loc];
+                if (is_player(objidx)) {
+                        struct player *p = &players[nplayers++];
+                        p->loc = loc;
+                } else if (is_bomb(objidx)) {
+                        nbombs++;
                 }
         }
         meta.nplayers = nplayers;
@@ -530,7 +529,7 @@ load_stage()
         /* move to the center of the screen */
         int d = (width - info.w) / 2;
         if (d > 0) {
-                memmove(&map[0][d], map, (size_t)(width * height - d));
+                memmove(&map[d], map, (size_t)(width * height - d));
                 memset(map, 0, (size_t)d);
         }
         calc_stage_meta();
@@ -563,51 +562,46 @@ move(enum diridx dir)
 {
         ASSERT(moving_dir != NONE);
         struct player *p = cur_player();
-        bool is_robot = map[p->y][p->x] == A;
+        bool is_robot = map[p->loc] == A;
         const struct dir *d = &dirs[dir];
-        int dx = d->dx;
-        int dy = d->dy;
-        if ((beam[beamidx][p->y][p->x] != 0) == is_robot) {
-                int x = p->x + dx;
-                int y = p->y + dy;
-                if (in_map(x, y)) {
-                        bool can_move = false;
-                        uint8_t objidx = map[y][x];
-                        moving_pushing = false;
-                        moving_beam = false;
-                        if (is_robot && is_bomb(objidx)) {
+        int loc_diff = d->loc_diff;
+        if ((beam[beamidx][p->loc] != 0) != is_robot) {
+                return;
+        }
+        int loc = p->loc + loc_diff;
+        if (in_map(loc)) {
+                bool can_move = false;
+                uint8_t objidx = map[loc];
+                moving_pushing = false;
+                moving_beam = false;
+                if (is_robot && is_bomb(objidx)) {
+                        can_move = true;
+                        meta.nbombs--;
+                        need_redraw |= CALC_BEAM;
+                } else if (objidx == _) {
+                        can_move = true;
+                } else if (can_push(objidx)) {
+                        int nloc = loc + loc_diff;
+                        if (in_map(nloc) && map[nloc] == _) {
+                                if (is_player(objidx)) {
+                                        struct player *p2 = player_at(loc);
+                                        p2->loc = nloc;
+                                }
+                                move_object(nloc, loc);
                                 can_move = true;
-                                meta.nbombs--;
-                                need_redraw |= CALC_BEAM;
-                        } else if (objidx == _) {
-                                can_move = true;
-                        } else if (can_push(objidx)) {
-                                int nx = x + dx;
-                                int ny = y + dy;
-                                if (in_map(nx, ny) && map[ny][nx] == _) {
-                                        if (is_player(objidx)) {
-                                                struct player *p2 =
-                                                        player_at(x, y);
-                                                p2->x = nx;
-                                                p2->y = ny;
-                                        }
-                                        move_object(nx, ny, x, y);
-                                        can_move = true;
-                                        moving_pushing = true;
-                                        if (block_beam(objidx)) {
-                                                need_redraw |= CALC_BEAM;
-                                                moving_beam = true;
-                                        }
+                                moving_pushing = true;
+                                if (block_beam(objidx)) {
+                                        need_redraw |= CALC_BEAM;
+                                        moving_beam = true;
                                 }
                         }
-                        if (can_move) {
-                                move_object(x, y, p->x, p->y);
-                                p->x = x;
-                                p->y = y;
-                                ASSERT(moving_step == 0);
-                                moving_step++;
-                                moving_dir = dir;
-                        }
+                }
+                if (can_move) {
+                        move_object(loc, p->loc);
+                        p->loc = loc;
+                        ASSERT(moving_step == 0);
+                        moving_step++;
+                        moving_dir = dir;
                 }
         }
 }
@@ -674,7 +668,8 @@ update()
                                 // trace("switch stage");
                                 state.cur_stage =
                                         (state.cur_stage + nstages +
-                                         (unsigned int)dirs[dir].dx) %
+                                         (unsigned int)loc_x(
+                                                 dirs[dir].loc_diff)) %
                                         nstages;
                                 save_state();
                                 load_stage();

@@ -5,22 +5,18 @@ const struct dir dirs[] = {
         [LEFT] =
                 {
                         -1,
-                        0,
                 },
         [DOWN] =
                 {
-                        0,
-                        1,
+                        width,
                 },
         [RIGHT] =
                 {
                         1,
-                        0,
                 },
         [UP] =
                 {
-                        0,
-                        -1,
+                        -width,
                 },
 };
 
@@ -62,39 +58,31 @@ block_beam(uint8_t objidx)
 }
 
 bool
-in_map(int x, int y)
+in_map(loc_t loc)
 {
-        return 0 <= x && x < width && 0 <= y && y < height;
+        return 0 <= loc && loc < width * height;
 }
 
 void
 calc_beam(const map_t map, map_t beam_map)
 {
-        int x;
-        int y;
-        for (y = 0; y < height; y++) {
-                for (x = 0; x < width; x++) {
-                        beam_map[y][x] = 0;
-                }
+        loc_t loc;
+        for (loc = 0; loc < width * height; loc++) {
+                beam_map[loc] = 0;
         }
-        for (y = 0; y < height; y++) {
-                for (x = 0; x < width; x++) {
-                        uint8_t objidx = map[y][x];
-                        if (!is_light(objidx)) {
-                                continue;
+        for (loc = 0; loc < width * height; loc++) {
+                uint8_t objidx = map[loc];
+                if (!is_light(objidx)) {
+                        continue;
+                }
+                const struct dir *dir = &dirs[light_dir(objidx)];
+                loc_t bloc = loc;
+                while (1) {
+                        bloc += dir->loc_diff;
+                        if (!in_map(bloc) || block_beam(map[bloc])) {
+                                break;
                         }
-                        const struct dir *dir = &dirs[light_dir(objidx)];
-                        int bx = x;
-                        int by = y;
-                        while (1) {
-                                bx += dir->dx;
-                                by += dir->dy;
-                                if (!in_map(bx, by) ||
-                                    block_beam(map[by][bx])) {
-                                        break;
-                                }
-                                beam_map[by][bx] = 1;
-                        }
+                        beam_map[bloc] = 1;
                 }
         }
 }
