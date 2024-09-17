@@ -214,15 +214,14 @@ static struct redraw_rect {
 struct stage_meta {
         int nplayers;
         int cur;
+        struct player {
+                loc_t loc;
+        } players[max_players];
         int nbombs;
 
         int stage_height;
         const char *message;
 } meta;
-
-struct player {
-        loc_t loc;
-} players[max_players];
 
 #define max_stages 100
 #define save_data_version 1
@@ -239,22 +238,22 @@ map_t beam[2];
 bool
 is_cur_player(loc_t loc)
 {
-        const struct player *p = &players[meta.cur];
+        const struct player *p = &meta.players[meta.cur];
         return p->loc == loc;
 }
 
 struct player *
 cur_player()
 {
-        return &players[meta.cur];
+        return &meta.players[meta.cur];
 }
 
 struct player *
-player_at(loc_t loc)
+player_at(struct stage_meta *meta, loc_t loc)
 {
         int i;
-        for (i = 0; i < meta.nplayers; i++) {
-                struct player *p = &players[i];
+        for (i = 0; i < meta->nplayers; i++) {
+                struct player *p = &meta->players[i];
                 if (p->loc == loc) {
                         return p;
                 }
@@ -502,7 +501,7 @@ draw_message()
 }
 
 void
-calc_stage_meta()
+calc_stage_meta(map_t map, struct stage_meta *meta)
 {
         int nplayers = 0;
         int nbombs = 0;
@@ -510,15 +509,15 @@ calc_stage_meta()
         for (loc = 0; loc < width * height; loc++) {
                 uint8_t objidx = map[loc];
                 if (is_player(objidx)) {
-                        struct player *p = &players[nplayers++];
+                        struct player *p = &meta->players[nplayers++];
                         p->loc = loc;
                 } else if (is_bomb(objidx)) {
                         nbombs++;
                 }
         }
-        meta.nplayers = nplayers;
-        meta.cur = 0;
-        meta.nbombs = nbombs;
+        meta->nplayers = nplayers;
+        meta->cur = 0;
+        meta->nbombs = nbombs;
 }
 
 void
@@ -532,7 +531,7 @@ load_stage()
                 memmove(&map[d], map, (size_t)(width * height - d));
                 memset(map, 0, (size_t)d);
         }
-        calc_stage_meta();
+        calc_stage_meta(map, &meta);
         meta.stage_height = info.h;
         meta.message = info.message;
         mark_redraw_all();
@@ -563,14 +562,13 @@ save_state()
 #define MOVE_GET_BOMB 0x08 /* got a bomb */
 
 unsigned int
-move(enum diridx dir, bool commit)
+player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
+            map_t map, map_t beam_map, bool commit)
 {
-        ASSERT(moving_dir != NONE);
-        struct player *p = cur_player();
         bool is_robot = map[p->loc] == A;
         const struct dir *d = &dirs[dir];
         int loc_diff = d->loc_diff;
-        if ((beam[beamidx][p->loc] != 0) != is_robot) {
+        if ((beam_map[p->loc] != 0) != is_robot) {
                 return 0;
         }
         int loc = p->loc + loc_diff;
@@ -582,7 +580,7 @@ move(enum diridx dir, bool commit)
         if (is_robot && is_bomb(objidx)) {
                 flags |= MOVE_OK | MOVE_BEAM | MOVE_GET_BOMB;
                 if (commit) {
-                        meta.nbombs--;
+                        meta->nbombs--;
                 }
         } else if (objidx == _) {
                 flags |= MOVE_OK;
@@ -592,7 +590,8 @@ move(enum diridx dir, bool commit)
                         flags |= MOVE_OK | MOVE_PUSH;
                         if (commit) {
                                 if (is_player(objidx)) {
-                                        struct player *p2 = player_at(loc);
+                                        struct player *p2 =
+                                                player_at(meta, loc);
                                         p2->loc = nloc;
                                 }
                                 move_object(nloc, loc);
@@ -607,6 +606,14 @@ move(enum diridx dir, bool commit)
                 p->loc = loc;
         }
         return flags;
+}
+
+unsigned int
+move(enum diridx dir)
+{
+        ASSERT(moving_dir != NONE);
+        struct player *p = cur_player();
+        return player_move(&meta, p, dir, map, beam[beamidx], true);
 }
 
 void
@@ -686,7 +693,7 @@ update()
                 }
 
                 if (dir != NONE) {
-                        unsigned int flags = move(dir, true);
+                        unsigned int flags = move(dir);
                         if ((flags & MOVE_OK) != 0) {
                                 ASSERT(moving_step == 0);
                                 moving_step++;
