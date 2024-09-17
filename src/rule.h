@@ -28,7 +28,6 @@ extern const struct dir dirs[4];
 
 struct stage_meta {
         int nplayers;
-        int cur;
         struct player {
                 loc_t loc;
         } players[max_players];

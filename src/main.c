@@ -191,8 +191,10 @@ const struct obj {
 static uint8_t prev_gamepad = 0;
 static unsigned int frame = 0;
 
-#define moving_nsteps 4
 static unsigned int beamidx = 0;
+static int cur_player_idx;
+
+#define moving_nsteps 4
 static unsigned int moving_step = 0;
 static enum diridx moving_dir = 0;
 static bool moving_pushing = false;
@@ -230,20 +232,20 @@ map_t beam[2];
 bool
 is_cur_player(loc_t loc)
 {
-        const struct player *p = &meta.players[meta.cur];
+        const struct player *p = &meta.players[cur_player_idx];
         return p->loc == loc;
 }
 
 struct player *
 cur_player()
 {
-        return &meta.players[meta.cur];
+        return &meta.players[cur_player_idx];
 }
 
 void
 switch_player()
 {
-        meta.cur = (meta.cur + 1) % meta.nplayers;
+        cur_player_idx = (cur_player_idx + 1) % meta.nplayers;
 }
 
 bool
@@ -486,7 +488,6 @@ calc_stage_meta(map_t map, struct stage_meta *meta)
                 }
         }
         meta->nplayers = nplayers;
-        meta->cur = 0;
         meta->nbombs = nbombs;
 }
 
@@ -504,6 +505,7 @@ load_stage()
         calc_stage_meta(map, &meta);
         meta.stage_height = info.h;
         draw_info.message = info.message;
+        cur_player_idx = 0;
         mark_redraw_all();
         moving_step = 0;
         update_beam();
