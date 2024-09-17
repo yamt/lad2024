@@ -621,10 +621,11 @@ update()
                                 moving_beam = ((~flags &
                                                 (MOVE_PUSH | MOVE_BEAM)) == 0);
                                 moving_pushing = (flags & MOVE_PUSH) != 0;
+                                const struct player *p = cur_player();
+                                loc_t diff = dirs[dir].loc_diff;
+                                mark_redraw_object(p->loc - diff);
                                 if ((flags & MOVE_PUSH) != 0) {
-                                        const struct player *p = cur_player();
-                                        mark_redraw_object(p->loc +
-                                                           dirs[dir].loc_diff);
+                                        mark_redraw_object(p->loc + diff);
                                 }
                                 if ((flags & MOVE_BEAM) != 0) {
                                         need_redraw |= CALC_BEAM;
