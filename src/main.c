@@ -220,8 +220,11 @@ struct stage_meta {
         int nbombs;
 
         int stage_height;
-        const char *message;
 } meta;
+
+struct stage_draw_info {
+        const char *message;
+} draw_info;
 
 #define max_stages 100
 #define save_data_version 1
@@ -476,15 +479,15 @@ draw_message()
         }
         digits(percent, (20 - 2 - 3) * 8, 19 * 8);
 
-        if (meta.message == NULL) {
+        if (draw_info.message == NULL) {
                 return;
         }
         int start_y = meta.stage_height + 1;
         *DRAW_COLORS = 0x04;
-        text(meta.message, 0, start_y * 8);
+        text(draw_info.message, 0, start_y * 8);
         int x = 0;
         int y = start_y;
-        const uint8_t *p = (const uint8_t *)meta.message;
+        const uint8_t *p = (const uint8_t *)draw_info.message;
         uint8_t ch;
         while ((ch = *p++) != 0) {
                 if (ch == '\n') {
@@ -533,7 +536,7 @@ load_stage()
         }
         calc_stage_meta(map, &meta);
         meta.stage_height = info.h;
-        meta.message = info.message;
+        draw_info.message = info.message;
         mark_redraw_all();
         moving_step = 0;
         update_beam();
