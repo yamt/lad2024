@@ -557,8 +557,13 @@ save_state()
         diskw(&state, sizeof(state));
 }
 
-void
-move(enum diridx dir)
+#define MOVE_OK 0x01
+#define MOVE_PUSH 0x02     /* push something */
+#define MOVE_BEAM 0x04     /* might need to recalculate beam */
+#define MOVE_GET_BOMB 0x08 /* got a bomb */
+
+unsigned int
+move(enum diridx dir, bool commit)
 {
         ASSERT(moving_dir != NONE);
         struct player *p = cur_player();
@@ -566,44 +571,42 @@ move(enum diridx dir)
         const struct dir *d = &dirs[dir];
         int loc_diff = d->loc_diff;
         if ((beam[beamidx][p->loc] != 0) != is_robot) {
-                return;
+                return 0;
         }
         int loc = p->loc + loc_diff;
-        if (in_map(loc)) {
-                bool can_move = false;
-                uint8_t objidx = map[loc];
-                moving_pushing = false;
-                moving_beam = false;
-                if (is_robot && is_bomb(objidx)) {
-                        can_move = true;
+        if (!in_map(loc)) {
+                return 0;
+        }
+        unsigned int flags = 0;
+        uint8_t objidx = map[loc];
+        if (is_robot && is_bomb(objidx)) {
+                flags |= MOVE_OK | MOVE_BEAM | MOVE_GET_BOMB;
+                if (commit) {
                         meta.nbombs--;
-                        need_redraw |= CALC_BEAM;
-                } else if (objidx == _) {
-                        can_move = true;
-                } else if (can_push(objidx)) {
-                        int nloc = loc + loc_diff;
-                        if (in_map(nloc) && map[nloc] == _) {
+                }
+        } else if (objidx == _) {
+                flags |= MOVE_OK;
+        } else if (can_push(objidx)) {
+                int nloc = loc + loc_diff;
+                if (in_map(nloc) && map[nloc] == _) {
+                        flags |= MOVE_OK | MOVE_PUSH;
+                        if (commit) {
                                 if (is_player(objidx)) {
                                         struct player *p2 = player_at(loc);
                                         p2->loc = nloc;
                                 }
                                 move_object(nloc, loc);
-                                can_move = true;
-                                moving_pushing = true;
-                                if (block_beam(objidx)) {
-                                        need_redraw |= CALC_BEAM;
-                                        moving_beam = true;
-                                }
+                        }
+                        if (block_beam(objidx)) {
+                                flags |= MOVE_BEAM;
                         }
                 }
-                if (can_move) {
-                        move_object(loc, p->loc);
-                        p->loc = loc;
-                        ASSERT(moving_step == 0);
-                        moving_step++;
-                        moving_dir = dir;
-                }
         }
+        if ((flags & MOVE_OK) != 0 && commit) {
+                move_object(loc, p->loc);
+                p->loc = loc;
+        }
+        return flags;
 }
 
 void
@@ -683,7 +686,18 @@ update()
                 }
 
                 if (dir != NONE) {
-                        move(dir);
+                        unsigned int flags = move(dir, true);
+                        if ((flags & MOVE_OK) != 0) {
+                                ASSERT(moving_step == 0);
+                                moving_step++;
+                                moving_dir = dir;
+                                moving_beam = ((~flags &
+                                                (MOVE_PUSH | MOVE_BEAM)) == 0);
+                                moving_pushing = (flags & MOVE_PUSH) != 0;
+                                if ((flags & MOVE_BEAM) != 0) {
+                                        need_redraw |= CALC_BEAM;
+                                }
+                        }
                 }
                 mark_redraw_cur_player();
         }
