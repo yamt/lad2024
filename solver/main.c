@@ -50,7 +50,7 @@ add(struct node *n)
                         return true;
                 }
         }
-        LIST_INSERT_TAIL(head, n, hashq);
+        LIST_INSERT_HEAD(head, n, hashq);
         return false;
 }
 
