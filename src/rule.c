@@ -109,6 +109,25 @@ player_at(struct stage_meta *meta, loc_t loc)
         return NULL;
 }
 
+void
+calc_stage_meta(map_t map, struct stage_meta *meta)
+{
+        int nplayers = 0;
+        int nbombs = 0;
+        int loc;
+        for (loc = 0; loc < width * height; loc++) {
+                uint8_t objidx = map[loc];
+                if (is_player(objidx)) {
+                        struct player *p = &meta->players[nplayers++];
+                        p->loc = loc;
+                } else if (is_bomb(objidx)) {
+                        nbombs++;
+                }
+        }
+        meta->nplayers = nplayers;
+        meta->nbombs = nbombs;
+}
+
 unsigned int
 player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
             map_t map, const map_t beam_map, bool commit)

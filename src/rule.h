@@ -49,6 +49,7 @@ bool in_map(loc_t loc);
 void calc_beam(const map_t map, map_t beam_map);
 void move_object(map_t map, loc_t nloc, loc_t oloc);
 struct player *player_at(struct stage_meta *meta, loc_t loc);
+void calc_stage_meta(map_t map, struct stage_meta *meta);
 
 #define MOVE_OK 0x01
 #define MOVE_PUSH 0x02     /* push something */

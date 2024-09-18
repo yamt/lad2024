@@ -470,25 +470,6 @@ draw_message()
 }
 
 void
-calc_stage_meta(map_t map, struct stage_meta *meta)
-{
-        int nplayers = 0;
-        int nbombs = 0;
-        int loc;
-        for (loc = 0; loc < width * height; loc++) {
-                uint8_t objidx = map[loc];
-                if (is_player(objidx)) {
-                        struct player *p = &meta->players[nplayers++];
-                        p->loc = loc;
-                } else if (is_bomb(objidx)) {
-                        nbombs++;
-                }
-        }
-        meta->nplayers = nplayers;
-        meta->nbombs = nbombs;
-}
-
-void
 load_stage()
 {
         struct map_info info;
