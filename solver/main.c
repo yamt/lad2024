@@ -113,6 +113,11 @@ main(int argc, char **argv)
         struct map_info info;
         printf("stage %u\n", stage_number);
         decode_stage(stage_number - 1, n->map, &info);
+        if (info.w > width || info.h > height) {
+                printf("info %u %u\n", info.w, info.h);
+                printf("macro %u %u\n", width, height);
+                exit(1);
+        }
         LIST_INSERT_TAIL(&todo, n, q);
         n->parent = NULL;
         n->steps = 0;
