@@ -108,6 +108,7 @@ evaluate(struct node *n)
         unsigned int npush_cont = 0;
         unsigned int npush_sameobj = 0;
         unsigned int nbeam_changed = 0;
+        unsigned int nsuicide = 0;
         loc_t last_pushed_obj_loc = -1;
         LIST_HEAD(struct node) h;
         LIST_HEAD_INIT(&h);
@@ -118,12 +119,14 @@ evaluate(struct node *n)
         struct node *prev = NULL;
         LIST_FOREACH(n, &h, q)
         {
+                map_t beam_map;
                 bool same = false;
                 if (prev != NULL && next_loc(prev) == n->loc) {
                         same = true;
                 }
-                uint8_t objidx = n->map[next_loc(n)];
-                int chr = objchr(objidx);
+                const uint8_t objidx = n->map[next_loc(n)];
+                const bool is_robot = objidx == A;
+                const int chr = objchr(objidx);
                 if (same) {
                         printf("step %3u:               dir=%c", n->steps,
                                "LDRU"[n->dir]);
@@ -161,6 +164,10 @@ evaluate(struct node *n)
                 if ((n->flags & MOVE_BEAM) != 0) {
                         nbeam_changed++;
                 }
+                calc_beam(n->map, beam_map);
+                if (is_robot != (beam_map[next_loc(n)] != 0)) {
+                        nsuicide++;
+                }
                 prev = n;
         }
         printf("nswitch %u\n", nswitch);
@@ -168,6 +175,7 @@ evaluate(struct node *n)
         printf("npush_cont %u\n", npush_cont);
         printf("npush_sameobj %u\n", npush_sameobj);
         printf("nbeam_changed %u\n", nbeam_changed);
+        printf("nsuicide %u\n", nsuicide);
 }
 
 int
