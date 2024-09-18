@@ -1,4 +1,5 @@
 CFLAGS = -std=c99 -flto=full -O3 -Wall -DNDEBUG
+# CFLAGS += -Dheight=16 -Dwidth=16
 CLINKFLAGS = -flto=full
 
 CFLAGS += -I../src
