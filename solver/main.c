@@ -245,7 +245,7 @@ main(int argc, char **argv)
                 }
                 processed++;
                 if ((processed % 100000) == 0) {
-                        printf("processed %u / %u (%f) duplicated %u (%f) "
+                        printf("processed %u / %u (%.3f) dup %u (%.3f) "
                                "step %u\n",
                                processed, queued, (float)queued / processed,
                                duplicated, (float)duplicated / processed,
