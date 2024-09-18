@@ -15,7 +15,7 @@
 struct node {
         map_t map;
         LIST_ENTRY(struct node) q;
-        LIST_ENTRY(struct node) hash;
+        LIST_ENTRY(struct node) hashq;
         struct node *parent;
         unsigned int steps;
 
@@ -44,13 +44,13 @@ add(struct node *n)
         uint32_t idx = hash % HASH_SIZE;
         struct hash_head *head = &hash_heads[idx];
         struct node *n2;
-        LIST_FOREACH(n2, head, hash)
+        LIST_FOREACH(n2, head, hashq)
         {
                 if (!memcmp(n2->map, n->map, sizeof(n->map))) {
                         return true;
                 }
         }
-        LIST_INSERT_TAIL(head, n, hash);
+        LIST_INSERT_TAIL(head, n, hashq);
         return false;
 }
 
@@ -65,7 +65,7 @@ dump_hash(void)
         for (i = 0; i < HASH_SIZE; i++) {
                 unsigned int n = 0;
                 struct node *dn;
-                LIST_FOREACH(dn, &hash_heads[i], hash) { n++; }
+                LIST_FOREACH(dn, &hash_heads[i], hashq) { n++; }
                 if (n >= buckets - 1) {
                         count[buckets - 1]++;
                 } else {
