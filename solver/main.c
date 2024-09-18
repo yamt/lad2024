@@ -107,6 +107,7 @@ evaluate(struct node *n)
         unsigned int npush = 0;
         unsigned int npush_cont = 0;
         unsigned int npush_sameobj = 0;
+        unsigned int nbeam_changed = 0;
         loc_t last_pushed_obj_loc = -1;
         LIST_HEAD(struct node) h;
         LIST_HEAD_INIT(&h);
@@ -162,12 +163,16 @@ evaluate(struct node *n)
                 if ((n->flags & MOVE_GET_BOMB) != 0) {
                         last_pushed_obj_loc = -1;
                 }
+                if ((n->flags & MOVE_BEAM) != 0) {
+                        nbeam_changed++;
+                }
                 prev = n;
         }
         printf("nswitch %u\n", nswitch);
         printf("npush %u\n", npush);
         printf("npush_cont %u\n", npush_cont);
         printf("npush_sameobj %u\n", npush_sameobj);
+        printf("nbeam_changed %u\n", nbeam_changed);
 }
 
 int
