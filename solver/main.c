@@ -122,13 +122,8 @@ evaluate(struct node *n)
                 if (prev != NULL && next_loc(prev) == n->loc) {
                         same = true;
                 }
-                int chr;
                 uint8_t objidx = n->map[next_loc(n)];
-                if (objidx == A) {
-                        chr = 'A';
-                } else {
-                        chr = 'P';
-                }
+                int chr = objchr(objidx);
                 if (same) {
                         printf("step %3u:               dir=%c", n->steps,
                                "LDRU"[n->dir]);
