@@ -94,6 +94,13 @@ dump(const struct node *n)
 int
 main(int argc, char **argv)
 {
+        if (argc != 2) {
+                exit(2);
+        }
+        int stage_number = atoi(argv[1]);
+        if (stage_number <= 0) {
+                exit(2);
+        }
         LIST_HEAD_INIT(&todo);
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
@@ -104,7 +111,8 @@ main(int argc, char **argv)
         unsigned int duplicated = 0;
         struct node *n = alloc_node();
         struct map_info info;
-        decode_stage(12, n->map, &info);
+        printf("stage %u\n", stage_number);
+        decode_stage(stage_number - 1, n->map, &info);
         LIST_INSERT_TAIL(&todo, n, q);
         n->parent = NULL;
         n->steps = 0;
