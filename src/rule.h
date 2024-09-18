@@ -1,3 +1,6 @@
+#if !defined(_LAD_RULE_H)
+#define _LAD_RULE_H
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -55,3 +58,5 @@ struct player *player_at(struct stage_meta *meta, loc_t loc);
 unsigned int player_move(struct stage_meta *meta, struct player *p,
                          enum diridx dir, map_t map, const map_t beam_map,
                          bool commit);
+
+#endif /* !defined(_LAD_RULE_H) */
