@@ -10,7 +10,7 @@
 #include "loader.h"
 #include "rule.h"
 
-//#define HASH_SIZE 1024021
+// #define HASH_SIZE 1024021
 #define HASH_SIZE 10240033
 
 struct node {
