@@ -59,6 +59,7 @@ dump_hash(void)
 {
 #define buckets 10
         unsigned int count[buckets];
+        unsigned int total = 0;
         memset(count, 0, sizeof(count));
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
@@ -70,10 +71,12 @@ dump_hash(void)
                 } else {
                         count[n]++;
                 }
+                total++;
         }
         printf("hash stat\n");
         for (i = 0; i < buckets; i++) {
-                printf("%4d %u\n", i, count[i]);
+                printf("%4d %u (%.3f)\n", i, count[i],
+                       (float)count[i] / total);
         }
 }
 
@@ -148,8 +151,11 @@ main(int argc, char **argv)
                 }
                 processed++;
                 if ((processed % 10000) == 0) {
-                        printf("processed %u / %u duplicated %u step %u\n",
-                               processed, queued, duplicated, n->steps);
+                        printf("processed %u / %u (%f) duplicated %u (%f) "
+                               "step %u\n",
+                               processed, queued, (float)queued / processed,
+                               duplicated, (float)duplicated / processed,
+                               n->steps);
                         dump_hash();
                 }
         }
