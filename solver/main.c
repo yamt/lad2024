@@ -165,7 +165,7 @@ main(int argc, char **argv)
                                processed, queued, (float)queued / processed,
                                duplicated, (float)duplicated / processed,
                                n->steps);
-                        dump_hash();
+                        // dump_hash();
                 }
         }
         printf("impossible\n");
