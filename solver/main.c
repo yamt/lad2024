@@ -245,9 +245,9 @@ main(int argc, char **argv)
                 }
                 processed++;
                 if ((processed % 100000) == 0) {
-                        printf("processed %u / %u (%.3f) dup %u (%.3f) "
+                        printf("processed %u / %u (%u) dup %u (%.3f) "
                                "step %u\n",
-                               processed, queued, (float)queued / processed,
+                               processed, queued, queued - processed,
                                duplicated, (float)duplicated / processed,
                                n->steps);
                         // dump_hash();
