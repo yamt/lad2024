@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 #include "defs.h"
-
 #include "stages.h"
 
 #define C_B "\x92"

@@ -1,3 +1,5 @@
+#include "rule.h"
+
 struct map_info {
         int w;
         int h;

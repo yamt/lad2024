@@ -1,11 +1,9 @@
+#include <string.h>
+
 #include "defs.h"
-
 #include "rule.h"
-
 #include "loader.h"
 #include "stages.h"
-
-#include <string.h>
 
 void
 decode_stage(uint32_t stage_number, map_t map, struct map_info *info)

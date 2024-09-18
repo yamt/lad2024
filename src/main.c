@@ -3,11 +3,8 @@
 #include <string.h>
 
 #include "wasm4.h"
-
 #include "defs.h"
-
 #include "rule.h"
-
 #include "loader.h"
 
 /* clang-format off */
