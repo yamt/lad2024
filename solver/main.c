@@ -103,7 +103,7 @@ main(int argc, char **argv)
         unsigned int duplicated = 0;
         struct node *n = alloc_node();
         struct map_info info;
-        decode_stage(16, n->map, &info);
+        decode_stage(12, n->map, &info);
         LIST_INSERT_TAIL(&todo, n, q);
         n->parent = NULL;
         n->steps = 0;
