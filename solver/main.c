@@ -138,15 +138,6 @@ evaluate(struct node *n)
                 }
                 if ((n->flags & MOVE_PUSH) != 0) {
                         printf(" PUSH(%c)", objchr(n->map[pushed_obj_loc(n)]));
-                }
-                if ((n->flags & MOVE_GET_BOMB) != 0) {
-                        printf(" GET_BOMB");
-                }
-                if ((n->flags & MOVE_BEAM) != 0) {
-                        printf(" BEAM");
-                }
-                printf("\n");
-                if ((n->flags & MOVE_PUSH) != 0) {
                         loc_t obj_loc_before_push = next_loc(n);
                         if (prev != NULL && (prev->flags & MOVE_PUSH) != 0 &&
                             prev->dir == n->dir) {
@@ -159,15 +150,19 @@ evaluate(struct node *n)
                         last_pushed_obj_loc = pushed_obj_loc(n);
                 }
                 if ((n->flags & MOVE_GET_BOMB) != 0) {
+                        printf(" GET_BOMB");
                         last_pushed_obj_loc = -1;
                 }
                 if ((n->flags & MOVE_BEAM) != 0) {
+                        printf(" BEAM");
                         nbeam_changed++;
                 }
                 calc_beam(n->map, beam_map);
                 if (is_robot != (beam_map[next_loc(n)] != 0)) {
                         nsuicide++;
+                        printf(" SUICIDAL");
                 }
+                printf("\n");
                 prev = n;
         }
         printf("nswitch %u\n", nswitch);
