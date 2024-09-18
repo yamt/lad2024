@@ -4,8 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if !defined(width)
 #define width 20
+#endif
+#if !defined(height)
 #define height 20
+#endif
 #define max_players 4
 
 typedef uint8_t map_t[height * width];
