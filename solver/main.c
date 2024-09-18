@@ -23,6 +23,7 @@ struct node {
         /* move from the parent. note: this is redundant. */
         loc_t loc;
         enum diridx dir;
+        unsigned int flags;
 };
 
 LIST_HEAD_NAMED(struct node, hash_head) hash_heads[HASH_SIZE];
@@ -81,14 +82,92 @@ dump_hash(void)
         }
 }
 
-void
-dump(const struct node *n)
+loc_t
+next_loc(struct node *n)
 {
+        return n->loc + dirs[n->dir].loc_diff;
+}
+
+loc_t
+pushed_obj_loc(struct node *n)
+{
+        return n->loc + dirs[n->dir].loc_diff * 2;
+}
+
+char
+objchr(uint8_t objidx)
+{
+        return "_WBXLDRUPA"[objidx];
+}
+
+void
+evaluate(struct node *n)
+{
+        unsigned int nswitch = 0;
+        unsigned int npush = 0;
+        unsigned int npush_cont = 0;
+        unsigned int npush_sameobj = 0;
+        loc_t last_pushed_obj_loc = -1;
+        LIST_HEAD(struct node) h;
+        LIST_HEAD_INIT(&h);
         do {
-                printf("step %3u: x=%u y=%u dir=%c\n", n->steps, loc_x(n->loc),
-                       loc_y(n->loc), "LDRU"[n->dir]);
+                LIST_INSERT_HEAD(&h, n, q);
                 n = n->parent;
         } while (n->parent != NULL);
+        struct node *prev = NULL;
+        LIST_FOREACH(n, &h, q)
+        {
+                bool same = false;
+                if (prev != NULL && next_loc(prev) == n->loc) {
+                        same = true;
+                }
+                int chr;
+                uint8_t objidx = n->map[next_loc(n)];
+                if (objidx == A) {
+                        chr = 'A';
+                } else {
+                        chr = 'P';
+                }
+                if (same) {
+                        printf("step %3u:               dir=%c", n->steps,
+                               "LDRU"[n->dir]);
+                } else {
+                        printf("step %3u: %c (x=%2u y=%2u) dir=%c", n->steps,
+                               chr, loc_x(n->loc), loc_y(n->loc),
+                               "LDRU"[n->dir]);
+                        nswitch++;
+                }
+                if ((n->flags & MOVE_PUSH) != 0) {
+                        printf(" PUSH(%c)", objchr(n->map[pushed_obj_loc(n)]));
+                }
+                if ((n->flags & MOVE_GET_BOMB) != 0) {
+                        printf(" GET_BOMB");
+                }
+                if ((n->flags & MOVE_BEAM) != 0) {
+                        printf(" BEAM");
+                }
+                printf("\n");
+                if ((n->flags & MOVE_PUSH) != 0) {
+                        loc_t obj_loc_before_push = next_loc(n);
+                        if (prev != NULL && (prev->flags & MOVE_PUSH) != 0 &&
+                            prev->dir == n->dir) {
+                                npush_cont++;
+                        }
+                        if (obj_loc_before_push == last_pushed_obj_loc) {
+                                npush_sameobj++;
+                        }
+                        npush++;
+                        last_pushed_obj_loc = pushed_obj_loc(n);
+                }
+                if ((n->flags & MOVE_GET_BOMB) != 0) {
+                        last_pushed_obj_loc = -1;
+                }
+                prev = n;
+        }
+        printf("nswitch %u\n", nswitch);
+        printf("npush %u\n", npush);
+        printf("npush_cont %u\n", npush_cont);
+        printf("npush_sameobj %u\n", npush_sameobj);
 }
 
 int
@@ -153,11 +232,12 @@ main(int argc, char **argv)
                                 n2->steps = n->steps + 1;
                                 n2->loc = p->loc;
                                 n2->dir = dir;
+                                n2->flags = flags;
                                 LIST_INSERT_TAIL(&todo, n2, q);
                                 queued++;
                                 if (meta2.nbombs == 0) {
                                         printf("solved!\n");
-                                        dump(n2);
+                                        evaluate(n2);
                                         dump_hash();
                                         exit(0);
                                 }
