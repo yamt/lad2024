@@ -16,6 +16,7 @@ OBJS += list.o
 OBJS += dump.o
 OBJS += node.o
 OBJS += solver.o
+OBJS += evaluater.o
 
 BIN = solver
 

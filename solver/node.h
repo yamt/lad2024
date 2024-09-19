@@ -1,3 +1,6 @@
+#if !defined(_LAD_SOLVER_NODE_H)
+#define _LAD_SOLVER_NODE_H
+
 #include "list.h"
 #include "rule.h"
 
@@ -17,3 +20,5 @@ struct node {
 LIST_HEAD_NAMED(struct node, node_list);
 
 struct node *alloc_node(void);
+
+#endif /* !defined(_LAD_SOLVER_NODE_H) */

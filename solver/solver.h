@@ -1,3 +1,4 @@
+#include "node.h"
 
 #define SOLVE_SOLVED 0x01
 #define SOLVE_IMPOSSIBLE 0x02
