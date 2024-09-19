@@ -5,11 +5,11 @@
 
 #include "defs.h"
 #include "dump.h"
+#include "evaluater.h"
 #include "list.h"
 #include "loader.h"
 #include "node.h"
 #include "solver.h"
-#include "evaluater.h"
 
 int
 main(int argc, char **argv)
@@ -36,8 +36,9 @@ main(int argc, char **argv)
         struct node_list solution;
         unsigned int result = solve(n, 10000000, &solution);
         if (result == SOLVE_SOLVED) {
-                unsigned int score = evaluate(&solution);
-                printf("score %u\n", score);
+                struct evaluation ev;
+                evaluate(&solution, &ev);
+                printf("score %u\n", ev.score);
         }
         solve_cleanup();
 }
