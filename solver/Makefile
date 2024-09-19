@@ -14,6 +14,8 @@ OBJS += loader.o
 OBJS += stages.o
 OBJS += list.o
 OBJS += dump.o
+OBJS += node.o
+OBJS += solver.o
 
 BIN = solver
 
