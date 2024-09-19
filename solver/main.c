@@ -29,6 +29,7 @@ struct node {
 
 LIST_HEAD_NAMED(struct node, node_list);
 
+/* global solver state used by solve()/solve_cleanup() */
 struct node_list hash_heads[HASH_SIZE];
 struct node_list todo;
 
