@@ -184,7 +184,8 @@ evaluate(struct node_list *solution)
 #define SOLVE_GIVENUP 0x03
 
 unsigned int
-solve(struct node *root, struct node_list *solution)
+solve(struct node *root, unsigned int max_iterations,
+      struct node_list *solution)
 {
         unsigned int queued = 0;
         unsigned int processed = 0;
@@ -248,6 +249,10 @@ solve(struct node *root, struct node_list *solution)
                                n->steps);
                         // dump_hash();
                 }
+                if (processed >= max_iterations) {
+                        printf("giving up\n");
+                        return SOLVE_GIVENUP;
+                }
         }
         printf("impossible\n");
         return SOLVE_IMPOSSIBLE;
@@ -277,11 +282,7 @@ main(int argc, char **argv)
         if (stage_number <= 0) {
                 exit(2);
         }
-        LIST_HEAD_INIT(&todo);
-        unsigned int i;
-        for (i = 0; i < HASH_SIZE; i++) {
-                LIST_HEAD_INIT(&hash_heads[i]);
-        }
+
         struct node *n = alloc_node();
         struct map_info info;
         printf("stage %u\n", stage_number);
@@ -292,8 +293,14 @@ main(int argc, char **argv)
                 exit(1);
         }
         dump_map(n->map);
+
+        LIST_HEAD_INIT(&todo);
+        unsigned int i;
+        for (i = 0; i < HASH_SIZE; i++) {
+                LIST_HEAD_INIT(&hash_heads[i]);
+        }
         struct node_list solution;
-        unsigned int result = solve(n, &solution);
+        unsigned int result = solve(n, 10000000, &solution);
         if (result == SOLVE_SOLVED) {
                 unsigned int score = evaluate(&solution);
                 printf("score %u\n", score);
