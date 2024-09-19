@@ -6,10 +6,10 @@
 
 #include "defs.h"
 #include "dump.h"
-#include "hash.h"
-#include "rule.h"
-#include "node.h"
 #include "evaluater.h"
+#include "hash.h"
+#include "node.h"
+#include "rule.h"
 
 loc_t
 next_loc(struct node *n)
@@ -23,8 +23,8 @@ pushed_obj_loc(struct node *n)
         return n->loc + dirs[n->dir].loc_diff * 2;
 }
 
-unsigned int
-evaluate(struct node_list *solution)
+void
+evaluate(struct node_list *solution, struct evaluation *ev)
 {
         unsigned int nswitch = 0;
         unsigned int npush = 0;
@@ -92,6 +92,5 @@ evaluate(struct node_list *solution)
         unsigned int score = nswitch * 2 + npush * 2 - npush_cont -
                              npush_sameobj + nsuicide;
         printf("score %u\n", score);
-        return score;
+        ev->score = score;
 }
-
