@@ -166,8 +166,8 @@ evaluate(struct node *n)
         printf("npush_sameobj %u\n", npush_sameobj);
         printf("nbeam_changed %u\n", nbeam_changed);
         printf("nsuicide %u\n", nsuicide);
-        printf("score %u\n",
-               nswitch + npush * 2 - npush_cont - npush_sameobj + nsuicide);
+        printf("score %u\n", nswitch * 2 + npush * 2 - npush_cont -
+                                     npush_sameobj + nsuicide);
 }
 
 int
