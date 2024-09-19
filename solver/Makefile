@@ -11,6 +11,7 @@ OBJS += rule.o
 OBJS += loader.o
 OBJS += stages.o
 OBJS += list.o
+OBJS += dump.o
 
 BIN = solver
 

@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "defs.h"
+#include "dump.h"
 #include "hash.h"
 #include "list.h"
 #include "loader.h"
@@ -92,12 +93,6 @@ loc_t
 pushed_obj_loc(struct node *n)
 {
         return n->loc + dirs[n->dir].loc_diff * 2;
-}
-
-char
-objchr(uint8_t objidx)
-{
-        return "_WBXLDRUPA"[objidx];
 }
 
 void
@@ -202,6 +197,7 @@ main(int argc, char **argv)
                 printf("macro %u %u\n", width, height);
                 exit(1);
         }
+        dump_map(n->map);
         LIST_INSERT_TAIL(&todo, n, q);
         n->parent = NULL;
         n->steps = 0;
