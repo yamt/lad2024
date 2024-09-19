@@ -27,8 +27,10 @@ struct node {
         unsigned int flags;
 };
 
-LIST_HEAD_NAMED(struct node, hash_head) hash_heads[HASH_SIZE];
-LIST_HEAD(struct node) todo;
+LIST_HEAD_NAMED(struct node, node_list);
+
+struct node_list hash_heads[HASH_SIZE];
+struct node_list todo;
 
 struct node *
 alloc_node(void)
@@ -45,7 +47,7 @@ add(struct node *n)
 {
         uint32_t hash = sdbm_hash(n->map, sizeof(n->map));
         uint32_t idx = hash % HASH_SIZE;
-        struct hash_head *head = &hash_heads[idx];
+        struct node_list *head = &hash_heads[idx];
         struct node *n2;
         LIST_FOREACH(n2, head, hashq)
         {
@@ -96,7 +98,17 @@ pushed_obj_loc(struct node *n)
 }
 
 void
-evaluate(struct node *n)
+return_solution(struct node *n, struct node_list *solution)
+{
+        LIST_HEAD_INIT(solution);
+        do {
+                LIST_INSERT_HEAD(solution, n, q);
+                n = n->parent;
+        } while (n->parent != NULL);
+}
+
+unsigned int
+evaluate(struct node_list *solution)
 {
         unsigned int nswitch = 0;
         unsigned int npush = 0;
@@ -105,14 +117,9 @@ evaluate(struct node *n)
         unsigned int nbeam_changed = 0;
         unsigned int nsuicide = 0;
         loc_t last_pushed_obj_loc = -1;
-        LIST_HEAD(struct node) h;
-        LIST_HEAD_INIT(&h);
-        do {
-                LIST_INSERT_HEAD(&h, n, q);
-                n = n->parent;
-        } while (n->parent != NULL);
+        struct node *n;
         struct node *prev = NULL;
-        LIST_FOREACH(n, &h, q)
+        LIST_FOREACH(n, solution, q)
         {
                 map_t beam_map;
                 bool same = false;
@@ -166,49 +173,37 @@ evaluate(struct node *n)
         printf("npush_sameobj %u\n", npush_sameobj);
         printf("nbeam_changed %u\n", nbeam_changed);
         printf("nsuicide %u\n", nsuicide);
-        printf("score %u\n", nswitch * 2 + npush * 2 - npush_cont -
-                                     npush_sameobj + nsuicide);
+        unsigned int score = nswitch * 2 + npush * 2 - npush_cont -
+                             npush_sameobj + nsuicide;
+        printf("score %u\n", score);
+        return score;
 }
 
-int
-main(int argc, char **argv)
+#define SOLVE_SOLVED 0x01
+#define SOLVE_IMPOSSIBLE 0x02
+#define SOLVE_GIVENUP 0x03
+
+unsigned int
+solve(struct node *root, struct node_list *solution)
 {
-        if (argc != 2) {
-                exit(2);
-        }
-        int stage_number = atoi(argv[1]);
-        if (stage_number <= 0) {
-                exit(2);
-        }
-        LIST_HEAD_INIT(&todo);
-        unsigned int i;
-        for (i = 0; i < HASH_SIZE; i++) {
-                LIST_HEAD_INIT(&hash_heads[i]);
-        }
         unsigned int queued = 0;
         unsigned int processed = 0;
         unsigned int duplicated = 0;
-        struct node *n = alloc_node();
-        struct map_info info;
-        printf("stage %u\n", stage_number);
-        decode_stage(stage_number - 1, n->map, &info);
-        if (info.w > width || info.h > height) {
-                printf("info %u %u\n", info.w, info.h);
-                printf("macro %u %u\n", width, height);
-                exit(1);
-        }
-        dump_map(n->map);
-        LIST_INSERT_TAIL(&todo, n, q);
-        n->parent = NULL;
-        n->steps = 0;
+
+        root->parent = NULL;
+        root->steps = 0;
+        LIST_INSERT_TAIL(&todo, root, q);
         queued++;
-        add(n);
+        add(root);
+
+        struct node *n;
         while ((n = LIST_FIRST(&todo)) != NULL) {
                 LIST_REMOVE(&todo, n, q);
                 struct stage_meta meta;
                 map_t beam_map;
                 calc_stage_meta(n->map, &meta);
                 calc_beam(n->map, beam_map);
+                unsigned int i;
                 for (i = 0; i < meta.nplayers; i++) {
                         struct player *p = &meta.players[i];
                         enum diridx dir;
@@ -238,9 +233,9 @@ main(int argc, char **argv)
                                 queued++;
                                 if (meta2.nbombs == 0) {
                                         printf("solved!\n");
-                                        evaluate(n2);
-                                        dump_hash();
-                                        exit(0);
+                                        return_solution(n2, solution);
+                                        // dump_hash();
+                                        return SOLVE_SOLVED;
                                 }
                         }
                 }
@@ -255,4 +250,53 @@ main(int argc, char **argv)
                 }
         }
         printf("impossible\n");
+        return SOLVE_IMPOSSIBLE;
+}
+
+void
+solve_cleanup(void)
+{
+        unsigned int i;
+        for (i = 0; i < HASH_SIZE; i++) {
+                struct node_list *h = &hash_heads[i];
+                struct node *n;
+                while ((n = LIST_FIRST(h)) != NULL) {
+                        LIST_REMOVE(h, n, hashq);
+                        free(n);
+                }
+        }
+}
+
+int
+main(int argc, char **argv)
+{
+        if (argc != 2) {
+                exit(2);
+        }
+        int stage_number = atoi(argv[1]);
+        if (stage_number <= 0) {
+                exit(2);
+        }
+        LIST_HEAD_INIT(&todo);
+        unsigned int i;
+        for (i = 0; i < HASH_SIZE; i++) {
+                LIST_HEAD_INIT(&hash_heads[i]);
+        }
+        struct node *n = alloc_node();
+        struct map_info info;
+        printf("stage %u\n", stage_number);
+        decode_stage(stage_number - 1, n->map, &info);
+        if (info.w > width || info.h > height) {
+                printf("info %u %u\n", info.w, info.h);
+                printf("macro %u %u\n", width, height);
+                exit(1);
+        }
+        dump_map(n->map);
+        struct node_list solution;
+        unsigned int result = solve(n, &solution);
+        if (result == SOLVE_SOLVED) {
+                unsigned int score = evaluate(&solution);
+                printf("score %u\n", score);
+        }
+        solve_cleanup();
 }
