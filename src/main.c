@@ -2,10 +2,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "wasm4.h"
 #include "defs.h"
-#include "rule.h"
 #include "loader.h"
+#include "rule.h"
+#include "wasm4.h"
 
 /* clang-format off */
 

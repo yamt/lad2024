@@ -5,5 +5,6 @@
 #define SOLVE_GIVENUP 0x03
 
 struct node;
-unsigned int solve(struct node *root, unsigned int max_iterations, struct node_list *solution);
+unsigned int solve(struct node *root, unsigned int max_iterations,
+                   struct node_list *solution);
 void solve_cleanup(void);

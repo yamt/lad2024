@@ -7,8 +7,8 @@
 #include "defs.h"
 #include "hash.h"
 #include "list.h"
-#include "rule.h"
 #include "node.h"
+#include "rule.h"
 #include "solver.h"
 
 // #define HASH_SIZE 1024021
@@ -25,8 +25,7 @@ add(struct node *n)
         uint32_t idx = hash % HASH_SIZE;
         struct node_list *head = &hash_heads[idx];
         struct node *n2;
-        LIST_FOREACH(n2, head, hashq)
-        {
+        LIST_FOREACH(n2, head, hashq) {
                 if (!memcmp(n2->map, n->map, sizeof(n->map))) {
                         return true;
                 }
@@ -46,7 +45,9 @@ dump_hash(void)
         for (i = 0; i < HASH_SIZE; i++) {
                 unsigned int n = 0;
                 struct node *dn;
-                LIST_FOREACH(dn, &hash_heads[i], hashq) { n++; }
+                LIST_FOREACH(dn, &hash_heads[i], hashq) {
+                        n++;
+                }
                 if (n >= buckets - 1) {
                         count[buckets - 1]++;
                 } else {
@@ -165,4 +166,3 @@ solve_cleanup(void)
                 }
         }
 }
-

@@ -1,8 +1,8 @@
 #include <string.h>
 
 #include "defs.h"
-#include "rule.h"
 #include "loader.h"
+#include "rule.h"
 #include "stages.h"
 
 void
