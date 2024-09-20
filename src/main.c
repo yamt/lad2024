@@ -303,7 +303,7 @@ mark_redraw_all_objects()
 {
         /* XXX this assumes how mark_redraw_object is implemented */
         mark_redraw_object(0);
-        mark_redraw_object(width * meta.stage_height - 1);
+        mark_redraw_object(map_width * meta.stage_height - 1);
 }
 
 void
@@ -311,7 +311,7 @@ mark_redraw_all()
 {
         need_redraw = ALL;
         mark_redraw_all_objects();
-        redraw_rect.ymax = height;
+        redraw_rect.ymax = map_height;
 }
 
 void
@@ -396,7 +396,7 @@ draw_object(int x, int y, uint8_t objidx)
 {
         const struct obj *obj = &objs[objidx];
         *DRAW_COLORS = obj->color;
-        loc_t loc = x + y * width;
+        loc_t loc = x + y * map_width;
         int i = 0;
         int dx = 0;
         int dy = 0;
@@ -486,9 +486,9 @@ load_stage()
         struct map_info info;
         decode_stage(state.cur_stage, map, &info);
         /* move to the center of the screen */
-        int d = (width - info.w) / 2;
+        int d = (map_width - info.w) / 2;
         if (d > 0) {
-                memmove(&map[d], map, (size_t)(width * height - d));
+                memmove(&map[d], map, (size_t)(map_width * map_height - d));
                 memset(map, 0, (size_t)d);
         }
         calc_stage_meta(map, &meta);
@@ -724,9 +724,9 @@ update()
                 }
         } else {
                 need_redraw = 0;
-                redraw_rect.xmin = width;
+                redraw_rect.xmin = map_width;
                 redraw_rect.xmax = 0;
-                redraw_rect.ymin = height;
+                redraw_rect.ymin = map_height;
                 redraw_rect.ymax = 0;
 
                 if (meta.nbombs == 0) {

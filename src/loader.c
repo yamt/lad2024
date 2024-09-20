@@ -10,7 +10,7 @@ decode_stage(uint32_t stage_number, map_t map, struct map_info *info)
 {
         const struct stage *stage = &stages[stage_number];
 
-        memset(map, 0, height * width);
+        memset(map, 0, map_height * map_width);
         int x;
         int y;
         x = y = 0;
