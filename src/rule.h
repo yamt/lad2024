@@ -4,15 +4,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if !defined(width)
-#define width 20
+#if !defined(map_width)
+#define map_width 20
 #endif
-#if !defined(height)
-#define height 20
+#if !defined(map_height)
+#define map_height 20
 #endif
 #define max_players 4
 
-typedef uint8_t map_t[height * width];
+typedef uint8_t map_t[map_height * map_width];
 
 enum diridx {
         NONE = -1,
@@ -23,9 +23,9 @@ enum diridx {
 };
 
 typedef int loc_t;
-#define loc_x(loc) ((loc) % width)
-#define loc_y(loc) ((loc) / width)
-#define genloc(x, y) ((x) + (y) * width)
+#define loc_x(loc) ((loc) % map_width)
+#define loc_y(loc) ((loc) / map_width)
+#define genloc(x, y) ((x) + (y) * map_width)
 
 struct dir {
         loc_t loc_diff;

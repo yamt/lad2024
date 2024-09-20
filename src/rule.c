@@ -10,7 +10,7 @@ const struct dir dirs[] = {
                 },
         [DOWN] =
                 {
-                        width,
+                        map_width,
                 },
         [RIGHT] =
                 {
@@ -18,7 +18,7 @@ const struct dir dirs[] = {
                 },
         [UP] =
                 {
-                        -width,
+                        -map_width,
                 },
 };
 
@@ -62,17 +62,17 @@ block_beam(uint8_t objidx)
 bool
 in_map(loc_t loc)
 {
-        return 0 <= loc && loc < width * height;
+        return 0 <= loc && loc < map_width * map_height;
 }
 
 void
 calc_beam(const map_t map, map_t beam_map)
 {
         loc_t loc;
-        for (loc = 0; loc < width * height; loc++) {
+        for (loc = 0; loc < map_width * map_height; loc++) {
                 beam_map[loc] = 0;
         }
-        for (loc = 0; loc < width * height; loc++) {
+        for (loc = 0; loc < map_width * map_height; loc++) {
                 uint8_t objidx = map[loc];
                 if (!is_light(objidx)) {
                         continue;
@@ -115,7 +115,7 @@ calc_stage_meta(map_t map, struct stage_meta *meta)
         int nplayers = 0;
         int nbombs = 0;
         int loc;
-        for (loc = 0; loc < width * height; loc++) {
+        for (loc = 0; loc < map_width * map_height; loc++) {
                 uint8_t objidx = map[loc];
                 if (is_player(objidx)) {
                         struct player *p = &meta->players[nplayers++];

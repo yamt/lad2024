@@ -18,9 +18,9 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev)
         struct map_info info;
         printf("stage %u\n", stage_number);
         decode_stage(stage_number - 1, n->map, &info);
-        if (info.w > width || info.h > height) {
+        if (info.w > map_width || info.h > map_height) {
                 printf("info %u %u\n", info.w, info.h);
-                printf("macro %u %u\n", width, height);
+                printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
         dump_map(n->map);
