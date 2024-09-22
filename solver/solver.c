@@ -125,14 +125,14 @@ solve(struct node *root, unsigned int max_iterations,
                                 n2->loc = p->loc;
                                 n2->dir = dir;
                                 n2->flags = flags;
-                                LIST_INSERT_TAIL(&todo, n2, q);
-                                queued++;
                                 if (meta2.nbombs == 0) {
                                         printf("solved!\n");
                                         return_solution(n2, solution);
                                         // dump_hash();
                                         return SOLVE_SOLVED;
                                 }
+                                LIST_INSERT_TAIL(&todo, n2, q);
+                                queued++;
                         }
                 }
                 processed++;
