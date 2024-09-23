@@ -8,6 +8,7 @@
 #include "dump.h"
 #include "evaluater.h"
 #include "hash.h"
+#include "mapsize.h"
 #include "node.h"
 #include "rule.h"
 
@@ -88,8 +89,14 @@ evaluate(struct node_list *solution, struct evaluation *ev)
         printf("npush_sameobj %u\n", npush_sameobj);
         printf("nbeam_changed %u\n", nbeam_changed);
         printf("nsuicide %u\n", nsuicide);
+        struct size size;
+        measure_size(LIST_FIRST(solution)->map, &size);
+        unsigned int map_size =
+                (size.xmax - size.xmin + 1) * (size.ymax - size.ymin + 1);
+        printf("map size %u\n", map_size);
         unsigned int score = nswitch * 2 + npush * 2 - npush_cont -
                              npush_sameobj + nsuicide;
+        score = score * map_width * map_height / map_size;
         printf("score %u\n", score);
         ev->score = score;
 }
