@@ -130,6 +130,7 @@ generate(struct genctx *ctx)
                         return true;
                 }
         }
+        simplify(ctx->map);
         return false;
 }
 
