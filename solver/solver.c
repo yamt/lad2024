@@ -161,8 +161,9 @@ solve_cleanup(void)
         for (i = 0; i < HASH_SIZE; i++) {
                 struct node_list *h = &hash_heads[i];
                 struct node *n;
-                while ((n = LIST_FIRST(h)) != NULL) {
-                        LIST_REMOVE(h, n, hashq);
+                struct node *next;
+                for (n = LIST_FIRST(h); n != NULL; n = next) {
+                        next = LIST_NEXT(n, hashq);
                         free(n);
                 }
         }
