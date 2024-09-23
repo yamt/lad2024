@@ -104,7 +104,7 @@ main(int argc, char **argv)
                 dump_map(n->map);
                 printf("solving\n");
                 struct node_list solution;
-                unsigned int result = solve(n, 10000000, &solution);
+                unsigned int result = solve(n, 10000000, false, &solution);
                 if (result == SOLVE_SOLVED) {
                         struct evaluation ev;
                         evaluate(&solution, &ev);
