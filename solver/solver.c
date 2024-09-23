@@ -74,7 +74,7 @@ return_solution(struct node *n, struct node_list *solution)
 }
 
 unsigned int
-solve(struct node *root, unsigned int max_iterations,
+solve(struct node *root, unsigned int max_iterations, bool verbose,
       struct node_list *solution)
 {
         LIST_HEAD_INIT(&todo);
@@ -137,7 +137,7 @@ solve(struct node *root, unsigned int max_iterations,
                         }
                 }
                 processed++;
-                if ((processed % 100000) == 0) {
+                if (verbose && (processed % 100000) == 0) {
                         dump_map(n->map);
                         printf("%u / %u (%u) dup %u (%.3f) step %u\n",
                                processed, queued, queued - processed,

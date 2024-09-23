@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "node.h"
 
 #define SOLVE_SOLVED 0x01
@@ -6,5 +8,5 @@
 
 struct node;
 unsigned int solve(struct node *root, unsigned int max_iterations,
-                   struct node_list *solution);
+                   bool verbose, struct node_list *solution);
 void solve_cleanup(void);
