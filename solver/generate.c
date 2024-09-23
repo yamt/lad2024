@@ -112,7 +112,8 @@ main(int argc, char **argv)
                         if (ev.score >= 10) {
                                 char filename[100];
                                 snprintf(filename, sizeof(filename),
-                                         "seed-%u-score-%u.c", seed, ev.score);
+                                         "generated-score-%u-seed-%u.c",
+                                         ev.score, seed);
                                 dump_map_c(n->map, filename);
                         }
                 }
