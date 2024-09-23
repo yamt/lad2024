@@ -72,6 +72,23 @@ return_solution(struct node *n, struct node_list *solution)
         } while (n->parent != NULL);
 }
 
+bool
+impossible(const struct node *n, struct stage_meta *meta)
+{
+        map_t beam_map;
+        calc_beam(n->map, beam_map);
+        unsigned int i;
+        bool can_move = false;
+        for (i = 0; i < meta->nplayers; i++) {
+                struct player *p = &meta->players[i];
+                bool is_robot = n->map[p->loc] == A;
+                if (is_robot == (beam_map[p->loc] != 0)) {
+                        can_move = true;
+                }
+        }
+        return !can_move;
+}
+
 unsigned int
 solve(struct node *root, unsigned int max_iterations,
       struct node_list *solution)
@@ -85,6 +102,7 @@ solve(struct node *root, unsigned int max_iterations,
         unsigned int queued = 0;
         unsigned int processed = 0;
         unsigned int duplicated = 0;
+        unsigned int imp = 0;
 
         root->parent = NULL;
         root->steps = 0;
@@ -115,6 +133,11 @@ solve(struct node *root, unsigned int max_iterations,
                                 struct stage_meta meta2 = meta;
                                 player_move(&meta2, &meta2.players[i], dir,
                                             n2->map, beam_map, true);
+                                if (impossible(n2, &meta2)) {
+                                        imp++;
+                                        free(n2);
+                                        continue;
+                                }
                                 if (add(n2)) {
                                         duplicated++;
                                         free(n2);
@@ -137,11 +160,12 @@ solve(struct node *root, unsigned int max_iterations,
                 }
                 processed++;
                 if ((processed % 100000) == 0) {
-                        printf("processed %u / %u (%u) dup %u (%.3f) "
+                        printf("processed %u / %u (%u) dup %u (%.3f) imp %u "
+                               "(%.3f)"
                                "step %u\n",
                                processed, queued, queued - processed,
-                               duplicated, (float)duplicated / processed,
-                               n->steps);
+                               duplicated, (float)duplicated / processed, imp,
+                               (float)imp / processed, n->steps);
                         // dump_hash();
                 }
                 if (processed >= max_iterations) {
