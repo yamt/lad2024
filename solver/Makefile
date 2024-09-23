@@ -9,6 +9,8 @@ VPATH = ../src
 
 SOLVER_OBJS = main.o
 
+GENERATOR_OBJS = generate.o
+
 OBJS = hash.o
 OBJS += rule.o
 OBJS += loader.o
@@ -19,7 +21,7 @@ OBJS += node.o
 OBJS += solver.o
 OBJS += evaluater.o
 
-BINS = solver
+BINS = solver generator
 
 .PHONY: all
 all: $(BINS)
@@ -28,6 +30,11 @@ solver: $(SOLVER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(SOLVER_OBJS) $(OBJS)
+
+generator: $(GENERATOR_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(GENERATOR_OBJS) $(OBJS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
