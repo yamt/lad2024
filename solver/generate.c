@@ -31,6 +31,9 @@ room(struct genctx *ctx)
         int y;
         int rw = gen_rand(1, 4);
         int rh = gen_rand(1, 4);
+        if (ctx->w < rw + 2 || ctx->h < rh + 2) {
+                return;
+        }
         int rx = gen_rand(1, ctx->w - rw - 1);
         int ry = gen_rand(1, ctx->h - rh - 1);
         for (y = 0; y < rh; y++) {
@@ -59,14 +62,11 @@ place_obj(struct genctx *ctx, uint8_t objidx)
 bool
 generate(struct genctx *ctx)
 {
-        int h = 8;
-        int w = 8;
-
         memset(ctx->map, 0, genloc(map_width, map_height));
         int x;
         int y;
-        for (y = 0; y < h; y++) {
-                for (x = 0; x < w; x++) {
+        for (y = 0; y < ctx->h; y++) {
+                for (x = 0; x < ctx->w; x++) {
                         ctx->map[genloc(x, y)] = W;
                 }
         }
@@ -86,15 +86,20 @@ generate(struct genctx *ctx)
 int
 main(int argc, char **argv)
 {
+        struct genctx ctx;
+        ctx.h = 8;
+        ctx.w = 8;
+        if (ctx.w > map_width || ctx.h > map_height) {
+                printf("ctx %u %u\n", ctx.w, ctx.h);
+                printf("macro %u %u\n", map_width, map_height);
+                exit(1);
+        }
         int seed = 0;
         while (1) {
                 srand(seed);
                 struct node *n = alloc_node();
-                struct genctx ctx;
-                ctx.map = n->map;
-                ctx.h = 8;
-                ctx.w = 8;
                 printf("generating\n");
+                ctx.map = n->map;
                 if (generate(&ctx)) {
                         printf("generation failed\n");
                         seed++;
