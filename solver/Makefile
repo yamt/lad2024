@@ -21,6 +21,7 @@ OBJS += dump.o
 OBJS += node.o
 OBJS += rng.o
 OBJS += solver.o
+OBJS += simplify.o
 OBJS += evaluater.o
 
 BINS = solver generator
