@@ -446,6 +446,29 @@ const struct stage stages[] = {
             END, END,
         },
     },
+    {
+        .data = (const uint8_t[]){
+            _,_,W,W,W,W, END,
+            _,W,_,P,_,_,W, END,
+            W,A,D,_,_,L,W, END,
+            W,_,_,_,U,_,W, END,
+            W,X,X,P,P,R,W, END,
+            _,W,W,W,W,W, END,
+            END, END,
+        },
+    },
+    {
+        .data = (const uint8_t[]){
+            _,W,W,W,W,W,W, END,
+            W,_,P,_,_,_,X,W, END,
+            W,X,D,U,_,_,D,W, END,
+            W,X,A,X,B,_,_,W, END,
+            W,_,B,_,_,_,_,W, END,
+            W,X,W,W,W,W,W, END,
+            _,W, END,
+            END, END,
+        },
+    },
 };
 
 /* clang-format on */
