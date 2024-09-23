@@ -155,6 +155,9 @@ player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
                 int nloc = loc + loc_diff;
                 if (in_map(nloc) && map[nloc] == _) {
                         flags |= MOVE_OK | MOVE_PUSH;
+                        if (block_beam(objidx)) {
+                                flags |= MOVE_BEAM;
+                        }
                         if (commit) {
                                 if (is_player(objidx)) {
                                         struct player *p2 =
@@ -162,9 +165,6 @@ player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
                                         p2->loc = nloc;
                                 }
                                 move_object(map, nloc, loc);
-                        }
-                        if (block_beam(objidx)) {
-                                flags |= MOVE_BEAM;
                         }
                 }
         }
