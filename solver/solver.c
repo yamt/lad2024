@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "defs.h"
+#include "dump.h"
 #include "hash.h"
 #include "list.h"
 #include "node.h"
@@ -160,6 +161,7 @@ solve(struct node *root, unsigned int max_iterations,
                 }
                 processed++;
                 if ((processed % 100000) == 0) {
+                        dump_map(n->map);
                         printf("processed %u / %u (%u) dup %u (%.3f) imp %u "
                                "(%.3f)"
                                "step %u\n",
