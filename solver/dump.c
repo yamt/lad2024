@@ -42,10 +42,10 @@ dump_map_c(const map_t map, const char *filename)
         }
         int x;
         int y;
-        fprintf(fp, "\t{\n");
-        fprintf(fp, "\t\t.data = (const uint8_t[]){\n");
+        fprintf(fp, "    {\n");
+        fprintf(fp, "        .data = (const uint8_t[]){\n");
         for (y = 0; y < map_height; y++) {
-                const char *sep = "\t\t\t";
+                const char *sep = "            ";
                 int line_size = map_width;
                 for (x = map_width - 1; x >= 0; x--) {
                         loc_t loc = genloc(x, y);
@@ -67,8 +67,8 @@ dump_map_c(const map_t map, const char *filename)
                 }
                 fprintf(fp, " END,\n");
         }
-        fprintf(fp, "\t\t\tEND, END,\n");
-        fprintf(fp, "\t\t},\n");
-        fprintf(fp, "\t},\n");
+        fprintf(fp, "            END, END,\n");
+        fprintf(fp, "        },\n");
+        fprintf(fp, "    },\n");
         fclose(fp);
 }
