@@ -16,6 +16,7 @@ OBJS += rule.o
 OBJS += loader.o
 OBJS += stages.o
 OBJS += list.o
+OBJS += mapsize.o
 OBJS += dump.o
 OBJS += node.o
 OBJS += rng.o
