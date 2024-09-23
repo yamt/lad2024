@@ -146,19 +146,26 @@ main(int argc, char **argv)
                 exit(1);
         }
         int seed = 0;
+        unsigned int ntotal = 0;
+        unsigned int ngeneratefail = 0;
+        unsigned int nimpossible = 0;
+        unsigned int ngiveup = 0;
+        unsigned int nsucceed = 0;
+        unsigned int ngood = 0;
         while (1) {
                 struct rng rng;
                 rng_init(&rng, seed);
                 struct node *n = alloc_node();
-                printf("generating\n");
+                printf("generating seed=%u\n", seed);
+                ntotal++;
                 ctx.map = n->map;
                 ctx.rng = &rng;
                 if (generate(&ctx)) {
                         printf("generation failed\n");
+                        ngeneratefail++;
                         seed++;
                         continue;
                 }
-                printf("generated\n");
                 dump_map(n->map);
                 printf("solving\n");
                 struct node_list solution;
@@ -174,11 +181,22 @@ main(int argc, char **argv)
                                          ev.score, seed);
                                 simplify(n->map);
                                 dump_map_c(n->map, filename);
+                                ngood++;
                         }
+                        nsucceed++;
+                } else if (result == SOLVE_IMPOSSIBLE) {
+                        nimpossible++;
+                } else {
+                        ngiveup++;
                 }
+                printf("total %u genfail %u (%.3f) impossible %u (%.3f) "
+                       "giveup %u (%.3f) success %u (%.3f) good %u (%.3f)\n",
+                       ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
+                       nimpossible, (float)nimpossible / ntotal, ngiveup,
+                       (float)ngiveup / ntotal, nsucceed,
+                       (float)nsucceed / ntotal, ngood, (float)ngood / ntotal);
                 printf("cleaning\n");
                 solve_cleanup();
-                printf("cleaned\n");
                 seed++;
         }
 }
