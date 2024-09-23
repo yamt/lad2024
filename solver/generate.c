@@ -10,9 +10,9 @@
 #include "list.h"
 #include "loader.h"
 #include "mapsize.h"
-#include "simplify.h"
 #include "node.h"
 #include "rng.h"
+#include "simplify.h"
 #include "solver.h"
 
 struct genctx {

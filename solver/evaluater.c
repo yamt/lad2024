@@ -9,9 +9,9 @@
 #include "evaluater.h"
 #include "hash.h"
 #include "mapsize.h"
-#include "simplify.h"
 #include "node.h"
 #include "rule.h"
+#include "simplify.h"
 
 loc_t
 next_loc(struct node *n)
@@ -26,7 +26,8 @@ pushed_obj_loc(struct node *n)
 }
 
 void
-evaluate(const struct node *root, const struct node_list *solution, struct evaluation *ev)
+evaluate(const struct node *root, const struct node_list *solution,
+         struct evaluation *ev)
 {
         unsigned int nswitch = 0;
         unsigned int npush = 0;
