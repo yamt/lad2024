@@ -9,6 +9,7 @@
 #include "evaluater.h"
 #include "hash.h"
 #include "mapsize.h"
+#include "simplify.h"
 #include "node.h"
 #include "rule.h"
 
@@ -25,7 +26,7 @@ pushed_obj_loc(struct node *n)
 }
 
 void
-evaluate(struct node_list *solution, struct evaluation *ev)
+evaluate(const struct node *root, const struct node_list *solution, struct evaluation *ev)
 {
         unsigned int nswitch = 0;
         unsigned int npush = 0;
@@ -89,8 +90,11 @@ evaluate(struct node_list *solution, struct evaluation *ev)
         printf("npush_sameobj %u\n", npush_sameobj);
         printf("nbeam_changed %u\n", nbeam_changed);
         printf("nsuicide %u\n", nsuicide);
+        map_t simplified_map;
+        memcpy(simplified_map, root->map, map_width * map_height);
+        simplify(simplified_map);
         struct size size;
-        measure_size(LIST_FIRST(solution)->map, &size);
+        measure_size(simplified_map, &size);
         unsigned int map_size =
                 (size.xmax - size.xmin + 1) * (size.ymax - size.ymin + 1);
         printf("map size %u\n", map_size);

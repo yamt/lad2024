@@ -28,7 +28,7 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev)
         struct node_list solution;
         unsigned int result = solve(n, 10000000, true, &solution);
         if (result == SOLVE_SOLVED) {
-                evaluate(&solution, ev);
+                evaluate(n, &solution, ev);
         }
         solve_cleanup();
         return result;
