@@ -162,9 +162,8 @@ solve(struct node *root, unsigned int max_iterations,
                 processed++;
                 if ((processed % 100000) == 0) {
                         dump_map(n->map);
-                        printf("processed %u / %u (%u) dup %u (%.3f) imp %u "
-                               "(%.3f)"
-                               "step %u\n",
+                        printf("%u / %u (%u) dup %u (%.3f) imp %u "
+                               "(%.3f) step %u\n",
                                processed, queued, queued - processed,
                                duplicated, (float)duplicated / processed, imp,
                                (float)imp / processed, n->steps);
