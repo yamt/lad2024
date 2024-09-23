@@ -46,3 +46,4 @@ clean:
 	rm -f $(BINS)
 	rm -f $(OBJS)
 	rm -f $(SOLVER_OBJS)
+	rm -f $(GENERATOR_OBJS)
