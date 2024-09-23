@@ -151,7 +151,7 @@ generate(struct genctx *ctx)
         for (i = 0; i < n; i++) {
                 room(ctx);
         }
-        n = rng_rand(rng, 1, 6);
+        n = rng_rand(rng, 1, 5);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, X)) {
                         return true;
