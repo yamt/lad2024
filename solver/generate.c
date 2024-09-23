@@ -177,8 +177,8 @@ int
 main(int argc, char **argv)
 {
         struct genctx ctx;
-        ctx.h = 8;
-        ctx.w = 8;
+        ctx.h = 10;
+        ctx.w = 10;
         if (ctx.w > map_width || ctx.h > map_height) {
                 printf("ctx %u %u\n", ctx.w, ctx.h);
                 printf("macro %u %u\n", map_width, map_height);
