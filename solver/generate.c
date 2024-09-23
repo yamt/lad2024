@@ -72,7 +72,7 @@ generate(struct genctx *ctx)
         struct rng *rng = ctx->rng;
         int i;
         int n;
-        n = rng_rand(rng, 1, 6);
+        n = rng_rand(rng, 1, 4);
         for (i = 0; i < n; i++) {
                 room(ctx);
         }
