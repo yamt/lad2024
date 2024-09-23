@@ -13,6 +13,83 @@
 #include "rng.h"
 #include "solver.h"
 
+struct size {
+        int xmin;
+        int ymin;
+        int xmax;
+        int ymax;
+};
+
+void
+measure_size(const map_t map, struct size *size)
+{
+        size->xmin = map_width - 1;
+        size->ymin = map_height - 1;
+        size->xmax = 0;
+        size->ymax = 0;
+        int x;
+        int y;
+        for (y = 0; y < map_height; y++) {
+                for (x = 0; x < map_width; x++) {
+                        if (map[genloc(x, y)] != _) {
+                                if (size->xmin > x) {
+                                        size->xmin = x;
+                                }
+                                if (size->ymin > y) {
+                                        size->ymin = y;
+                                }
+                                if (size->xmax < x) {
+                                        size->xmax = x;
+                                }
+                                if (size->ymax < y) {
+                                        size->ymax = y;
+                                }
+                        }
+                }
+        }
+}
+
+void
+simplify(map_t map)
+{
+        struct size size;
+        measure_size(map, &size);
+        map_t orig;
+        memcpy(orig, map, map_width * map_height);
+        loc_t loc;
+        for (loc = 0; loc < map_width * map_height; loc++) {
+                if (map[loc] != W) {
+                        continue;
+                }
+                enum diridx dir;
+                for (dir = 0; dir < 4; dir++) {
+                        loc_t nloc = loc + dirs[dir].loc_diff;
+                        if (!in_map(nloc)) {
+                                continue;
+                        }
+                        int nx = loc_x(nloc);
+                        int ny = loc_y(nloc);
+                        if (nx < size.xmin || nx > size.xmax ||
+                            ny < size.ymin || ny > size.ymax) {
+                                continue;
+                        }
+                        if (orig[nloc] == W) {
+                                continue;
+                        }
+                        break;
+                }
+                if (dir == 4) {
+                        map[loc] = _;
+                }
+        }
+        measure_size(map, &size);
+        if (size.xmin > 0 || size.ymin > 0) {
+                loc_t off = genloc(size.xmin, size.ymin);
+                memmove(&map[0], &map[off], map_width * map_height - off);
+                memset(&map[map_width * map_height - off], 0, off);
+        }
+}
+
 struct genctx {
         struct rng *rng;
         uint8_t *map;
@@ -169,6 +246,7 @@ main(int argc, char **argv)
                                 snprintf(filename, sizeof(filename),
                                          "generated-score-%u-seed-%u.c",
                                          ev.score, seed);
+                                simplify(n->map);
                                 dump_map_c(n->map, filename);
                         }
                 }
