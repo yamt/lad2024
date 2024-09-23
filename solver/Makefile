@@ -7,8 +7,9 @@ CLINKFLAGS = -flto=full
 CFLAGS += -I../src
 VPATH = ../src
 
-OBJS = main.o
-OBJS += hash.o
+SOLVER_OBJS = main.o
+
+OBJS = hash.o
 OBJS += rule.o
 OBJS += loader.o
 OBJS += stages.o
@@ -18,20 +19,21 @@ OBJS += node.o
 OBJS += solver.o
 OBJS += evaluater.o
 
-BIN = solver
+BINS = solver
 
 .PHONY: all
-all: $(BIN)
+all: $(BINS)
 
-$(BIN): $(OBJS)
+solver: $(SOLVER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(OBJS)
+	-o $@ $(SOLVER_OBJS) $(OBJS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 .PHONY: clean
 clean:
-	rm -f $(BIN)
+	rm -f $(BINS)
 	rm -f $(OBJS)
+	rm -f $(SOLVER_OBJS)
