@@ -10,32 +10,28 @@
 #include "list.h"
 #include "loader.h"
 #include "node.h"
+#include "rng.h"
 #include "solver.h"
 
 struct genctx {
+        struct rng *rng;
         uint8_t *map;
         int h;
         int w;
 };
-
-int
-gen_rand(int min, int max)
-{
-        return min + (rand() % (max - min + 1));
-}
 
 void
 room(struct genctx *ctx)
 {
         int x;
         int y;
-        int rw = gen_rand(1, 4);
-        int rh = gen_rand(1, 4);
+        int rw = rng_rand(ctx->rng, 1, 4);
+        int rh = rng_rand(ctx->rng, 1, 4);
         if (ctx->w < rw + 2 || ctx->h < rh + 2) {
                 return;
         }
-        int rx = gen_rand(1, ctx->w - rw - 1);
-        int ry = gen_rand(1, ctx->h - rh - 1);
+        int rx = rng_rand(ctx->rng, 1, ctx->w - rw - 1);
+        int ry = rng_rand(ctx->rng, 1, ctx->h - rh - 1);
         for (y = 0; y < rh; y++) {
                 for (x = 0; x < rw; x++) {
                         ctx->map[genloc(rx + x, ry + y)] = _;
@@ -48,8 +44,8 @@ place_obj(struct genctx *ctx, uint8_t objidx)
 {
         int tries = 5;
         do {
-                int x = gen_rand(1, ctx->w - 2);
-                int y = gen_rand(1, ctx->h - 2);
+                int x = rng_rand(ctx->rng, 1, ctx->w - 2);
+                int y = rng_rand(ctx->rng, 1, ctx->h - 2);
                 loc_t loc = genloc(x, y);
                 if (ctx->map[loc] == _) {
                         ctx->map[loc] = objidx;
@@ -71,16 +67,68 @@ generate(struct genctx *ctx)
                 }
         }
 
-        room(ctx);
-        room(ctx);
-        room(ctx);
-        room(ctx);
-        room(ctx);
-        room(ctx);
-        return place_obj(ctx, X) || place_obj(ctx, X) || place_obj(ctx, X) ||
-               place_obj(ctx, B) || place_obj(ctx, L) || place_obj(ctx, U) ||
-               place_obj(ctx, R) || place_obj(ctx, D) || place_obj(ctx, A) ||
-               place_obj(ctx, P);
+        struct rng *rng = ctx->rng;
+        int i;
+        int n;
+        n = rng_rand(rng, 1, 6);
+        for (i = 0; i < n; i++) {
+                room(ctx);
+        }
+        n = rng_rand(rng, 1, 6);
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, X)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, 0, 2);
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, B)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, 0, 2);
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, U)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, 0, 2);
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, R)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, 0, 2);
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, D)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, 0, 2);
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, L)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, -4, 2);
+        if (n <= 0) {
+                n = 1;
+        }
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, A)) {
+                        return true;
+                }
+        }
+        n = rng_rand(rng, -4, 4 - n);
+        if (n <= 0) {
+                n = 1;
+        }
+        for (i = 0; i < n; i++) {
+                if (place_obj(ctx, P)) {
+                        return true;
+                }
+        }
+        return false;
 }
 
 int
@@ -96,10 +144,12 @@ main(int argc, char **argv)
         }
         int seed = 0;
         while (1) {
-                srand(seed);
+                struct rng rng;
+                rng_init(&rng, seed);
                 struct node *n = alloc_node();
                 printf("generating\n");
                 ctx.map = n->map;
+                ctx.rng = &rng;
                 if (generate(&ctx)) {
                         printf("generation failed\n");
                         seed++;

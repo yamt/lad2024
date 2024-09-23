@@ -18,6 +18,7 @@ OBJS += stages.o
 OBJS += list.o
 OBJS += dump.o
 OBJS += node.o
+OBJS += rng.o
 OBJS += solver.o
 OBJS += evaluater.o
 
