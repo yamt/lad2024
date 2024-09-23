@@ -1,8 +1,8 @@
 #include <string.h>
 
 #include "defs.h"
-#include "rule.h"
 #include "mapsize.h"
+#include "rule.h"
 #include "simplify.h"
 
 void
@@ -45,4 +45,3 @@ simplify(map_t map)
                 memset(&map[map_width * map_height - off], 0, off);
         }
 }
-
