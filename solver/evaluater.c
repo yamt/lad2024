@@ -101,7 +101,7 @@ evaluate(const struct node *root, const struct node_list *solution,
         printf("map size %u\n", map_size);
         unsigned int score = nswitch * 2 + npush * 2 - npush_cont -
                              npush_sameobj + nsuicide;
-        score = score * map_width * map_height / map_size;
+        score = score * 20 * 20 / map_size;
         printf("score %u\n", score);
         ev->score = score;
 }
