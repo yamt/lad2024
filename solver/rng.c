@@ -62,5 +62,5 @@ int
 rng_rand(struct rng *rng, int min, int max)
 {
         uint32_t v = rng_rand_u32(rng);
-        return min + (int)(v % (max - min));
+        return min + (int)(v % (max - min + 1));
 }
