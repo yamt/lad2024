@@ -23,10 +23,20 @@ struct genctx {
 };
 
 void
-room(struct genctx *ctx)
+rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
 {
         int x;
         int y;
+        for (y = 0; y < rh; y++) {
+                for (x = 0; x < rw; x++) {
+                        map[genloc(rx + x, ry + y)] = objidx;
+                }
+        }
+}
+
+void
+room(struct genctx *ctx)
+{
         int rw = rng_rand(ctx->rng, 1, 4);
         int rh = rng_rand(ctx->rng, 1, 4);
         if (ctx->w < rw + 2 || ctx->h < rh + 2) {
@@ -34,11 +44,7 @@ room(struct genctx *ctx)
         }
         int rx = rng_rand(ctx->rng, 1, ctx->w - rw - 1);
         int ry = rng_rand(ctx->rng, 1, ctx->h - rh - 1);
-        for (y = 0; y < rh; y++) {
-                for (x = 0; x < rw; x++) {
-                        ctx->map[genloc(rx + x, ry + y)] = _;
-                }
-        }
+        rect(ctx->map, rx, ry, rw, rh, _);
 }
 
 bool
@@ -58,16 +64,37 @@ place_obj(struct genctx *ctx, uint8_t objidx)
 }
 
 bool
+simple_impossible_check(const map_t map)
+{
+		unsigned int count[END];
+        memset(count, 0, sizeof(count));
+        loc_t loc;
+        for (loc = 0; loc < map_width * map_height; loc++) {
+                uint8_t objidx = map[loc];
+                count[objidx]++;
+		}
+        unsigned int i;
+        for (i = 0; i < END; i++) {
+            printf("count[%c] = %u\n", objchr(i), count[i]);
+        }
+
+        if (count[A] == 0) {
+            return true;
+        }
+        if (count[X] == 0) {
+            /* this is not impossbile. but not interesting anyway. */
+            return true;
+        }
+        if (count[L] == 0 && count[D] == 0 && count[R] == 0 && count[U] == 0) {
+            return true;
+        }
+        return false;
+}
+
+bool
 generate(struct genctx *ctx)
 {
-        memset(ctx->map, 0, genloc(map_width, map_height));
-        int x;
-        int y;
-        for (y = 0; y < ctx->h; y++) {
-                for (x = 0; x < ctx->w; x++) {
-                        ctx->map[genloc(x, y)] = W;
-                }
-        }
+        rect(ctx->map, 0, 0, map_width, map_height, W);
 
         struct rng *rng = ctx->rng;
         int i;
@@ -131,6 +158,9 @@ generate(struct genctx *ctx)
                 }
         }
         simplify(ctx->map);
+        if (simple_impossible_check(ctx->map)) {
+            return true;
+        }
         return false;
 }
 
