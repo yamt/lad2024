@@ -27,14 +27,14 @@ visit(map_t map, loc_t loc, map_t reachable)
 }
 
 void
-calc_reachable(map_t map, loc_t loc, map_t reachable)
+calc_reachable_from(map_t map, loc_t loc, map_t reachable)
 {
         memset(reachable, 0, map_height * map_width);
         visit(map, loc, reachable);
 }
 
 bool
-simplify_unreachable(map_t map)
+calc_reachable_from_A(map_t map, map_t reachable)
 {
         loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
@@ -44,11 +44,21 @@ simplify_unreachable(map_t map)
                 }
         }
         if (loc == map_width * map_height) {
+                return true;
+        }
+        calc_reachable_from(map, loc, reachable);
+        return false;
+}
+
+bool
+simplify_unreachable(map_t map)
+{
+        map_t reachable;
+        if (calc_reachable_from_A(map, reachable)) {
                 return false;
         }
-        map_t reachable;
-        calc_reachable(map, loc, reachable);
         bool modified = false;
+        loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx != W && !reachable[loc]) {
