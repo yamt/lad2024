@@ -66,27 +66,27 @@ place_obj(struct genctx *ctx, uint8_t objidx)
 bool
 simple_impossible_check(const map_t map)
 {
-		unsigned int count[END];
+        unsigned int count[END];
         memset(count, 0, sizeof(count));
         loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
                 uint8_t objidx = map[loc];
                 count[objidx]++;
-		}
+        }
         unsigned int i;
         for (i = 0; i < END; i++) {
-            printf("count[%c] = %u\n", objchr(i), count[i]);
+                printf("count[%c] = %u\n", objchr(i), count[i]);
         }
 
         if (count[A] == 0) {
-            return true;
+                return true;
         }
         if (count[X] == 0) {
-            /* this is not impossbile. but not interesting anyway. */
-            return true;
+                /* this is not impossbile. but not interesting anyway. */
+                return true;
         }
         if (count[L] == 0 && count[D] == 0 && count[R] == 0 && count[U] == 0) {
-            return true;
+                return true;
         }
         return false;
 }
@@ -159,7 +159,7 @@ generate(struct genctx *ctx)
         }
         simplify(ctx->map);
         if (simple_impossible_check(ctx->map)) {
-            return true;
+                return true;
         }
         return false;
 }
@@ -206,10 +206,10 @@ main(int argc, char **argv)
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
-                        struct evaluation ev;
-                        evaluate(n, &solution, &ev);
-                        printf("seed %u score %u\n", seed, ev.score);
-                        score = ev.score;
+                                struct evaluation ev;
+                                evaluate(n, &solution, &ev);
+                                printf("seed %u score %u\n", seed, ev.score);
+                                score = ev.score;
                         }
                         if (score >= 10) {
                                 char filename[100];
