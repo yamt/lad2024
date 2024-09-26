@@ -183,12 +183,12 @@ main(int argc, char **argv)
         unsigned int nsucceed = 0;
         unsigned int ngood = 0;
         while (1) {
+                map_t map;
                 struct rng rng;
                 rng_init(&rng, seed);
-                struct node *n = alloc_node();
                 printf("generating seed=%u\n", seed);
                 ntotal++;
-                ctx.map = n->map;
+                ctx.map = map;
                 ctx.rng = &rng;
                 if (generate(&ctx)) {
                         printf("generation failed\n");
@@ -196,21 +196,28 @@ main(int argc, char **argv)
                         seed++;
                         continue;
                 }
-                dump_map(n->map);
+                dump_map(map);
                 printf("solving\n");
+                struct node *n = alloc_node();
+                memcpy(n->map, map, map_width * map_height);
                 struct node_list solution;
-                unsigned int result = solve(n, 10000000, false, &solution);
-                if (result == SOLVE_SOLVED) {
+                size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
+                unsigned int result = solve(n, limit, true, &solution);
+                if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
+                        unsigned int score = 99999; /* unknown */
+                        if (result == SOLVE_SOLVED) {
                         struct evaluation ev;
                         evaluate(n, &solution, &ev);
                         printf("seed %u score %u\n", seed, ev.score);
-                        if (ev.score >= 10) {
+                        score = ev.score;
+                        }
+                        if (score >= 10) {
                                 char filename[100];
                                 snprintf(filename, sizeof(filename),
                                          "generated-score-%05u-seed-%08x.c",
-                                         ev.score, seed);
-                                simplify(n->map);
-                                dump_map_c(n->map, filename);
+                                         score, seed);
+                                simplify(map);
+                                dump_map_c(map, filename);
                                 ngood++;
                         }
                         nsucceed++;

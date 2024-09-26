@@ -63,6 +63,26 @@ dump_hash(void)
         }
 }
 
+unsigned int
+forget_old(unsigned int thresh)
+{
+        unsigned int removed = 0;
+        unsigned int i;
+        for (i = 0; i < HASH_SIZE; i++) {
+                struct node_list *h = &hash_heads[i];
+                struct node *n;
+                while ((n = LIST_LAST(h, struct node, hashq)) != NULL) {
+                        if (n->steps >= thresh) {
+                                break;
+                        }
+                        LIST_REMOVE(h, n, hashq);
+                        free(n);
+                        removed++;
+                }
+        }
+        return removed;
+}
+
 void
 return_solution(struct node *n, struct node_list *solution)
 {
@@ -74,7 +94,7 @@ return_solution(struct node *n, struct node_list *solution)
 }
 
 unsigned int
-solve(struct node *root, unsigned int max_iterations, bool verbose,
+solve(struct node *root, size_t limit, bool verbose,
       struct node_list *solution)
 {
         LIST_HEAD_INIT(&todo);
@@ -83,15 +103,20 @@ solve(struct node *root, unsigned int max_iterations, bool verbose,
                 LIST_HEAD_INIT(&hash_heads[i]);
         }
 
+        limit = limit / sizeof(struct node);
         unsigned int queued = 0;
+        unsigned int registered = 0;
         unsigned int processed = 0;
         unsigned int duplicated = 0;
+
+        unsigned int last_thresh = 0;
 
         root->parent = NULL;
         root->steps = 0;
         LIST_INSERT_TAIL(&todo, root, q);
         queued++;
         add(root);
+        registered++;
 
         struct node *n;
         while ((n = LIST_FIRST(&todo)) != NULL) {
@@ -121,12 +146,17 @@ solve(struct node *root, unsigned int max_iterations, bool verbose,
                                         free(n2);
                                         continue;
                                 }
+                                registered++;
                                 n2->parent = n;
                                 n2->steps = n->steps + 1;
                                 n2->loc = p->loc;
                                 n2->dir = dir;
                                 n2->flags = flags;
                                 if (meta2.nbombs == 0) {
+                                        if (last_thresh) {
+                                                printf("proven solvable\n");
+                                                return SOLVE_SOLVABLE;
+                                        }
                                         printf("solved!\n");
                                         return_solution(n2, solution);
                                         // dump_hash();
@@ -139,16 +169,34 @@ solve(struct node *root, unsigned int max_iterations, bool verbose,
                 processed++;
                 if (verbose && (processed % 100000) == 0) {
                         dump_map(n->map);
-                        printf("%u / %u (%u) dup %u (%.3f) step %u\n",
+                        printf("%u / %u (%u) / %u dup %u (%.3f) step %u\n",
                                processed, queued, queued - processed,
-                               duplicated, (float)duplicated / processed,
-                               n->steps);
+                               registered, duplicated,
+                               (float)duplicated / processed, n->steps);
                         // dump_hash();
                 }
+                if (registered > limit) {
+                        unsigned int thresh = n->steps / 2;
+                        if (thresh <= last_thresh) {
+                                thresh = last_thresh + 1;
+                                if (thresh > n->steps) {
+                                        printf("too many registered nodes\n");
+                                        return SOLVE_GIVENUP;
+                                }
+                        }
+                        printf("removing old nodes (step thresh %u)\n",
+                               thresh);
+                        unsigned int removed = forget_old(thresh);
+                        printf("removed %u / %u nodes\n", removed, registered);
+                        registered -= removed;
+                        last_thresh = thresh;
+                }
+#if 0
                 if (processed >= max_iterations) {
                         printf("giving up\n");
                         return SOLVE_GIVENUP;
                 }
+#endif
         }
         printf("impossible\n");
         return SOLVE_IMPOSSIBLE;
