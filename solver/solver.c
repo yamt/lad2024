@@ -95,7 +95,7 @@ return_solution(struct node *n, struct node_list *solution)
 
 unsigned int
 solve(struct node *root, size_t limit, bool verbose,
-      struct node_list *solution)
+      struct solution *solution)
 {
         LIST_HEAD_INIT(&todo);
         unsigned int i;
@@ -153,12 +153,13 @@ solve(struct node *root, size_t limit, bool verbose,
                                 n2->dir = dir;
                                 n2->flags = flags;
                                 if (meta2.nbombs == 0) {
+                                        solution->nmoves = n2->steps;
                                         if (last_thresh) {
                                                 printf("proven solvable\n");
                                                 return SOLVE_SOLVABLE;
                                         }
                                         printf("solved!\n");
-                                        return_solution(n2, solution);
+                                        return_solution(n2, &solution->moves);
                                         // dump_hash();
                                         return SOLVE_SOLVED;
                                 }

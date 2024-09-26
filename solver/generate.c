@@ -200,22 +200,22 @@ main(int argc, char **argv)
                 printf("solving\n");
                 struct node *n = alloc_node();
                 memcpy(n->map, map, map_width * map_height);
-                struct node_list solution;
+                struct solution solution;
                 size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
                 unsigned int result = solve(n, limit, true, &solution);
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
                                 struct evaluation ev;
-                                evaluate(n, &solution, &ev);
+                                evaluate(n, &solution.moves, &ev);
                                 printf("seed %u score %u\n", seed, ev.score);
                                 score = ev.score;
                         }
                         if (score >= 10) {
                                 char filename[100];
                                 snprintf(filename, sizeof(filename),
-                                         "generated-score-%05u-seed-%08x.c",
-                                         score, seed);
+                                         "generated-score-%05u-moves-%03u-seed-%08x.c",
+                                         score, solution.nmoves, seed);
                                 simplify(map);
                                 dump_map_c(map, filename);
                                 ngood++;
