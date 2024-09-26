@@ -10,7 +10,12 @@
 /* proven to be solvable, but returning no solution */
 #define SOLVE_SOLVABLE 0x04
 
+struct solution {
+        struct node_list moves;
+        unsigned int nmoves;
+};
+
 struct node;
 unsigned int solve(struct node *root, size_t limit, bool verbose,
-                   struct node_list *solution);
+                   struct solution *solution);
 void solve_cleanup(void);
