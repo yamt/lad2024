@@ -94,8 +94,7 @@ return_solution(struct node *n, struct node_list *solution)
 }
 
 unsigned int
-solve(struct node *root, size_t limit, bool verbose,
-      struct solution *solution)
+solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
 {
         LIST_HEAD_INIT(&todo);
         unsigned int i;
@@ -177,6 +176,12 @@ solve(struct node *root, size_t limit, bool verbose,
                         // dump_hash();
                 }
                 if (registered > limit) {
+                        /*
+                         * note: we keep nodes for previous steps
+                         * for two purpose:
+                         *  - to build the solution to return
+                         *  - for dedup to reduce the space to traverse
+                         */
                         unsigned int thresh = n->steps / 2;
                         if (thresh <= last_thresh) {
                                 thresh = last_thresh + 1;
