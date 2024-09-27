@@ -1,4 +1,4 @@
-#include "mapsize.h"
+#include "maputil.h"
 #include "defs.h"
 
 void

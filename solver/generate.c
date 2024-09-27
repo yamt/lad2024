@@ -9,7 +9,7 @@
 #include "evaluater.h"
 #include "list.h"
 #include "loader.h"
-#include "mapsize.h"
+#include "maputil.h"
 #include "node.h"
 #include "rng.h"
 #include "simplify.h"
