@@ -507,3 +507,27 @@
             END, END,
         },
     },
+    {
+        .data = (const uint8_t[]){
+            _,W,W,W,W,W, END,
+            W,X,A,U,X,P,W, END,
+            W,_,_,A,U,_,W, END,
+            W,_,_,U,_,_,W, END,
+            W,_,_,_,L,W, END,
+            _,W,W,W,W, END,
+            END, END,
+        },
+    },
+    {
+        .data = (const uint8_t[]){
+            _,_,_,W,W,W, END,
+            _,_,W,_,X,X,W, END,
+            _,W,P,_,_,_,W, END,
+            _,W,_,_,D,_,W, END,
+            W,A,U,_,P,_,W, END,
+            W,_,_,_,X,W, END,
+            W,U,_,_,W, END,
+            _,W,W,W, END,
+            END, END,
+        },
+    },
