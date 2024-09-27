@@ -199,7 +199,7 @@ main(int argc, char **argv)
                 dump_map(map);
                 printf("solving\n");
                 struct node *n = alloc_node();
-                memcpy(n->map, map, map_width * map_height);
+                map_copy(n->map, map);
                 struct solution solution;
                 size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
                 unsigned int result = solve(n, limit, true, &solution);

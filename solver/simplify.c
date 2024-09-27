@@ -29,7 +29,7 @@ visit(map_t map, loc_t loc, map_t reachable)
 void
 calc_reachable_from(map_t map, loc_t loc, map_t reachable)
 {
-        memset(reachable, 0, map_height * map_width);
+        map_fill(reachable, 0);
         visit(map, loc, reachable);
 }
 
@@ -74,7 +74,7 @@ bool
 simplify_unmovable(map_t map)
 {
         map_t unmovable;
-        memset(unmovable, 0, map_height * map_width);
+        map_fill(unmovable, 0);
 
         loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
@@ -148,7 +148,7 @@ simplify(map_t map)
         struct size size;
         measure_size(map, &size);
         map_t orig;
-        memcpy(orig, map, map_width * map_height);
+        map_copy(orig, map);
         loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
                 if (map[loc] != W) {
