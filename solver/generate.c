@@ -167,6 +167,12 @@ generate(struct genctx *ctx)
 }
 
 int
+random_seed(void)
+{
+        return arc4random();
+}
+
+int
 main(int argc, char **argv)
 {
         struct genctx ctx;
@@ -177,7 +183,7 @@ main(int argc, char **argv)
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
-        int seed = 0;
+        int seed = random_seed();
         unsigned int ntotal = 0;
         unsigned int ngeneratefail = 0;
         unsigned int nimpossible = 0;
