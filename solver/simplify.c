@@ -6,11 +6,16 @@
 #include "rule.h"
 #include "simplify.h"
 
+#define UNVISITED 0
+#define VISITED 1
+#define MOVABLE 2
+#define UNMOVABLE 3
+
 void
-visit(map_t map, loc_t loc, map_t reachable)
+visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
 {
         uint8_t objidx = map[loc];
-        if (objidx == W) {
+        if (objidx != _ && movable[loc] == UNMOVABLE) {
                 return;
         }
         if (reachable[loc]) {
@@ -23,44 +28,45 @@ visit(map_t map, loc_t loc, map_t reachable)
                 if (!in_map(nloc)) {
                         continue;
                 }
-                visit(map, nloc, reachable);
+                visit(map, movable, nloc, reachable);
         }
 }
 
 void
-calc_reachable_from(map_t map, loc_t loc, map_t reachable)
+calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
+                    map_t reachable)
 {
         map_fill(reachable, 0);
-        visit(map, loc, reachable);
+        visit(map, movable, loc, reachable);
 }
 
 bool
-calc_reachable_from_A(map_t map, map_t reachable)
+calc_reachable_from_A(const map_t map, const map_t movable, map_t reachable)
 {
         loc_t loc;
-        for (loc = 0; loc < map_width * map_height; loc++) {
+        for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == A) {
                         break;
                 }
         }
-        if (loc == map_width * map_height) {
+        if (loc == map_size) {
                 return true;
         }
-        calc_reachable_from(map, loc, reachable);
+        calc_reachable_from(map, movable, loc, reachable);
         return false;
 }
 
 bool
-simplify_unreachable(map_t map)
+simplify_unreachable(map_t map, const map_t movable)
 {
         map_t reachable;
-        if (calc_reachable_from_A(map, reachable)) {
+        if (calc_reachable_from_A(map, movable, reachable)) {
                 return false;
         }
         bool modified = false;
         loc_t loc;
-        for (loc = 0; loc < map_width * map_height; loc++) {
+        for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx != W && !reachable[loc]) {
                         map[loc] = W;
@@ -79,11 +85,6 @@ is_simple_movable_object(uint8_t objidx)
          */
         return can_push(objidx) && !is_player(objidx) && objidx != X;
 }
-
-#define UNVISITED 0
-#define VISITED 1
-#define MOVABLE 2
-#define UNMOVABLE 3
 
 bool
 occupied(const map_t map, const map_t movable, loc_t loc)
@@ -162,10 +163,8 @@ calc_movable(const map_t map, map_t movable)
 
 /* turn unmovable objects to W */
 bool
-simplify_unmovable(map_t map)
+turn_unmovable_to_W(map_t map, const map_t movable)
 {
-        map_t movable;
-        calc_movable(map, movable);
 
         /* turn unmovable objects to W */
         bool modified = false;
@@ -202,8 +201,11 @@ simplify_unmovable(map_t map)
 void
 simplify(map_t map)
 {
-        simplify_unmovable(map);
-        simplify_unreachable(map);
+        map_t movable;
+        calc_movable(map, movable);
+
+        turn_unmovable_to_W(map, movable);
+        simplify_unreachable(map, movable);
 
         /*
          * remove redundant W outside of the map
