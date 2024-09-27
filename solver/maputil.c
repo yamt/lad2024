@@ -33,7 +33,7 @@ measure_size(const map_t map, struct size *size)
 }
 
 void
-map_copy(map_t dst, map_t src)
+map_copy(map_t dst, const map_t src)
 {
 	memcpy(dst, src, map_size);
 }
