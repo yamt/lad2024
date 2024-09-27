@@ -73,10 +73,12 @@ simple_impossible_check(const map_t map)
                 uint8_t objidx = map[loc];
                 count[objidx]++;
         }
+#if 0
         unsigned int i;
         for (i = 0; i < END; i++) {
                 printf("count[%c] = %u\n", objchr(i), count[i]);
         }
+#endif
 
         if (count[A] == 0) {
                 return true;
@@ -186,12 +188,12 @@ main(int argc, char **argv)
                 map_t map;
                 struct rng rng;
                 rng_init(&rng, seed);
-                printf("generating seed=%u\n", seed);
+                // printf("generating seed=%u\n", seed);
                 ntotal++;
                 ctx.map = map;
                 ctx.rng = &rng;
                 if (generate(&ctx)) {
-                        printf("generation failed\n");
+                        // printf("generation failed\n");
                         ngeneratefail++;
                         seed++;
                         continue;
@@ -202,7 +204,7 @@ main(int argc, char **argv)
                 map_copy(n->map, map);
                 struct solution solution;
                 size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
-                unsigned int result = solve(n, limit, true, &solution);
+                unsigned int result = solve(n, limit, false, &solution);
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
