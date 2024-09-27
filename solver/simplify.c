@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "defs.h"
+#include "dump.h"
 #include "maputil.h"
 #include "rule.h"
 #include "simplify.h"
@@ -69,69 +70,133 @@ simplify_unreachable(map_t map)
         return modified;
 }
 
+bool
+is_simple_movable_object(uint8_t objidx)
+{
+        /*
+         * players can move by themselves.
+         * bomb can be collected.
+         */
+        return can_push(objidx) && !is_player(objidx) && objidx != X;
+}
+
+#define UNVISITED 0
+#define VISITED 1
+#define MOVABLE 2
+#define UNMOVABLE 3
+
+bool
+occupied(const map_t map, const map_t movable, loc_t loc)
+{
+        if (!in_map(loc)) {
+                return true;
+        }
+        uint8_t objidx = map[loc];
+        if (objidx == W) {
+                return true;
+        }
+        if (is_simple_movable_object(objidx) && movable[loc] != MOVABLE) {
+                return true;
+        }
+        return false;
+}
+
+void
+calc_movable(const map_t map, map_t movable)
+{
+        map_fill(movable, UNVISITED);
+
+        bool more;
+        do {
+                more = false;
+                loc_t loc;
+                for (loc = 0; loc < map_size; loc++) {
+                        if (movable[loc] != 0) {
+                                continue;
+                        }
+                        uint8_t objidx = map[loc];
+                        if (objidx == W) {
+                                movable[loc] = UNMOVABLE;
+                                more = true;
+                                continue;
+                        }
+                        if (!is_simple_movable_object(objidx)) {
+                                movable[loc] = VISITED;
+                                more = true;
+                                continue;
+                        }
+                        bool might_move = false;
+                        enum diridx dir;
+                        for (dir = 0; dir < 2; dir++) {
+                                loc_t d = dirs[dir].loc_diff;
+                                if (!occupied(map, movable, loc + d) &&
+                                    !occupied(map, movable, loc - d)) {
+                                        might_move = true;
+                                        break;
+                                }
+                        }
+                        if (might_move) {
+                                movable[loc] = MOVABLE;
+                                /*
+                                 * note: mark neighbors unvisited.
+                                 * this might effectively degrade them
+                                 * from 3 to 2.
+                                 */
+                                for (dir = 0; dir < 4; dir++) {
+                                        loc_t d = dirs[dir].loc_diff;
+                                        loc_t nloc = loc + d;
+                                        if (!in_map(nloc)) {
+                                                continue;
+                                        }
+                                        if (movable[nloc] == UNMOVABLE) {
+                                                movable[nloc] = 0;
+                                                more = true;
+                                        }
+                                }
+                        } else {
+                                movable[loc] = UNMOVABLE;
+                        }
+                }
+        } while (more);
+}
+
 /* turn unmovable objects to W */
 bool
 simplify_unmovable(map_t map)
 {
-        map_t unmovable;
-        map_fill(unmovable, 0);
+        map_t movable;
+        calc_movable(map, movable);
+        dump_map_raw(movable);
 
+        /* turn unmovable objects to W */
+        bool modified = false;
         loc_t loc;
-        for (loc = 0; loc < map_width * map_height; loc++) {
+        for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
-                if (objidx == W) {
-                        unmovable[loc] = 1;
+                if (!is_simple_movable_object(objidx)) {
+                        continue;
+                }
+                if (movable[loc] != UNMOVABLE) {
+                        continue;
+                }
+                if (is_light(objidx)) {
+                        /*
+                         * detect trivial cases like:
+                         *
+                         * RL
+                         * UU
+                         */
+                        loc_t nloc = loc + dirs[light_dir(objidx)].loc_diff;
+                        if (!in_map(nloc) || (movable[nloc] == UNMOVABLE &&
+                                              block_beam(map[nloc]))) {
+                                map[loc] = W;
+                                modified = true;
+                        }
+                } else {
+                        map[loc] = W;
+                        modified = true;
                 }
         }
-
-        bool modified = false;
-        bool more;
-        do {
-                more = false;
-                for (loc = 0; loc < map_width * map_height; loc++) {
-                        if (unmovable[loc]) {
-                                continue;
-                        }
-                        uint8_t objidx = map[loc];
-                        if (can_push(objidx) && !is_player(objidx) &&
-                            objidx != X) {
-                                enum diridx dir;
-                                for (dir = 0; dir < 4; dir++) {
-                                        loc_t nloc;
-                                        nloc = loc + dirs[dir].loc_diff;
-                                        if (in_map(nloc) && !unmovable[nloc]) {
-                                                continue;
-                                        }
-                                        nloc = loc +
-                                               dirs[(dir + 1) % 4].loc_diff;
-                                        if (in_map(nloc) && !unmovable[nloc]) {
-                                                continue;
-                                        }
-                                        unmovable[loc] = 1;
-                                        more = true;
-                                        if (is_light(objidx)) {
-                                                /*
-                                                 * detect trivial cases like:
-                                                 *
-                                                 * RL
-                                                 */
-                                                nloc = loc +
-                                                       dirs[light_dir(objidx)]
-                                                               .loc_diff;
-                                                if (!in_map(nloc) ||
-                                                    block_beam(map[nloc])) {
-                                                        map[loc] = W;
-                                                        modified = true;
-                                                }
-                                        } else {
-                                                map[loc] = W;
-                                                modified = true;
-                                        }
-                                        break;
-                                }
-                        }
-                }
-        } while (more);
         return modified;
 }
 
