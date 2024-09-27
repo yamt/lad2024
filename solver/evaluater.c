@@ -96,12 +96,12 @@ evaluate(const struct node *root, const struct node_list *solution,
         simplify(simplified_map);
         struct size size;
         measure_size(simplified_map, &size);
-        unsigned int map_size =
+        unsigned int map_area =
                 (size.xmax - size.xmin + 1) * (size.ymax - size.ymin + 1);
-        printf("map size %u\n", map_size);
+        printf("map size %u\n", map_area);
         unsigned int score = nswitch * 2 + npush * 2 - npush_cont -
                              npush_sameobj + nsuicide;
-        score = score * 20 * 20 / map_size;
+        score = score * 20 * 20 / map_area;
         printf("score %u\n", score);
         ev->score = score;
 }
