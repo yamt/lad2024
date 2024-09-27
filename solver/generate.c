@@ -208,7 +208,7 @@ main(int argc, char **argv)
                         continue;
                 }
                 dump_map(map);
-                printf("solving\n");
+                printf("solving (seed %" PRIx64 ")\n", seed);
                 struct node *n = alloc_node();
                 map_copy(n->map, map);
                 struct solution solution;
