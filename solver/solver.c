@@ -8,6 +8,7 @@
 #include "dump.h"
 #include "hash.h"
 #include "list.h"
+#include "maputil.h"
 #include "node.h"
 #include "rule.h"
 #include "solver.h"
@@ -136,7 +137,7 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                                         continue;
                                 }
                                 struct node *n2 = alloc_node();
-                                memcpy(n2->map, n->map, sizeof(n->map));
+                                map_copy(n2->map, n->map);
                                 struct stage_meta meta2 = meta;
                                 player_move(&meta2, &meta2.players[i], dir,
                                             n2->map, beam_map, true);
