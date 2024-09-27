@@ -1,7 +1,7 @@
 #include <string.h>
 
-#include "maputil.h"
 #include "defs.h"
+#include "maputil.h"
 
 void
 measure_size(const map_t map, struct size *size)
@@ -35,11 +35,11 @@ measure_size(const map_t map, struct size *size)
 void
 map_copy(map_t dst, const map_t src)
 {
-	memcpy(dst, src, map_size);
+        memcpy(dst, src, map_size);
 }
 
 void
 map_fill(map_t map, uint8_t objidx)
 {
-	memset(map, objidx, map_size);
+        memset(map, objidx, map_size);
 }

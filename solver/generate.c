@@ -214,7 +214,8 @@ main(int argc, char **argv)
                         if (score >= 10) {
                                 char filename[100];
                                 snprintf(filename, sizeof(filename),
-                                         "generated-score-%05u-moves-%03u-seed-%08x.c",
+                                         "generated-score-%05u-moves-%03u-"
+                                         "seed-%08x.c",
                                          score, solution.nmoves, seed);
                                 simplify(map);
                                 dump_map_c(map, filename);
