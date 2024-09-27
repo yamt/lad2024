@@ -8,7 +8,7 @@
 #include "dump.h"
 #include "evaluater.h"
 #include "hash.h"
-#include "mapsize.h"
+#include "maputil.h"
 #include "node.h"
 #include "rule.h"
 #include "simplify.h"

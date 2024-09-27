@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "defs.h"
-#include "mapsize.h"
+#include "maputil.h"
 #include "rule.h"
 #include "simplify.h"
 
