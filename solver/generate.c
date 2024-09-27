@@ -105,37 +105,37 @@ generate(struct genctx *ctx)
         for (i = 0; i < n; i++) {
                 room(ctx);
         }
-        n = rng_rand(rng, 1, 5);
+        n = rng_rand(rng, 1, 20);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, X)) {
                         return true;
                 }
         }
-        n = rng_rand(rng, 0, 2);
+        n = rng_rand(rng, 0, 20);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, B)) {
                         return true;
                 }
         }
-        n = rng_rand(rng, 0, 2);
+        n = rng_rand(rng, 0, 12);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, U)) {
                         return true;
                 }
         }
-        n = rng_rand(rng, 0, 2);
+        n = rng_rand(rng, 0, 12);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, R)) {
                         return true;
                 }
         }
-        n = rng_rand(rng, 0, 2);
+        n = rng_rand(rng, 0, 12);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, D)) {
                         return true;
                 }
         }
-        n = rng_rand(rng, 0, 2);
+        n = rng_rand(rng, 0, 12);
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, L)) {
                         return true;
