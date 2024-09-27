@@ -166,7 +166,6 @@ simplify_unmovable(map_t map)
 {
         map_t movable;
         calc_movable(map, movable);
-        dump_map_raw(movable);
 
         /* turn unmovable objects to W */
         bool modified = false;
