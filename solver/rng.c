@@ -1,11 +1,14 @@
 #include "rng.h"
 
 void
-rng_init(struct rng *rng, int seed)
+rng_init(struct rng *rng, uint64_t seed)
 {
+        uint32_t high = seed >> 32;
+        uint32_t low = seed;
         unsigned int i;
-        for (i = 0; i < 16; i++) {
-                rng->state[i] = seed + i;
+        for (i = 0; i < 16; i += 2) {
+                rng->state[i] = low + i;
+                rng->state[i + 1] = high + i;
         }
         rng->i = 0;
 }

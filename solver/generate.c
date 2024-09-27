@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -166,10 +167,12 @@ generate(struct genctx *ctx)
         return false;
 }
 
-int
+uint64_t
 random_seed(void)
 {
-        return arc4random();
+        uint64_t v;
+        arc4random_buf(&v, sizeof(v));
+        return v;
 }
 
 int
@@ -183,13 +186,13 @@ main(int argc, char **argv)
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
-        int seed = random_seed();
-        unsigned int ntotal = 0;
-        unsigned int ngeneratefail = 0;
-        unsigned int nimpossible = 0;
-        unsigned int ngiveup = 0;
-        unsigned int nsucceed = 0;
-        unsigned int ngood = 0;
+        uint64_t seed = random_seed();
+        uint64_t ntotal = 0;
+        uint64_t ngeneratefail = 0;
+        uint64_t nimpossible = 0;
+        uint64_t ngiveup = 0;
+        uint64_t nsucceed = 0;
+        uint64_t ngood = 0;
         while (1) {
                 map_t map;
                 struct rng rng;
@@ -216,14 +219,15 @@ main(int argc, char **argv)
                         if (result == SOLVE_SOLVED) {
                                 struct evaluation ev;
                                 evaluate(n, &solution.moves, &ev);
-                                printf("seed %u score %u\n", seed, ev.score);
+                                printf("seed %" PRIx64 " score %u\n", seed,
+                                       ev.score);
                                 score = ev.score;
                         }
                         if (score >= 10) {
                                 char filename[100];
                                 snprintf(filename, sizeof(filename),
                                          "generated-score-%05u-moves-%03u-"
-                                         "seed-%08x.c",
+                                         "seed-%08" PRIx64 ".c",
                                          score, solution.nmoves, seed);
                                 simplify(map);
                                 dump_map_c(map, filename);
@@ -235,8 +239,10 @@ main(int argc, char **argv)
                 } else {
                         ngiveup++;
                 }
-                printf("total %u genfail %u (%.3f) impossible %u (%.3f) "
-                       "giveup %u (%.3f) success %u (%.3f) good %u (%.3f)\n",
+                printf("total %" PRIu64 " genfail %" PRIu64
+                       " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
+                       " (%.3f) success %" PRIu64 " (%.3f) good %" PRIu64
+                       " (%.3f)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
                        nimpossible, (float)nimpossible / ntotal, ngiveup,
                        (float)ngiveup / ntotal, nsucceed,
