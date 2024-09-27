@@ -4,6 +4,27 @@
 #include "defs.h"
 #include "dump.h"
 
+void
+dump_map_raw(const map_t map)
+{
+        int x;
+        int y;
+        printf("  ");
+        for (x = 0; x < map_width; x++) {
+                printf("%2u", x);
+        }
+        printf("\n");
+        for (y = 0; y < map_height; y++) {
+                printf("%2u", y);
+                for (x = 0; x < map_width; x++) {
+                        loc_t loc = genloc(x, y);
+                        uint8_t objidx = map[loc];
+                        printf("%2x", objidx);
+                }
+                printf("\n");
+        }
+}
+
 char
 objchr(uint8_t objidx)
 {
