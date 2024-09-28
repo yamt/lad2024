@@ -588,3 +588,15 @@
             END, END,
         },
     },
+    {
+        .data = (const uint8_t[]){
+            _,_,_,W,W, END,
+            _,W,W,X,P,W, END,
+            W,_,W,X,R,W, END,
+            W,R,U,_,A,_,W, END,
+            W,P,X,P,R,_,W, END,
+            _,W,_,_,W,W, END,
+            _,_,W,W, END,
+            END, END,
+        },
+    },
