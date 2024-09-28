@@ -160,10 +160,6 @@ generate(struct genctx *ctx)
                         return true;
                 }
         }
-        simplify(ctx->map);
-        if (simple_impossible_check(ctx->map)) {
-                return true;
-        }
         return false;
 }
 
@@ -189,6 +185,7 @@ main(int argc, char **argv)
         uint64_t seed = random_seed();
         uint64_t ntotal = 0;
         uint64_t ngeneratefail = 0;
+        uint64_t nsimpleimpossible = 0;
         uint64_t nimpossible = 0;
         uint64_t ngiveup = 0;
         uint64_t nsucceed = 0;
@@ -207,14 +204,20 @@ main(int argc, char **argv)
                         seed++;
                         continue;
                 }
+                simplify(ctx.map);
+                if (simple_impossible_check(ctx.map)) {
+                        nsimpleimpossible++;
+                        seed++;
+                        continue;
+                }
                 dump_map(map);
                 printf("solving (seed %" PRIx64 ")\n", seed);
                 struct node *n = alloc_node();
                 map_copy(n->map, map);
                 struct solution solution;
-                //size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
+                // size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
                 size_t limit = (size_t)8 * 1024 * 1024 * 1024; /* 8GB */
-                unsigned int result = solve(n, limit, false, &solution);
+                unsigned int result = solve(n, limit, true, &solution);
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
@@ -241,12 +244,14 @@ main(int argc, char **argv)
                         ngiveup++;
                 }
                 printf("total %" PRIu64 " genfail %" PRIu64
+                       " (%.3f) simple-impossible %" PRIu64
                        " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
                        " (%.3f) success %" PRIu64 " (%.3f) good %" PRIu64
                        " (%.3f)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
-                       nimpossible, (float)nimpossible / ntotal, ngiveup,
-                       (float)ngiveup / ntotal, nsucceed,
+                       nimpossible, (float)nimpossible / ntotal,
+                       nsimpleimpossible, (float)nsimpleimpossible / ntotal,
+                       ngiveup, (float)ngiveup / ntotal, nsucceed,
                        (float)nsucceed / ntotal, ngood, (float)ngood / ntotal);
                 printf("cleaning\n");
                 solve_cleanup();
