@@ -228,7 +228,7 @@ main(int argc, char **argv)
                                 char filename[100];
                                 snprintf(filename, sizeof(filename),
                                          "generated-score-%05u-moves-%03u-"
-                                         "seed-%08" PRIx64 ".c",
+                                         "seed-%016" PRIx64 ".c",
                                          score, solution.nmoves, seed);
                                 simplify(map);
                                 dump_map_c(map, filename);
