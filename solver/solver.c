@@ -191,8 +191,9 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                                         return SOLVE_GIVENUP;
                                 }
                         }
-                        printf("removing old nodes (step thresh %u)\n",
-                               thresh);
+                        printf("removing old nodes (step thresh %u / %u, "
+                               "processed %u)\n",
+                               thresh, n->steps, processed);
                         unsigned int removed = forget_old(thresh);
                         printf("removed %u / %u nodes\n", removed, registered);
                         registered -= removed;
