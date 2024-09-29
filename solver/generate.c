@@ -115,7 +115,7 @@ generate(struct genctx *ctx)
                 }
         }
 
-        n = rng_rand(rng, -4, 2);
+        n = rng_rand(rng, -10, 4);
         if (n <= 0) {
                 n = 1;
         }
@@ -124,8 +124,8 @@ generate(struct genctx *ctx)
                         return true;
                 }
         }
-        n = rng_rand(rng, -4, 4 - n);
-        if (n <= 0) {
+        n = rng_rand(rng, -10, 4 - n);
+        if (n < 0) {
                 n = 1;
         }
         for (i = 0; i < n; i++) {
