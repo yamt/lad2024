@@ -124,7 +124,7 @@ generate(struct genctx *ctx)
         struct rng *rng = ctx->rng;
         int i;
         int n;
-        n = rng_rand(rng, 1, 8);
+        n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
                 room(ctx, i > 0);
         }
@@ -133,8 +133,8 @@ generate(struct genctx *ctx)
                 int min;
                 int max;
         } objs[] = {
-                {X, 1, 20}, {B, 0, 20}, {U, 0, 12},
-                {R, 0, 12}, {D, 0, 12}, {L, 0, 12},
+                {X, 1, 10}, {B, 0, 10}, {U, 0, 6},
+                {R, 0, 6}, {D, 0, 6}, {L, 0, 6},
         };
         int j;
         for (j = 0; j < sizeof(objs) / sizeof(objs[0]); j++) {
