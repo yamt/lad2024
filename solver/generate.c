@@ -217,7 +217,7 @@ main(int argc, char **argv)
                 struct solution solution;
                 // size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
                 size_t limit = (size_t)8 * 1024 * 1024 * 1024; /* 8GB */
-                unsigned int result = solve(n, limit, true, &solution);
+                unsigned int result = solve(n, limit, false, &solution);
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
