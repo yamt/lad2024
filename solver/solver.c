@@ -124,6 +124,16 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                 struct stage_meta meta;
                 map_t beam_map;
                 calc_stage_meta(n->map, &meta);
+                if (n->steps > 0) {
+                        /* prefer to continue moving the same player */
+                        struct player *p = player_at(
+                                &meta, n->loc + dirs[n->dir].loc_diff);
+                        if (p != &meta.players[0]) {
+                                struct player tmp = meta.players[0];
+                                meta.players[0] = *p;
+                                *p = tmp;
+                        }
+                }
                 calc_beam(n->map, beam_map);
                 unsigned int i;
                 for (i = 0; i < meta.nplayers; i++) {
