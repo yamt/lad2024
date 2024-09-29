@@ -73,7 +73,7 @@ room(struct genctx *ctx, bool connect)
 bool
 place_obj(struct genctx *ctx, uint8_t objidx)
 {
-        int tries = 5;
+        int tries = 32;
         do {
                 int x = rng_rand(ctx->rng, 1, ctx->w - 2);
                 int y = rng_rand(ctx->rng, 1, ctx->h - 2);
