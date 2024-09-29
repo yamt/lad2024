@@ -26,7 +26,8 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev)
         dump_map(n->map);
 
         struct solution solution;
-        size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
+        // size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
+        size_t limit = (size_t)8 * 1024 * 1024 * 1024; /* 8GB */
         unsigned int result = solve(n, limit, true, &solution);
         if (result == SOLVE_SOLVED) {
                 evaluate(n, &solution.moves, ev);
