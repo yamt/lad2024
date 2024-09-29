@@ -35,17 +35,39 @@ rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
         }
 }
 
-void
-room(struct genctx *ctx)
+bool
+anyeq(const map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
 {
-        int rw = rng_rand(ctx->rng, 1, 4);
-        int rh = rng_rand(ctx->rng, 1, 4);
+        int x;
+        int y;
+        for (y = 0; y < rh; y++) {
+                for (x = 0; x < rw; x++) {
+                        if (map[genloc(rx + x, ry + y)] == objidx) {
+                                return true;
+                        }
+                }
+        }
+        return false;
+}
+
+void
+room(struct genctx *ctx, bool connect)
+{
+        int rw = rng_rand(ctx->rng, 2, 4);
+        int rh = 6 - rw;
         if (ctx->w < rw + 2 || ctx->h < rh + 2) {
                 return;
         }
-        int rx = rng_rand(ctx->rng, 1, ctx->w - rw - 1);
-        int ry = rng_rand(ctx->rng, 1, ctx->h - rh - 1);
-        rect(ctx->map, rx, ry, rw, rh, _);
+        int tries = 32;
+        do {
+                int rx = rng_rand(ctx->rng, 1, ctx->w - rw - 1);
+                int ry = rng_rand(ctx->rng, 1, ctx->h - rh - 1);
+                if (!connect ||
+                    anyeq(ctx->map, rx - 1, ry - 1, rw + 2, rh + 2, _)) {
+                        rect(ctx->map, rx, ry, rw, rh, _);
+                        break;
+                }
+        } while (tries--);
 }
 
 bool
@@ -104,7 +126,7 @@ generate(struct genctx *ctx)
         int n;
         n = rng_rand(rng, 1, 8);
         for (i = 0; i < n; i++) {
-                room(ctx);
+                room(ctx, i > 0);
         }
         n = rng_rand(rng, 1, 20);
         for (i = 0; i < n; i++) {
