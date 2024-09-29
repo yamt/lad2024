@@ -88,30 +88,15 @@ bool
 generate(struct genctx *ctx)
 {
         rect(ctx->map, 0, 0, map_width, map_height, W);
+        rect(ctx->map, 1, 1, map_width - 2, map_height - 2, _);
 
         struct rng *rng = ctx->rng;
         int i;
         int n;
-        n = rng_rand(rng, 1, 16);
-        for (i = 0; i < n; i++) {
-                room(ctx, i > 0);
-        }
-        struct obj {
-                uint8_t objidx;
-                int min;
-                int max;
-        } objs[] = {
-                {X, 1, 5}, {B, 0, 10}, {U, 0, 6},
-                {R, 0, 6}, {D, 0, 6},  {L, 0, 6},
-        };
-        int j;
-        for (j = 0; j < sizeof(objs) / sizeof(objs[0]); j++) {
-                const struct obj *o = &objs[j];
-                n = rng_rand(rng, o->min, o->max);
-                for (i = 0; i < n; i++) {
-                        if (place_obj(ctx, o->objidx)) {
-                                return true;
-                        }
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                if (ctx->map[loc] == _ && ((loc_x(loc) + loc_y(loc)) & 1)) {
+                        ctx->map[loc] = rng_rand(rng, W, U);
                 }
         }
 
