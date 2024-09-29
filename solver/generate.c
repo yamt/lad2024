@@ -224,9 +224,9 @@ main(int argc, char **argv)
                        " (%.3f) success %" PRIu64 " (%.3f) good %" PRIu64
                        " (%.3f)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
-                       nimpossible, (float)nimpossible / ntotal,
                        nsimpleimpossible, (float)nsimpleimpossible / ntotal,
-                       ngiveup, (float)ngiveup / ntotal, nsucceed,
+                       nimpossible, (float)nimpossible / ntotal, ngiveup,
+                       (float)ngiveup / ntotal, nsucceed,
                        (float)nsucceed / ntotal, ngood, (float)ngood / ntotal);
                 printf("cleaning\n");
                 solve_cleanup();
