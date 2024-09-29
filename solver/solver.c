@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -124,10 +125,13 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                 struct stage_meta meta;
                 map_t beam_map;
                 calc_stage_meta(n->map, &meta);
+                assert(meta.nplayers > 0);
+                assert(meta.nplayers <= max_players);
                 if (n->steps > 0) {
                         /* prefer to continue moving the same player */
                         struct player *p = player_at(
                                 &meta, n->loc + dirs[n->dir].loc_diff);
+                        assert(p != NULL);
                         if (p != &meta.players[0]) {
                                 struct player tmp = meta.players[0];
                                 meta.players[0] = *p;
