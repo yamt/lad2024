@@ -24,33 +24,6 @@ struct genctx {
 };
 
 void
-rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
-{
-        int x;
-        int y;
-        for (y = 0; y < rh; y++) {
-                for (x = 0; x < rw; x++) {
-                        map[genloc(rx + x, ry + y)] = objidx;
-                }
-        }
-}
-
-bool
-anyeq(const map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
-{
-        int x;
-        int y;
-        for (y = 0; y < rh; y++) {
-                for (x = 0; x < rw; x++) {
-                        if (map[genloc(rx + x, ry + y)] == objidx) {
-                                return true;
-                        }
-                }
-        }
-        return false;
-}
-
-void
 room(struct genctx *ctx, bool connect)
 {
         int rw = rng_rand(ctx->rng, 2, 4);

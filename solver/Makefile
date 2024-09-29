@@ -2,6 +2,7 @@ CFLAGS = -std=c99 -Wall
 CFLAGS = -flto=full -O3 -DNDEBUG
 #CFLAGS = -Og -g
 # CFLAGS += -Dmap_height=16 -Dmap_width=16
+CFLAGS += -Dmap_height=10 -Dmap_width=10
 CLINKFLAGS = -flto=full
 
 CFLAGS += -I../src
