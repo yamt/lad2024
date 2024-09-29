@@ -90,12 +90,7 @@ bool
 simple_impossible_check(const map_t map)
 {
         unsigned int count[END];
-        memset(count, 0, sizeof(count));
-        loc_t loc;
-        for (loc = 0; loc < map_width * map_height; loc++) {
-                uint8_t objidx = map[loc];
-                count[objidx]++;
-        }
+        count_objects(map, count);
 #if 0
         unsigned int i;
         for (i = 0; i < END; i++) {

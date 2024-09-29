@@ -43,3 +43,14 @@ map_fill(map_t map, uint8_t objidx)
 {
         memset(map, objidx, map_size);
 }
+
+void
+count_objects(const map_t map, unsigned int count[END])
+{
+        memset(count, 0, sizeof(count[0]) * END);
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t objidx = map[loc];
+                count[objidx]++;
+        }
+}
