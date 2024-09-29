@@ -128,42 +128,25 @@ generate(struct genctx *ctx)
         for (i = 0; i < n; i++) {
                 room(ctx, i > 0);
         }
-        n = rng_rand(rng, 1, 20);
-        for (i = 0; i < n; i++) {
-                if (place_obj(ctx, X)) {
-                        return true;
+        struct obj {
+                uint8_t objidx;
+                int min;
+                int max;
+        } objs[] = {
+                {X, 1, 20}, {B, 0, 20}, {U, 0, 12},
+                {R, 0, 12}, {D, 0, 12}, {L, 0, 12},
+        };
+        int j;
+        for (j = 0; j < sizeof(objs) / sizeof(objs[0]); j++) {
+                const struct obj *o = &objs[j];
+                n = rng_rand(rng, o->min, o->max);
+                for (i = 0; i < n; i++) {
+                        if (place_obj(ctx, o->objidx)) {
+                                return true;
+                        }
                 }
         }
-        n = rng_rand(rng, 0, 20);
-        for (i = 0; i < n; i++) {
-                if (place_obj(ctx, B)) {
-                        return true;
-                }
-        }
-        n = rng_rand(rng, 0, 12);
-        for (i = 0; i < n; i++) {
-                if (place_obj(ctx, U)) {
-                        return true;
-                }
-        }
-        n = rng_rand(rng, 0, 12);
-        for (i = 0; i < n; i++) {
-                if (place_obj(ctx, R)) {
-                        return true;
-                }
-        }
-        n = rng_rand(rng, 0, 12);
-        for (i = 0; i < n; i++) {
-                if (place_obj(ctx, D)) {
-                        return true;
-                }
-        }
-        n = rng_rand(rng, 0, 12);
-        for (i = 0; i < n; i++) {
-                if (place_obj(ctx, L)) {
-                        return true;
-                }
-        }
+
         n = rng_rand(rng, -4, 2);
         if (n <= 0) {
                 n = 1;
