@@ -165,6 +165,7 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                                 if (meta2.nbombs == 0) {
                                         solution->nmoves = n2->steps;
                                         if (last_thresh) {
+                                                dump_map(n2->map);
                                                 printf("proven solvable\n");
                                                 return SOLVE_SOLVABLE;
                                         }
