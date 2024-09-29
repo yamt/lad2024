@@ -101,8 +101,8 @@ generate(struct genctx *ctx)
                 int min;
                 int max;
         } objs[] = {
-                {X, 1, 10}, {B, 0, 10}, {U, 0, 6},
-                {R, 0, 6},  {D, 0, 6},  {L, 0, 6},
+                {X, 1, 5}, {B, 0, 10}, {U, 0, 6},
+                {R, 0, 6}, {D, 0, 6},  {L, 0, 6},
         };
         int j;
         for (j = 0; j < sizeof(objs) / sizeof(objs[0]); j++) {
