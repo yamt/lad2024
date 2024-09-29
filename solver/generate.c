@@ -194,7 +194,7 @@ main(int argc, char **argv)
                 map_t map;
                 struct rng rng;
                 rng_init(&rng, seed);
-                // printf("generating seed=%u\n", seed);
+                // printf("generating seed=%" PRIx64 "\n", seed);
                 ntotal++;
                 ctx.map = map;
                 ctx.rng = &rng;
