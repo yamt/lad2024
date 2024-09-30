@@ -25,4 +25,3 @@ loc_in_bb(const struct bb *bb, loc_t loc)
 {
         return xy_in_bb(bb, loc_x(loc), loc_y(loc));
 }
-

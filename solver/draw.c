@@ -1,7 +1,7 @@
-#include "defs.h"
 #include "draw.h"
-#include "rng.h"
 #include "bb.h"
+#include "defs.h"
+#include "rng.h"
 
 bool
 simple_put(uint8_t *p, void *arg)

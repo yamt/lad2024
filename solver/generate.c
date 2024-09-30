@@ -7,8 +7,8 @@
 
 #include "bb.h"
 #include "defs.h"
-#include "dump.h"
 #include "draw.h"
+#include "dump.h"
 #include "evaluater.h"
 #include "list.h"
 #include "loader.h"
@@ -48,8 +48,8 @@ room(struct genctx *ctx, bool connect)
 bool
 place_obj(struct genctx *ctx, uint8_t objidx)
 {
-        return random_place_obj_in_bb(ctx->rng, ctx->map, &ctx->bb,
-                                      simple_put, &objidx);
+        return random_place_obj_in_bb(ctx->rng, ctx->map, &ctx->bb, simple_put,
+                                      &objidx);
 }
 
 bool
