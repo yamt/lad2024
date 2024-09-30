@@ -16,25 +16,56 @@
 #include "simplify.h"
 #include "solver.h"
 
+struct bb {
+        int x;
+        int y;
+        int w;
+        int h;
+};
+
+bool
+xy_in_bb(const struct bb *bb, int x, int y)
+{
+        if (x < bb->x) {
+                return false;
+        }
+        if (y < bb->y) {
+                return false;
+        }
+        if (x > bb->x + bb->w - 1) {
+                return false;
+        }
+        if (y > bb->y + bb->h - 1) {
+                return false;
+        }
+        return true;
+}
+
+bool
+loc_in_bb(const struct bb *bb, loc_t loc)
+{
+        return xy_in_bb(bb, loc_x(loc), loc_y(loc));
+}
+
 struct genctx {
         struct rng *rng;
         uint8_t *map;
-        int h;
-        int w;
+        struct bb bb;
 };
 
 void
 room(struct genctx *ctx, bool connect)
 {
+        const struct bb *bb = &ctx->bb;
         int rw = rng_rand(ctx->rng, 2, 4);
         int rh = 6 - rw;
-        if (ctx->w < rw + 2 || ctx->h < rh + 2) {
+        if (bb->w < rw + 2 || bb->h < rh + 2) {
                 return;
         }
         int tries = 32;
         do {
-                int rx = rng_rand(ctx->rng, 1, ctx->w - rw - 1);
-                int ry = rng_rand(ctx->rng, 1, ctx->h - rh - 1);
+                int rx = rng_rand(ctx->rng, bb->x, bb->x + bb->w - rw - 1);
+                int ry = rng_rand(ctx->rng, bb->y, bb->y + bb->h - rh - 1);
                 if (!connect ||
                     anyeq(ctx->map, rx - 1, ry - 1, rw + 2, rh + 2, _)) {
                         rect(ctx->map, rx, ry, rw, rh, _);
@@ -43,20 +74,78 @@ room(struct genctx *ctx, bool connect)
         } while (tries--);
 }
 
+typedef bool (*putter_t)(uint8_t *p, void *arg);
+
 bool
-place_obj(struct genctx *ctx, uint8_t objidx)
+simple_put(uint8_t *p, void *arg)
+{
+        if (*p == _) {
+                uint8_t *op = arg;
+                *p = *op;
+                return false;
+        }
+        return true;
+}
+
+bool
+random_place_obj_in_bb(struct rng *rng, map_t map, const struct bb *bb,
+                       putter_t putter, void *arg)
 {
         int tries = 32;
         do {
-                int x = rng_rand(ctx->rng, 1, ctx->w - 2);
-                int y = rng_rand(ctx->rng, 1, ctx->h - 2);
+                int x = rng_rand(rng, bb->x, bb->x + bb->w - 2);
+                int y = rng_rand(rng, bb->y, bb->y + bb->h - 2);
                 loc_t loc = genloc(x, y);
-                if (ctx->map[loc] == _) {
-                        ctx->map[loc] = objidx;
+                if (!putter(&map[loc], arg)) {
                         return false;
                 }
         } while (tries--);
         return true;
+}
+
+bool
+random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
+{
+        int n;
+        struct obj {
+                uint8_t objidx;
+                int min;
+                int max;
+        } objs[] = {
+                {X, 1, 5}, {B, 0, 10}, {U, 0, 6},
+                {R, 0, 6}, {D, 0, 6},  {L, 0, 6},
+        };
+        int j;
+        for (j = 0; j < sizeof(objs) / sizeof(objs[0]); j++) {
+                int i;
+                const struct obj *o = &objs[j];
+                n = rng_rand(rng, o->min, o->max);
+                for (i = 0; i < n; i++) {
+                        if (random_place_obj_in_bb(rng, map, bb, simple_put,
+                                                   (void *)&o->objidx)) {
+                                return true;
+                        }
+                }
+        }
+        return false;
+}
+
+bool
+replace_obj(uint8_t *p, void *arg)
+{
+        if (*p != _ && *p != W) {
+                uint8_t *op = arg;
+                *p = *op;
+                return false;
+        }
+        return true;
+}
+
+bool
+place_obj(struct genctx *ctx, uint8_t objidx)
+{
+        return random_place_obj_in_bb(ctx->rng, ctx->map, &ctx->bb,
+                                      replace_obj, &objidx);
 }
 
 bool
@@ -84,21 +173,40 @@ simple_impossible_check(const map_t map)
         return false;
 }
 
-bool
-generate(struct genctx *ctx)
+void
+random_ichimatsu(struct genctx *ctx)
 {
-        rect(ctx->map, 0, 0, map_width, map_height, W);
-        rect(ctx->map, 1, 1, map_width - 2, map_height - 2, _);
-
         struct rng *rng = ctx->rng;
         int i;
-        int n;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 if (ctx->map[loc] == _ && ((loc_x(loc) + loc_y(loc)) & 1)) {
                         ctx->map[loc] = rng_rand(rng, W, U);
                 }
         }
+}
+
+bool
+generate(struct genctx *ctx)
+{
+        rect(ctx->map, 0, 0, map_width, map_height, W);
+
+        rect(ctx->map, 1, 1, 3, 3, _);
+        rect(ctx->map, 7, 1, 3, 3, _);
+        rect(ctx->map, 7, 7, 3, 3, _);
+        rect(ctx->map, 1, 7, 3, 3, _);
+        rect(ctx->map, 3, 3, 5, 5, _);
+        rect(ctx->map, 5, 5, 1, 1, W);
+#if 0
+        random_ichimatsu(ctx);
+#endif
+        if (random_place_objs_in_bb(ctx->rng, ctx->map, &ctx->bb)) {
+                return true;
+        }
+
+        struct rng *rng = ctx->rng;
+        int i;
+        int n;
 
         n = rng_rand(rng, -10, max_players);
         if (n <= 0) {
@@ -135,10 +243,12 @@ int
 main(int argc, char **argv)
 {
         struct genctx ctx;
-        ctx.h = map_height;
-        ctx.w = map_width;
-        if (ctx.w > map_width || ctx.h > map_height) {
-                printf("ctx %u %u\n", ctx.w, ctx.h);
+        ctx.bb.x = 0;
+        ctx.bb.y = 0;
+        ctx.bb.h = map_height;
+        ctx.bb.w = map_width;
+        if (ctx.bb.w > map_width || ctx.bb.h > map_height) {
+                printf("ctx %u %u\n", ctx.bb.w, ctx.bb.h);
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
