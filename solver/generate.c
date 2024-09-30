@@ -35,8 +35,8 @@ room(struct genctx *ctx, bool connect)
         }
         int tries = 32;
         do {
-                int rx = rng_rand(ctx->rng, bb->x, bb->x + bb->w - rw - 1);
-                int ry = rng_rand(ctx->rng, bb->y, bb->y + bb->h - rh - 1);
+                int rx = rng_rand(ctx->rng, bb->x + 1, bb->x + bb->w - rw - 1);
+                int ry = rng_rand(ctx->rng, bb->y + 1, bb->y + bb->h - rh - 1);
                 if (!connect ||
                     anyeq(ctx->map, rx - 1, ry - 1, rw + 2, rh + 2, _)) {
                         rect(ctx->map, rx, ry, rw, rh, _);
@@ -49,7 +49,7 @@ bool
 place_obj(struct genctx *ctx, uint8_t objidx)
 {
         return random_place_obj_in_bb(ctx->rng, ctx->map, &ctx->bb,
-                                      replace_obj, &objidx);
+                                      simple_put, &objidx);
 }
 
 bool
@@ -95,22 +95,31 @@ generate(struct genctx *ctx)
 {
         rect(ctx->map, 0, 0, map_width, map_height, W);
 
+#if 0
         rect(ctx->map, 1, 1, 3, 3, _);
         rect(ctx->map, 7, 1, 3, 3, _);
         rect(ctx->map, 7, 7, 3, 3, _);
         rect(ctx->map, 1, 7, 3, 3, _);
         rect(ctx->map, 3, 3, 5, 5, _);
         rect(ctx->map, 5, 5, 1, 1, W);
-#if 0
-        random_ichimatsu(ctx);
 #endif
-        if (random_place_objs_in_bb(ctx->rng, ctx->map, &ctx->bb)) {
-                return true;
-        }
 
         struct rng *rng = ctx->rng;
         int i;
         int n;
+
+        n = rng_rand(rng, 1, 16);
+        for (i = 0; i < n; i++) {
+                room(ctx, i > 0);
+        }
+
+#if 0
+        random_ichimatsu(ctx);
+#endif
+
+        if (random_place_objs_in_bb(ctx->rng, ctx->map, &ctx->bb)) {
+                return true;
+        }
 
         n = rng_rand(rng, -10, max_players);
         if (n <= 0) {
