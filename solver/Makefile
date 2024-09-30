@@ -20,6 +20,7 @@ OBJS += list.o
 OBJS += maputil.o
 OBJS += bb.o
 OBJS += dump.o
+OBJS += draw.o
 OBJS += node.o
 OBJS += rng.o
 OBJS += solver.o
