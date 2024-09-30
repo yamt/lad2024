@@ -18,6 +18,7 @@ OBJS += loader.o
 OBJS += stages.o
 OBJS += list.o
 OBJS += maputil.o
+OBJS += bb.o
 OBJS += dump.o
 OBJS += node.o
 OBJS += rng.o
