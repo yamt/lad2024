@@ -303,7 +303,7 @@ mark_redraw_all_objects()
 {
         /* XXX this assumes how mark_redraw_object is implemented */
         mark_redraw_object(0);
-        mark_redraw_object(map_width * meta.stage_height - 1);
+        mark_redraw_object(genloc(map_width - 1, map_height - 1));
 }
 
 void
@@ -396,7 +396,7 @@ draw_object(int x, int y, uint8_t objidx)
 {
         const struct obj *obj = &objs[objidx];
         *DRAW_COLORS = obj->color;
-        loc_t loc = x + y * map_width;
+        loc_t loc = genloc(x, y);
         int i = 0;
         int dx = 0;
         int dy = 0;
