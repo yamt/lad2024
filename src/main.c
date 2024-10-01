@@ -193,9 +193,20 @@ static int cur_player_idx;
 
 #define moving_nsteps 4
 static unsigned int moving_step = 0;
-static enum diridx moving_dir = 0;
-static bool moving_pushing = false;
-static bool moving_beam = false;
+static bool undoing = false;
+#define moving_dir undos[undo_idx].dir
+#define moving_pushing ((undos[undo_idx].flags & MOVE_PUSH) != 0)
+#define moving_beam ((~undos[undo_idx].flags & (MOVE_PUSH | MOVE_BEAM)) == 0)
+
+struct move {
+        loc_t loc;
+        enum diridx dir;
+        unsigned int flags; /* MOVE_ flags */
+};
+
+#define max_undos 16
+static struct move undos[max_undos];
+static unsigned int undo_idx;
 
 #define CALC_BEAM 1U
 #define MESSAGE 4U
@@ -486,6 +497,9 @@ load_stage()
         cur_player_idx = 0;
         mark_redraw_all();
         moving_step = 0;
+        memset(undos, 0, sizeof(undos));
+        undo_idx = 0;
+        undoing = false;
         update_beam();
 }
 
@@ -534,6 +548,44 @@ stage_clear()
         state.cur_stage = (state.cur_stage + 1) % nstages;
         save_state();
         load_stage();
+}
+
+void
+undo_move(const struct move *undo)
+{
+        struct player *p = cur_player();
+        ASSERT(p->loc == undo->loc);
+        unsigned int flags = undo->flags;
+        loc_t diff = dirs[undo->dir].loc_diff;
+        loc_t ploc = p->loc;
+        ASSERT(map[ploc - diff] == _);
+        move_object(map, ploc - diff, ploc);
+        if ((flags & MOVE_PUSH) != 0) {
+                move_object(map, ploc, ploc + diff);
+                struct player *p2 = player_at(&meta, ploc + diff);
+                if (p2 != NULL) {
+                        p2->loc -= diff;
+                }
+        }
+        if ((flags & MOVE_GET_BOMB) != 0) {
+                map[ploc] = X;
+                meta.nbombs++;
+        }
+        p->loc -= diff;
+        ASSERT(is_player(map[p->loc]));
+}
+
+void
+mark_redraw_after_move(const struct move *undo)
+{
+        loc_t diff = dirs[undo->dir].loc_diff;
+        mark_redraw_object(undo->loc - diff);
+        if ((undo->flags & MOVE_PUSH) != 0) {
+                mark_redraw_object(undo->loc + diff);
+        }
+        if ((undo->flags & MOVE_BEAM) != 0) {
+                need_redraw |= CALC_BEAM;
+        }
 }
 
 void
@@ -588,26 +640,51 @@ update()
                                 load_stage();
                                 return;
                         }
-                }
+                        if (dir == DOWN) {
+                                const struct move *undo = &undos[undo_idx];
+                                if ((undo->flags & MOVE_OK) != 0) {
+                                        // trace("undo");
+                                        unsigned int flags = undo->flags;
 
-                if (dir != NONE) {
+                                        /*
+                                         * switch back to the last-moved
+                                         * player
+                                         */
+                                        const struct player *p =
+                                                player_at(&meta, undo->loc);
+                                        ASSERT(p != NULL);
+                                        cur_player_idx = p - meta.players;
+                                        ASSERT(cur_player() == p);
+
+                                        /* undo, recalculate beam, redo */
+                                        if ((flags & MOVE_BEAM) != 0) {
+                                                undo_move(undo);
+                                                update_beam();
+                                                flags = move(undo->dir);
+                                                ASSERT(flags == undo->flags);
+                                                need_redraw |= CALC_BEAM;
+                                        }
+                                        mark_redraw_after_move(undo);
+                                        mark_redraw_cur_player();
+
+                                        undoing = true;
+                                        moving_step = moving_nsteps - 1;
+                                }
+                        }
+                } else if (dir != NONE) {
                         unsigned int flags = move(dir);
                         if ((flags & MOVE_OK) != 0) {
                                 ASSERT(moving_step == 0);
-                                moving_step++;
-                                moving_dir = dir;
-                                moving_beam = ((~flags &
-                                                (MOVE_PUSH | MOVE_BEAM)) == 0);
-                                moving_pushing = (flags & MOVE_PUSH) != 0;
+
+                                undo_idx = (undo_idx + 1) % max_undos;
+                                struct move *undo = &undos[undo_idx];
                                 const struct player *p = cur_player();
-                                loc_t diff = dirs[dir].loc_diff;
-                                mark_redraw_object(p->loc - diff);
-                                if ((flags & MOVE_PUSH) != 0) {
-                                        mark_redraw_object(p->loc + diff);
-                                }
-                                if ((flags & MOVE_BEAM) != 0) {
-                                        need_redraw |= CALC_BEAM;
-                                }
+                                undo->loc = p->loc;
+                                undo->dir = dir;
+                                undo->flags = flags;
+                                mark_redraw_after_move(undo);
+
+                                moving_step++;
                         }
                 }
                 mark_redraw_cur_player();
@@ -626,10 +703,24 @@ update()
         }
 
         if (moving_step) {
-                moving_step++;
-                if (moving_step == moving_nsteps) {
-                        moving_step = 0;
-                        mark_redraw_all_objects();
+                if (undoing) {
+                        // tracef("undo step %d", moving_step);
+                        moving_step--;
+                        if (moving_step == 0) {
+                                struct move *undo = &undos[undo_idx];
+                                undo_move(undo);
+                                mark_redraw_after_move(undo);
+                                undoing = false;
+                                undo->flags = 0; /* mark this invalid */
+                                undo_idx =
+                                        (undo_idx + max_undos - 1) % max_undos;
+                        }
+                } else {
+                        moving_step++;
+                        if (moving_step == moving_nsteps) {
+                                moving_step = 0;
+                                mark_redraw_all_objects();
+                        }
                 }
         } else {
                 need_redraw = 0;
