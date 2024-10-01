@@ -114,7 +114,7 @@ calc_stage_meta(map_t map, struct stage_meta *meta)
 {
         int nplayers = 0;
         int nbombs = 0;
-        int loc;
+        loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
                 uint8_t objidx = map[loc];
                 if (is_player(objidx)) {
@@ -134,11 +134,11 @@ player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
 {
         bool is_robot = map[p->loc] == A;
         const struct dir *d = &dirs[dir];
-        int loc_diff = d->loc_diff;
+        loc_t loc_diff = d->loc_diff;
         if ((beam_map[p->loc] != 0) != is_robot) {
                 return 0;
         }
-        int loc = p->loc + loc_diff;
+        loc_t loc = p->loc + loc_diff;
         if (!in_map(loc)) {
                 return 0;
         }
@@ -152,7 +152,7 @@ player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
         } else if (objidx == _) {
                 flags |= MOVE_OK;
         } else if (can_push(objidx)) {
-                int nloc = loc + loc_diff;
+                loc_t nloc = loc + loc_diff;
                 if (in_map(nloc) && map[nloc] == _) {
                         flags |= MOVE_OK | MOVE_PUSH;
                         if (block_beam(objidx)) {

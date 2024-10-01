@@ -25,7 +25,7 @@ enum diridx {
 typedef int loc_t;
 #define loc_x(loc) ((loc) % map_width)
 #define loc_y(loc) ((loc) / map_width)
-#define genloc(x, y) ((x) + (y) * map_width)
+#define genloc(x, y) (loc_t)((x) + (y) * map_width)
 
 struct dir {
         loc_t loc_diff;
