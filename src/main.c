@@ -115,7 +115,7 @@ const uint8_t wall[] = {
 
 const struct obj {
         const uint8_t *sprite;
-        uint16_t color;
+        uint8_t color;
         uint8_t flags;
 } objs[] = {
         [_] =
