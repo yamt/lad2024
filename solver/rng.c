@@ -3,12 +3,16 @@
 void
 rng_init(struct rng *rng, uint64_t seed)
 {
-        uint32_t high = seed >> 32;
-        uint32_t low = seed;
         unsigned int i;
         for (i = 0; i < 16; i += 2) {
-                rng->state[i] = low + i;
-                rng->state[i + 1] = high + i;
+                rng->state[i] = seed;
+                rng->state[i + 1] = seed >> 32;
+
+                /*
+                 * simple LCG with parameters taken
+                 * from posix drand48 family
+                 */
+                seed = seed * 0x5DEECE66 + 0xB;
         }
         rng->i = 0;
 }

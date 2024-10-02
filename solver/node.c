@@ -11,3 +11,15 @@ alloc_node(void)
         }
         return n;
 }
+
+loc_t
+next_loc(const struct node *n)
+{
+        return n->loc + dirs[n->dir].loc_diff;
+}
+
+loc_t
+pushed_obj_loc(const struct node *n)
+{
+        return n->loc + dirs[n->dir].loc_diff * 2;
+}

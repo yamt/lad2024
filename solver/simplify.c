@@ -40,6 +40,9 @@ calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
         visit(map, movable, loc, reachable);
 }
 
+/*
+ * returns true if failed. (no A is found in the map)
+ */
 bool
 calc_reachable_from_A(const map_t map, const map_t movable, map_t reachable)
 {
@@ -241,8 +244,13 @@ simplify(map_t map)
                         map[loc] = _;
                 }
         }
+}
 
+void
+align_to_top_left(map_t map)
+{
         /* align to top-left */
+        struct size size;
         measure_size(map, &size);
         if (size.xmin > 0 || size.ymin > 0) {
                 loc_t off = genloc(size.xmin, size.ymin);
