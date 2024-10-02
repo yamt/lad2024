@@ -303,7 +303,7 @@ mark_redraw_all_objects()
 {
         /* XXX this assumes how mark_redraw_object is implemented */
         mark_redraw_object(0);
-        mark_redraw_object(genloc(map_width - 1, map_height - 1));
+        mark_redraw_object(genloc(map_width - 1, meta.stage_height - 1));
 }
 
 void
