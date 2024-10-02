@@ -20,5 +20,7 @@ struct node {
 LIST_HEAD_NAMED(struct node, node_list);
 
 struct node *alloc_node(void);
+loc_t next_loc(const struct node *n);
+loc_t pushed_obj_loc(const struct node *n);
 
 #endif /* !defined(_LAD_SOLVER_NODE_H) */

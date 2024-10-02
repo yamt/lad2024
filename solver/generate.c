@@ -14,6 +14,7 @@
 #include "loader.h"
 #include "maputil.h"
 #include "node.h"
+#include "refine.h"
 #include "rng.h"
 #include "simplify.h"
 #include "solver.h"
@@ -173,6 +174,7 @@ main(int argc, char **argv)
         uint64_t ngiveup = 0;
         uint64_t nsucceed = 0;
         uint64_t ngood = 0;
+        uint64_t nrefined = 0;
         while (1) {
                 map_t map;
                 struct rng rng;
@@ -187,8 +189,9 @@ main(int argc, char **argv)
                         seed++;
                         continue;
                 }
-                simplify(ctx.map);
-                if (simple_impossible_check(ctx.map)) {
+                simplify(map);
+                align_to_top_left(map);
+                if (simple_impossible_check(map)) {
                         nsimpleimpossible++;
                         seed++;
                         continue;
@@ -216,11 +219,52 @@ main(int argc, char **argv)
                                          "generated-score-%05u-moves-%03u-"
                                          "seed-%016" PRIx64 ".c",
                                          score, solution.nmoves, seed);
-                                simplify(map);
                                 dump_map_c(map, filename);
                                 ngood++;
                         }
                         nsucceed++;
+                        if (result == SOLVE_SOLVED) {
+                                map_t orig;
+                                map_copy(orig, map);
+                                if (refine(map, &solution)) {
+                                        map_t refinedmap;
+                                        map_copy(refinedmap, map);
+                                        simplify(map);
+                                        solve_cleanup();
+                                        struct solution
+                                                solution_after_refinement;
+                                        n = alloc_node();
+                                        map_copy(n->map, map);
+                                        result = solve(
+                                                n, limit, false,
+                                                &solution_after_refinement);
+                                        if (result != SOLVE_SOLVED ||
+                                            solution_after_refinement.nmoves !=
+                                                    solution.nmoves) {
+                                                printf("refinement changed "
+                                                       "the solution!\n");
+                                                dump_map(orig);
+                                                dump_map(refinedmap);
+                                                dump_map(map);
+                                                exit(1);
+                                        }
+                                        align_to_top_left(map);
+
+                                        /*
+                                         * XXX: refinement can change
+                                         * the score
+                                         */
+                                        char filename[100];
+                                        snprintf(filename, sizeof(filename),
+                                                 "generated-score-%05u-moves-%"
+                                                 "03u-"
+                                                 "seed-%016" PRIx64
+                                                 "-refined.c",
+                                                 score, solution.nmoves, seed);
+                                        dump_map_c(map, filename);
+                                        nrefined++;
+                                }
+                        }
                 } else if (result == SOLVE_IMPOSSIBLE) {
                         nimpossible++;
                 } else {
@@ -230,12 +274,13 @@ main(int argc, char **argv)
                        " (%.3f) simple-impossible %" PRIu64
                        " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
                        " (%.3f) success %" PRIu64 " (%.3f) good %" PRIu64
-                       " (%.3f)\n",
+                       " (%.3f) refined %" PRIu64 " (%.3f)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
                        nsimpleimpossible, (float)nsimpleimpossible / ntotal,
                        nimpossible, (float)nimpossible / ntotal, ngiveup,
                        (float)ngiveup / ntotal, nsucceed,
-                       (float)nsucceed / ntotal, ngood, (float)ngood / ntotal);
+                       (float)nsucceed / ntotal, ngood, (float)ngood / ntotal,
+                       nrefined, (float)nrefined / ntotal);
                 printf("cleaning\n");
                 solve_cleanup();
                 seed++;

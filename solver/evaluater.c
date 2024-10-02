@@ -13,18 +13,6 @@
 #include "rule.h"
 #include "simplify.h"
 
-loc_t
-next_loc(struct node *n)
-{
-        return n->loc + dirs[n->dir].loc_diff;
-}
-
-loc_t
-pushed_obj_loc(struct node *n)
-{
-        return n->loc + dirs[n->dir].loc_diff * 2;
-}
-
 void
 evaluate(const struct node *root, const struct node_list *solution,
          struct evaluation *ev)
