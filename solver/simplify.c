@@ -14,14 +14,14 @@
 void
 visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
 {
-        uint8_t objidx = map[loc];
-        if (objidx != _ && movable[loc] == UNMOVABLE) {
-                return;
-        }
         if (reachable[loc]) {
                 return;
         }
         reachable[loc] = 1;
+        uint8_t objidx = map[loc];
+        if (objidx != _ && movable[loc] == UNMOVABLE) {
+                return;
+        }
         enum diridx dir;
         for (dir = 0; dir < 4; dir++) {
                 loc_t nloc = loc + dirs[dir].loc_diff;
