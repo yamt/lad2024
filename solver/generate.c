@@ -223,7 +223,7 @@ main(int argc, char **argv)
                                 ngood++;
                         }
                         nsucceed++;
-                        if (result == SOLVE_SOLVED) {
+                        if (result == SOLVE_SOLVED && score >= 10) {
                                 map_t orig;
                                 map_copy(orig, map);
                                 if (refine(map, &solution)) {
