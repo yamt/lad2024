@@ -1,3 +1,6 @@
+#if !defined(_LAD_DEFS_H)
+#define _LAD_DEFS_H
+
 #include <stdint.h>
 
 enum block {
@@ -15,3 +18,5 @@ enum block {
 };
 
 extern const unsigned int nstages;
+
+#endif /* !defined(_LAD_DEFS_H) */
