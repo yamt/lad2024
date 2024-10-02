@@ -1,6 +1,8 @@
-#include "draw.h"
+#include <assert.h>
+
 #include "bb.h"
 #include "defs.h"
+#include "draw.h"
 #include "rng.h"
 
 bool
@@ -30,6 +32,7 @@ random_place_obj_in_bb(struct rng *rng, map_t map, const struct bb *bb,
         return true;
 }
 
+#if 0
 bool
 random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
 {
@@ -52,6 +55,50 @@ random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
                                                    (void *)&o->objidx)) {
                                 return true;
                         }
+                }
+        }
+        return false;
+}
+#endif
+
+bool
+random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
+{
+        struct freq {
+                uint8_t objidx;
+                unsigned int freq;
+        };
+
+        struct freq freq[] = {
+                {_, 64}, {X, 3}, {B, 5}, {U, 3}, {R, 3}, {D, 3}, {L, 3},
+        };
+        unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
+        unsigned int total = 0;
+        unsigned int i;
+        for (i = 0; i < nfreq; i++) {
+                total += freq[i].freq;
+        }
+
+        int y;
+        for (y = 0; y < bb->h; y++) {
+                int x;
+                for (x = 0; x < bb->w; x++) {
+                        loc_t loc = genloc(bb->x + x, bb->y + y);
+                        if (map[loc] != _) {
+                                continue;
+                        }
+                        uint8_t objidx;
+                        unsigned int r = rng_rand(rng, 0, total - 1);
+                        for (i = 0; i < nfreq; i++) {
+                                const struct freq *f = &freq[i];
+                                if (r < f->freq) {
+                                        objidx = f->objidx;
+                                        break;
+                                }
+                                r -= f->freq;
+                        }
+                        assert(i < nfreq);
+                        map[loc] = objidx;
                 }
         }
         return false;

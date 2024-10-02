@@ -118,10 +118,6 @@ generate(struct genctx *ctx)
         random_ichimatsu(ctx);
 #endif
 
-        if (random_place_objs_in_bb(ctx->rng, ctx->map, &ctx->bb)) {
-                return true;
-        }
-
         n = rng_rand(rng, -10, max_players);
         if (n <= 0) {
                 n = 1;
@@ -142,6 +138,11 @@ generate(struct genctx *ctx)
                         }
                 }
         }
+
+        if (random_place_objs_in_bb(ctx->rng, ctx->map, &ctx->bb)) {
+                return true;
+        }
+
         return false;
 }
 
