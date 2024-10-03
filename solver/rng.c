@@ -5,7 +5,7 @@ rng_init(struct rng *rng, uint64_t seed)
 {
         unsigned int i;
         for (i = 0; i < 16; i += 2) {
-                rng->state[i] = seed;
+                rng->state[i] = (uint32_t)seed;
                 rng->state[i + 1] = seed >> 32;
 
                 /*
@@ -69,5 +69,5 @@ int
 rng_rand(struct rng *rng, int min, int max)
 {
         uint32_t v = rng_rand_u32(rng);
-        return min + (int)(v % (max - min + 1));
+        return min + (int)(v % (uint32_t)(max - min + 1));
 }
