@@ -4,6 +4,7 @@
 
 #include "defs.h"
 #include "loader.h"
+#include "rng.h"
 #include "rule.h"
 #include "wasm4.h"
 
@@ -87,6 +88,24 @@ const uint8_t bomb[] = {
         0b01111110,
         0b01011010,
         0b00111100,
+
+        0b00000000,
+        0b00111100,
+        0b01011010,
+        0b01111110,
+        0b01111110,
+        0b01111110,
+        0b01011010,
+        0b00111100,
+
+        0b00000000,
+        0b00000000,
+        0b00111100,
+        0b01011010,
+        0b11111111,
+        0b11111111,
+        0b10111101,
+        0b01111110,
 };
 
 const uint8_t light[] = {
@@ -236,6 +255,13 @@ struct save_data {
 
 map_t map;
 map_t beam[2];
+
+static struct rng rng;
+
+#define bomb_animate_nsteps 16
+#define bomb_animate_nframes 5
+static unsigned int bomb_animate_step;
+static loc_t bomb_animate_loc;
 
 bool
 is_cur_player(loc_t loc)
@@ -397,11 +423,18 @@ draw_object(int x, int y, uint8_t objidx)
         const struct obj *obj = &objs[objidx];
         *DRAW_COLORS = obj->color;
         loc_t loc = genloc(x, y);
-        int i = 0;
+        unsigned int i = 0;
         int dx = 0;
         int dy = 0;
         if (is_player(objidx) && is_cur_player(loc)) {
                 i = (frame / 8) % 3;
+        }
+        if (is_bomb(objidx) && bomb_animate_step && bomb_animate_loc == loc) {
+                i = bomb_animate_step * bomb_animate_nframes /
+                    bomb_animate_nsteps;
+                i = (const unsigned int[]){1, 2, 0, 1, 2}[i];
+                // tracef("loc %d step %d frame %d", (int)loc,
+                // bomb_animate_step, i);
         }
         if ((is_player(objidx) || can_push(objidx)) && is_moving(loc)) {
                 const struct dir *dir = &dirs[moving_dir];
@@ -589,6 +622,26 @@ mark_redraw_after_move(const struct move *undo)
 }
 
 void
+animate_bomb(void)
+{
+        if (bomb_animate_step) {
+                bomb_animate_step++;
+                if (bomb_animate_step == bomb_animate_nsteps) {
+                        bomb_animate_step = 0;
+                }
+                mark_redraw_object(bomb_animate_loc);
+        } else {
+                loc_t loc = rng_rand(&rng, 0, map_width * map_height - 1);
+                if (map[loc] == X) {
+                        // tracef("loc %d", (int)loc);
+                        bomb_animate_loc = loc;
+                        bomb_animate_step++;
+                        mark_redraw_object(bomb_animate_loc);
+                }
+        }
+}
+
+void
 start()
 {
         PALETTE[0] = 0x000030;
@@ -599,6 +652,8 @@ start()
 
         load_state();
         load_stage();
+
+        rng_init(&rng, 0);
 }
 
 void
@@ -692,6 +747,7 @@ update()
 
         frame++;
         update_palette();
+        animate_bomb();
         if ((need_redraw & CALC_BEAM) != 0) {
                 update_beam();
                 need_redraw &= ~CALC_BEAM;
