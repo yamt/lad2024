@@ -31,6 +31,12 @@ objchr(uint8_t objidx)
         return "_WBXLDRUPA"[objidx];
 }
 
+char
+dirchr(enum diridx dir)
+{
+        return "LDRU"[dir];
+}
+
 void
 dump_map(const map_t map)
 {
