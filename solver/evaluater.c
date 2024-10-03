@@ -37,11 +37,11 @@ evaluate(const struct node *root, const struct node_list *solution,
                 const int chr = objchr(objidx);
                 if (same) {
                         printf("step %3u:               dir=%c", n->steps,
-                               "LDRU"[n->dir]);
+                               dirchr(n->dir));
                 } else {
                         printf("step %3u: %c (x=%2u y=%2u) dir=%c", n->steps,
                                chr, loc_x(n->loc), loc_y(n->loc),
-                               "LDRU"[n->dir]);
+                               dirchr(n->dir));
                         nswitch++;
                 }
                 if ((n->flags & MOVE_PUSH) != 0) {
