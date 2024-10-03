@@ -29,6 +29,7 @@ OBJS += solver.o
 OBJS += simplify.o
 OBJS += evaluater.o
 OBJS += refine.o
+OBJS += validate.o
 
 BINS = solver generator rng_test
 

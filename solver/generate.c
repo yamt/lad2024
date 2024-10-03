@@ -18,6 +18,7 @@
 #include "rng.h"
 #include "simplify.h"
 #include "solver.h"
+#include "validate.h"
 
 struct genctx {
         struct rng *rng;
@@ -205,6 +206,13 @@ main(int argc, char **argv)
                 // size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
                 size_t limit = (size_t)8 * 1024 * 1024 * 1024; /* 8GB */
                 unsigned int result = solve(n, limit, false, &solution);
+                if (result == SOLVE_SOLVED &&
+                    validate(map, &solution, false)) {
+                        /* must be a bug */
+                        printf("validation failure\n");
+                        validate(map, &solution, true);
+                        exit(1);
+                }
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
@@ -231,6 +239,14 @@ main(int argc, char **argv)
                                         map_t refinedmap;
                                         map_copy(refinedmap, map);
                                         simplify(map);
+                                        if (validate(map, &solution, false)) {
+                                                /* must be a bug */
+                                                printf("validation failure "
+                                                       "after refinement\n");
+                                                exit(1);
+                                        }
+
+#if 1
                                         solve_cleanup();
                                         struct solution
                                                 solution_after_refinement;
@@ -249,6 +265,7 @@ main(int argc, char **argv)
                                                 dump_map(map);
                                                 exit(1);
                                         }
+#endif
                                         align_to_top_left(map);
 
                                         /*
