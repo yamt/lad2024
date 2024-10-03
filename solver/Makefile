@@ -12,6 +12,8 @@ SOLVER_OBJS = main.o
 
 GENERATOR_OBJS = generate.o
 
+RNG_TEST_OBJS = rng_test.o
+
 OBJS = hash.o
 OBJS += rule.o
 OBJS += loader.o
@@ -28,7 +30,7 @@ OBJS += simplify.o
 OBJS += evaluater.o
 OBJS += refine.o
 
-BINS = solver generator
+BINS = solver generator rng_test
 
 .PHONY: all
 all: $(BINS)
@@ -42,6 +44,11 @@ generator: $(GENERATOR_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(GENERATOR_OBJS) $(OBJS)
+
+rng_test: $(RNG_TEST_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(RNG_TEST_OBJS) $(OBJS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
