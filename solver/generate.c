@@ -110,10 +110,17 @@ generate(struct genctx *ctx)
         int i;
         int n;
 
+#if 0
         n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
                 room(ctx, i > 0);
         }
+#endif
+        unsigned int count[END];
+        do {
+                room(ctx, false);
+                count_objects(ctx->map, count);
+        } while (100 * count[_] / map_size < 50);
 
 #if 0
         random_ichimatsu(ctx);
