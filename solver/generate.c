@@ -207,10 +207,10 @@ main(int argc, char **argv)
                 size_t limit = (size_t)8 * 1024 * 1024 * 1024; /* 8GB */
                 unsigned int result = solve(n, limit, false, &solution);
                 if (result == SOLVE_SOLVED &&
-                    validate(map, &solution, false)) {
+                    validate(map, &solution, false, false)) {
                         /* must be a bug */
                         printf("validation failure\n");
-                        validate(map, &solution, true);
+                        validate(map, &solution, true, false);
                         exit(1);
                 }
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
@@ -238,11 +238,24 @@ main(int argc, char **argv)
                                 if (refine(map, &solution)) {
                                         map_t refinedmap;
                                         map_copy(refinedmap, map);
+                                        unsigned int count1[END];
+                                        unsigned int count2[END];
+                                        count_objects(map, count1);
                                         simplify(map);
-                                        if (validate(map, &solution, false)) {
+                                        count_objects(map, count2);
+                                        if (count2[X] == 0) {
+                                                goto done;
+                                        }
+                                        bool removed = count1[A] > count2[A] ||
+                                                       count1[P] > count2[P];
+                                        if (validate(map, &solution, false,
+                                                     removed)) {
                                                 /* must be a bug */
                                                 printf("validation failure "
                                                        "after refinement\n");
+                                                dump_map(orig);
+                                                dump_map(refinedmap);
+                                                dump_map(map);
                                                 exit(1);
                                         }
 
@@ -256,8 +269,13 @@ main(int argc, char **argv)
                                                 n, limit, false,
                                                 &solution_after_refinement);
                                         if (result != SOLVE_SOLVED ||
-                                            solution_after_refinement.nmoves !=
-                                                    solution.nmoves) {
+                                            (!removed &&
+                                             solution_after_refinement
+                                                             .nmoves !=
+                                                     solution.nmoves) ||
+                                            (removed &&
+                                             solution_after_refinement.nmoves >
+                                                     solution.nmoves)) {
                                                 printf("refinement changed "
                                                        "the solution!\n");
                                                 dump_map(orig);
@@ -288,6 +306,7 @@ main(int argc, char **argv)
                 } else {
                         ngiveup++;
                 }
+done:
                 printf("total %" PRIu64 " genfail %" PRIu64
                        " (%.3f) simple-impossible %" PRIu64
                        " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
