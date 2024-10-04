@@ -536,11 +536,27 @@ load_stage()
         update_beam();
 }
 
+static void
+validate_state(void)
+{
+        ASSERT(state.cur_stage < nstages);
+        ASSERT(state.cleared_stages < nstages);
+        unsigned int n = 0;
+        unsigned int i;
+        for (i = 0; i < max_stages; i++) {
+                if ((state.clear_bitmap[i / 32] & (1 << (i % 32))) != 0) {
+                        n++;
+                }
+        }
+        ASSERT(state.cleared_stages == n);
+}
+
 void
 load_state()
 {
         memset(&state, 0, sizeof(state));
         diskr(&state, sizeof(state));
+        validate_state();
         if (state.version != save_data_version) {
                 memset(&state, 0, sizeof(state));
         }
