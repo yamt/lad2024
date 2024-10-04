@@ -120,7 +120,7 @@ generate(struct genctx *ctx)
         do {
                 room(ctx, false);
                 count_objects(ctx->map, count);
-        } while (100 * count[_] / map_size < 50);
+        } while (100 * count[_] / map_size < 30);
 
 #if 0
         random_ichimatsu(ctx);
