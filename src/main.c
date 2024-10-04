@@ -644,6 +644,8 @@ animate_bomb(void)
 void
 start()
 {
+        ASSERT(nstages <= max_stages);
+
         PALETTE[0] = 0x000030;
         PALETTE[1] = 0xc00000;
         PALETTE[2] = 0xffff00;
