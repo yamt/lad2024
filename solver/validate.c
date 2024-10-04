@@ -12,7 +12,8 @@
  * expected to be quicker than solving it again.
  */
 bool
-validate(const map_t omap, const struct solution *solution, bool verbose)
+validate(const map_t omap, const struct solution *solution, bool verbose,
+         bool allow_removed_players)
 {
         struct stage_meta meta;
         map_t map;
@@ -38,6 +39,18 @@ validate(const map_t omap, const struct solution *solution, bool verbose)
                 if (p == NULL) {
                         printf("invalid player %d %d %c\n", loc_x(n->loc),
                                loc_y(n->loc), dirchr(n->dir));
+                        /*
+                         * note: for the stage originally with multiple As,
+                         * sometimes refine+simplify eliminate sets of A and
+                         * Xs. in that case, the simplified stage should
+                         * still be solvable by ignoring moves of the
+                         * eliminated A, which has been turned into W. (or
+                         * even _.)
+                         */
+                        if (allow_removed_players &&
+                            (map[n->loc] == W || map[n->loc] == _)) {
+                                continue;
+                        }
                         return true;
                 }
                 unsigned int flags =
