@@ -204,7 +204,6 @@ const struct obj {
                 }                                                             \
         } while (0)
 
-static uint8_t prev_gamepad = 0;
 static unsigned int frame = 0;
 
 static unsigned int beamidx = 0;
@@ -658,6 +657,49 @@ animate_bomb(void)
 }
 
 void
+read_gamepad(uint8_t *curp, uint8_t *pushedp, uint8_t *repeatedp)
+{
+        static uint8_t prev_gamepad = 0;
+        static uint8_t holding_frames;
+
+        uint8_t cur = *GAMEPAD1;
+        uint8_t gamepad = cur;
+        uint8_t gamepad_with_repeat;
+        gamepad &= ~prev_gamepad;
+        gamepad_with_repeat = gamepad;
+        if (cur == prev_gamepad) {
+                if (holding_frames < 40) {
+                        holding_frames++;
+                } else {
+                        gamepad_with_repeat |= cur;
+                }
+        } else {
+                holding_frames = 0;
+        }
+        prev_gamepad = cur;
+
+        *curp = cur;
+        *pushedp = gamepad;
+        *repeatedp = gamepad_with_repeat;
+}
+
+enum diridx
+gamepad_to_dir(uint8_t pad)
+{
+        enum diridx dir = NONE;
+        if ((pad & BUTTON_LEFT) != 0) {
+                dir = LEFT;
+        } else if ((pad & BUTTON_RIGHT) != 0) {
+                dir = RIGHT;
+        } else if ((pad & BUTTON_UP) != 0) {
+                dir = UP;
+        } else if ((pad & BUTTON_DOWN) != 0) {
+                dir = DOWN;
+        }
+        return dir;
+}
+
+void
 start()
 {
         ASSERT(nstages <= max_stages);
@@ -677,43 +719,33 @@ start()
 void
 update()
 {
-        uint8_t gamepad = *GAMEPAD1;
-        uint8_t cur = gamepad;
-        gamepad &= ~prev_gamepad;
-        prev_gamepad = cur;
+        uint8_t gamepad_cur;
+        uint8_t gamepad;
+        uint8_t gamepad_with_repeat;
+        read_gamepad(&gamepad_cur, &gamepad, &gamepad_with_repeat);
         if (moving_step == 0) {
-                enum diridx dir = NONE;
-                if ((gamepad & BUTTON_LEFT) != 0) {
-                        dir = LEFT;
-                } else if ((gamepad & BUTTON_RIGHT) != 0) {
-                        dir = RIGHT;
-                } else if ((gamepad & BUTTON_UP) != 0) {
-                        dir = UP;
-                } else if ((gamepad & BUTTON_DOWN) != 0) {
-                        dir = DOWN;
-                } else if ((gamepad & BUTTON_1) != 0) {
+                enum diridx dir = gamepad_to_dir(gamepad);
+                if (dir == NONE && (gamepad & BUTTON_1) != 0) {
                         mark_redraw_cur_player();
                         switch_player();
                 }
 
-                if ((cur & BUTTON_2) != 0) {
-                        if (dir == RIGHT || dir == LEFT) {
+                if ((gamepad_cur & BUTTON_2) != 0) {
+                        enum diridx rdir = gamepad_to_dir(gamepad_with_repeat);
+                        if (rdir == RIGHT || rdir == LEFT) {
                                 // trace("switch stage");
                                 state.cur_stage =
                                         (state.cur_stage + nstages +
                                          (unsigned int)loc_x(
-                                                 dirs[dir].loc_diff)) %
+                                                 dirs[rdir].loc_diff)) %
                                         nstages;
                                 save_state();
                                 load_stage();
-                                return;
-                        }
-                        if (dir == UP) {
+                        } else if (dir == UP) {
                                 // trace("reset");
                                 load_stage();
                                 return;
-                        }
-                        if (dir == DOWN) {
+                        } else if (dir == DOWN) {
                                 const struct move *undo = &undos[undo_idx];
                                 if ((undo->flags & MOVE_OK) != 0) {
                                         // trace("undo");
