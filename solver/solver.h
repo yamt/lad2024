@@ -13,6 +13,7 @@
 struct solution {
         struct node_list moves;
         unsigned int nmoves;
+        unsigned int iterations;
 };
 
 struct solver_param {
