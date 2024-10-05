@@ -314,7 +314,6 @@ main(int argc, char **argv)
                 } else {
                         ngiveup++;
                 }
-done:
                 printf("total %" PRIu64 " genfail %" PRIu64
                        " (%.3f) simple-impossible %" PRIu64
                        " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
