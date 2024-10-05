@@ -222,6 +222,7 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                 }
         }
         printf("impossible\n");
+        solution->iterations = processed;
         return SOLVE_IMPOSSIBLE;
 }
 
