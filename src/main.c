@@ -361,8 +361,19 @@ mark_redraw_all_objects()
 }
 
 void
+clear_redraw_flags(void)
+{
+        need_redraw = 0;
+        redraw_rect.xmin = map_width;
+        redraw_rect.xmax = 0;
+        redraw_rect.ymin = map_height;
+        redraw_rect.ymax = 0;
+}
+
+void
 mark_redraw_all()
 {
+        clear_redraw_flags();
         need_redraw = ALL;
         mark_redraw_all_objects();
         redraw_rect.ymax = map_height;
@@ -961,11 +972,7 @@ update()
                         }
                 }
         } else {
-                need_redraw = 0;
-                redraw_rect.xmin = map_width;
-                redraw_rect.xmax = 0;
-                redraw_rect.ymin = map_height;
-                redraw_rect.ymax = 0;
+                clear_redraw_flags();
 
                 if (meta.nbombs == 0) {
                         stage_clear();
