@@ -264,6 +264,7 @@ static struct redraw_rect {
 struct stage_meta meta;
 
 struct stage_draw_info {
+        unsigned int message_y;
         const char *message;
 } draw_info;
 
@@ -543,6 +544,27 @@ digits(unsigned int v, int x, int y)
         bordered_text(buf, x, y);
 }
 
+unsigned int
+count_message_lines(const char *message)
+{
+        const uint8_t *p = (const void *)message;
+        unsigned int x = 0;
+        unsigned int y = 0;
+        uint8_t ch;
+        while ((ch = *p++) != 0) {
+                if (ch == '\n') {
+                        x = 0;
+                        y++;
+                        continue;
+                }
+                x++;
+        }
+        if (x > 0) {
+                y++;
+        }
+        return y;
+}
+
 void
 draw_message()
 {
@@ -565,7 +587,7 @@ draw_message()
         if (draw_info.message == NULL) {
                 return;
         }
-        int start_y = (scale(meta.stage_height) + 7) / 8 + 1;
+        int start_y = (scale(draw_info.message_y) + 7) / 8 + 1;
 
         unsigned int orig_unit = set_unit(8);
         *DRAW_COLORS = 0x04;
@@ -595,20 +617,27 @@ load_stage()
         struct map_info info;
         decode_stage(state.cur_stage, map, &info);
 
+        unsigned int lines = 0;
+        if (info.message != NULL) {
+                lines = count_message_lines(info.message);
+                lines += 2;
+        }
+        ASSERT(info.w <= map_width);
+        ASSERT(info.h + lines <= map_height);
+        tracef("w %d h %d lines %d", info.w, info.h, lines);
         unsigned int unit = 8;
-        if (info.w <= 10 && info.h <= 10 && info.message == NULL) {
+        if (info.w * 16 / 8 <= map_width &&
+            info.h * 16 / 8 + lines <= map_height) {
                 unit = 16;
         }
         set_unit(unit);
 
         /* move to the center of the screen */
         unsigned int disp_width = map_width * 8 / unit;
+        unsigned int disp_height = (map_height - lines) * 8 / unit;
         int dx = (disp_width - info.w) / 2;
         int dy = 0;
-        if (info.message == NULL) {
-                unsigned int disp_height = map_height * 8 / unit;
-                dy = (disp_height - info.h) / 2;
-        }
+        dy = (disp_height - info.h) / 2;
 
         if (dx > 0 || dy > 0) {
                 loc_t loc = genloc(dx, dy);
@@ -619,6 +648,7 @@ load_stage()
 
         calc_stage_meta(map, &meta);
         meta.stage_height = info.h + (unsigned int)dy;
+        draw_info.message_y = map_height - lines - 1;
         draw_info.message = info.message;
         cur_player_idx = 0;
         mark_redraw_all();
