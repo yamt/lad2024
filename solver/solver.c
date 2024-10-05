@@ -96,7 +96,8 @@ return_solution(struct node *n, struct node_list *solution)
 }
 
 unsigned int
-solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
+solve(struct node *root, const struct solver_param *param, bool verbose,
+      struct solution *solution)
 {
         LIST_HEAD_INIT(&todo);
         unsigned int i;
@@ -104,7 +105,7 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                 LIST_HEAD_INIT(&hash_heads[i]);
         }
 
-        limit = limit / sizeof(struct node);
+        size_t limit = param->limit / sizeof(struct node);
         unsigned int queued = 0;
         unsigned int registered = 0;
         unsigned int processed = 0;
@@ -214,12 +215,10 @@ solve(struct node *root, size_t limit, bool verbose, struct solution *solution)
                         registered -= removed;
                         last_thresh = thresh;
                 }
-#if 0
-                if (processed >= max_iterations) {
+                if (processed >= param->max_iterations) {
                         printf("giving up\n");
                         return SOLVE_GIVENUP;
                 }
-#endif
         }
         printf("impossible\n");
         return SOLVE_IMPOSSIBLE;
@@ -239,3 +238,8 @@ solve_cleanup(void)
                 }
         }
 }
+
+struct solver_param solver_default_param = {
+        .limit = (size_t)8 * 1024 * 1024 * 1024,
+        .max_iterations = 1000000,
+};

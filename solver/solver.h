@@ -15,7 +15,14 @@ struct solution {
         unsigned int nmoves;
 };
 
+struct solver_param {
+        size_t limit;
+        unsigned int max_iterations;
+};
+
+extern struct solver_param solver_default_param;
+
 struct node;
-unsigned int solve(struct node *root, size_t limit, bool verbose,
-                   struct solution *solution);
+unsigned int solve(struct node *root, const struct solver_param *param,
+                   bool verbose, struct solution *solution);
 void solve_cleanup(void);
