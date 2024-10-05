@@ -169,6 +169,7 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                 n2->flags = flags;
                                 if (meta2.nbombs == 0) {
                                         solution->nmoves = n2->steps;
+                                        solution->iterations = processed;
                                         if (last_thresh) {
                                                 dump_map(n2->map);
                                                 printf("proven solvable\n");
