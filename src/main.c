@@ -10,7 +10,25 @@
 
 /* clang-format off */
 
-const uint8_t person[] = {
+enum sprite_idx {
+	SPIDX_NONE = -1,
+	SPIDX_PERSON = 0,
+	SPIDX_PERSON1,
+	SPIDX_PERSON2,
+	SPIDX_ROBOT,
+	SPIDX_ROBOT1,
+	SPIDX_ROBOT2,
+	SPIDX_BOX,
+	SPIDX_BOMB,
+	SPIDX_BOMB1,
+	SPIDX_BOMB2,
+	SPIDX_LIGHT,
+	SPIDX_WALL,
+	SPIDX_END
+};
+
+const uint8_t sprites[] = {
+		/* PERSON */
         0b00011000,
         0b10011001,
         0b01111110,
@@ -37,9 +55,8 @@ const uint8_t person[] = {
         0b00111100,
         0b00100100,
         0b00100100,
-};
 
-const uint8_t robot[] = {
+		/* ROBOT */
         0b00000100,
         0b00111100,
         0b01011010,
@@ -66,9 +83,8 @@ const uint8_t robot[] = {
         0b01111110,
         0b01111110,
         0b01111110,
-};
 
-const uint8_t box[] = {
+		/* BOX */
         0b00000000,
         0b01110110,
         0b11110111,
@@ -77,9 +93,8 @@ const uint8_t box[] = {
         0b11110111,
         0b01110110,
         0b00000000,
-};
 
-const uint8_t bomb[] = {
+        /* BOMB */
         0b00111100,
         0b01011010,
         0b01111110,
@@ -106,9 +121,8 @@ const uint8_t bomb[] = {
         0b11111111,
         0b10111101,
         0b01111110,
-};
 
-const uint8_t light[] = {
+		/* LIGHT */
         0b11111000,
         0b01111110,
         0b11111111,
@@ -117,9 +131,8 @@ const uint8_t light[] = {
         0b01111111,
         0b11111110,
         0b11111000,
-};
 
-const uint8_t wall[] = {
+		/* WALL */
         0b01111110,
         0b11111111,
         0b10000001,
@@ -133,65 +146,65 @@ const uint8_t wall[] = {
 /* clang-format on */
 
 const struct obj {
-        const uint8_t *sprite;
+        enum sprite_idx sprite;
         uint8_t color;
         uint8_t flags;
 } objs[] = {
         [_] =
                 {
-                        .sprite = NULL,
+                        .sprite = SPIDX_NONE,
                 },
         [W] =
                 {
-                        .sprite = wall,
+                        .sprite = SPIDX_WALL,
                         .color = 0x40,
                         .flags = 0,
                 },
         [U] =
                 {
-                        .sprite = light,
+                        .sprite = SPIDX_LIGHT,
                         .color = 0x20,
                         .flags = BLIT_FLIP_X | BLIT_FLIP_Y | BLIT_ROTATE,
                 },
         [R] =
                 {
-                        .sprite = light,
+                        .sprite = SPIDX_LIGHT,
                         .color = 0x20,
                         .flags = BLIT_FLIP_X | BLIT_FLIP_Y,
                 },
         [D] =
                 {
-                        .sprite = light,
+                        .sprite = SPIDX_LIGHT,
                         .color = 0x20,
                         .flags = BLIT_ROTATE,
                 },
         [L] =
                 {
-                        .sprite = light,
+                        .sprite = SPIDX_LIGHT,
                         .color = 0x20,
                         .flags = 0,
                 },
         [B] =
                 {
-                        .sprite = box,
+                        .sprite = SPIDX_BOX,
                         .color = 0x20,
                         .flags = 0,
                 },
         [X] =
                 {
-                        .sprite = bomb,
+                        .sprite = SPIDX_BOMB,
                         .color = 0x20,
                         .flags = 0,
                 },
         [P] =
                 {
-                        .sprite = person,
+                        .sprite = SPIDX_PERSON,
                         .color = 0x40,
                         .flags = 0,
                 },
         [A] =
                 {
-                        .sprite = robot,
+                        .sprite = SPIDX_ROBOT,
                         .color = 0x40,
                         .flags = 0,
                 },
@@ -205,6 +218,8 @@ const struct obj {
         } while (0)
 
 static unsigned int frame = 0;
+#define scale(x) ((x) << 3)
+#define sprite(x) (&sprites[(x) << 3])
 
 static unsigned int beamidx = 0;
 static int cur_player_idx;
@@ -362,12 +377,12 @@ draw_beam()
                 int loc_diff = d->loc_diff;
                 horizontal = loc_diff == -1 || loc_diff == 1;
                 if (loc_diff < 0) {
-                        prop = 8 * (moving_nsteps - moving_step) /
+                        prop = scale(moving_nsteps - moving_step) /
                                moving_nsteps;
                         loc_diff = -loc_diff;
                         curidx = 1 - curidx;
                 } else {
-                        prop = 8 * moving_step / moving_nsteps;
+                        prop = scale(moving_step) / moving_nsteps;
                         altidx = 1 - curidx;
                 }
                 loc_diff = loc_diff * prop;
@@ -387,7 +402,7 @@ draw_beam()
                                 } else {
                                         *DRAW_COLORS = 1;
                                 }
-                                rect(x * 8, y * 8, 8, 8);
+                                rect(scale(x), scale(y), scale(1), scale(1));
                         } else {
                                 if (alt) {
                                         *DRAW_COLORS = 3;
@@ -395,11 +410,12 @@ draw_beam()
                                         *DRAW_COLORS = 1;
                                 }
                                 if (horizontal) {
-                                        rect(x * 8 + dx, y * 8,
-                                             (uint32_t)(8 - dx), 8);
+                                        rect(scale(x) + dx, scale(y),
+                                             (uint32_t)(scale(1) - dx),
+                                             scale(1));
                                 } else {
-                                        rect(x * 8, y * 8 + dy, 8,
-                                             (uint32_t)(8 - dy));
+                                        rect(scale(x), scale(y) + dy, scale(1),
+                                             (uint32_t)(scale(1) - dy));
                                 }
                                 if (cur) {
                                         *DRAW_COLORS = 3;
@@ -407,9 +423,11 @@ draw_beam()
                                         *DRAW_COLORS = 1;
                                 }
                                 if (horizontal) {
-                                        rect(x * 8, y * 8, (uint32_t)dx, 8);
+                                        rect(scale(x), scale(y), (uint32_t)dx,
+                                             scale(1));
                                 } else {
-                                        rect(x * 8, y * 8, 8, (uint32_t)dy);
+                                        rect(scale(x), scale(y), scale(1),
+                                             (uint32_t)dy);
                                 }
                         }
                 }
@@ -442,7 +460,8 @@ draw_object(int x, int y, uint8_t objidx)
                 dx = loc_x(loc_diff);
                 dy = loc_y(loc_diff);
         }
-        blit(obj->sprite + i * 8, x * 8 + dx, y * 8 + dy, 8, 8, obj->flags);
+        blit(sprite((unsigned int)obj->sprite + i), scale(x) + dx,
+             scale(y) + dy, scale(1), scale(1), obj->flags);
 }
 
 void
@@ -491,7 +510,7 @@ draw_message()
         if (draw_info.message == NULL) {
                 return;
         }
-        int start_y = meta.stage_height + 1;
+        int start_y = (scale(meta.stage_height) + 7) / 8 + 1;
         *DRAW_COLORS = 0x04;
         text(draw_info.message, 0, start_y * 8);
         int x = 0;
