@@ -154,6 +154,58 @@ generate(struct genctx *ctx)
         return false;
 }
 
+bool
+try_refine(map_t map, struct solution *solution, size_t limit)
+{
+        map_t orig;
+        map_copy(orig, map);
+        if (!refine(map, solution)) {
+                return false;
+        }
+        map_t refinedmap;
+        map_copy(refinedmap, map);
+        unsigned int count1[END];
+        unsigned int count2[END];
+        count_objects(map, count1);
+        simplify(map);
+        count_objects(map, count2);
+        if (count2[X] == 0) {
+                return false;
+        }
+        bool removed = count1[A] > count2[A] || count1[P] > count2[P];
+        if (validate(map, solution, false, removed)) {
+                /* must be a bug */
+                printf("validation failure "
+                       "after refinement\n");
+                dump_map(orig);
+                dump_map(refinedmap);
+                dump_map(map);
+                exit(1);
+        }
+
+#if 1
+        solve_cleanup();
+        struct solution solution_after_refinement;
+        struct node *n = alloc_node();
+        map_copy(n->map, map);
+        unsigned int result =
+                solve(n, limit, false, &solution_after_refinement);
+        if (result != SOLVE_SOLVED ||
+            (!removed &&
+             solution_after_refinement.nmoves != solution->nmoves) ||
+            (removed && solution_after_refinement.nmoves > solution->nmoves)) {
+                printf("refinement changed the solution!\n");
+                dump_map(orig);
+                dump_map(refinedmap);
+                dump_map(map);
+                exit(1);
+        }
+#endif
+        align_to_top_left(map);
+
+        return true;
+}
+
 uint64_t
 random_seed(void)
 {
@@ -240,68 +292,14 @@ main(int argc, char **argv)
                         }
                         nsucceed++;
                         if (result == SOLVE_SOLVED && score >= 10) {
-                                map_t orig;
-                                map_copy(orig, map);
-                                if (refine(map, &solution)) {
-                                        map_t refinedmap;
-                                        map_copy(refinedmap, map);
-                                        unsigned int count1[END];
-                                        unsigned int count2[END];
-                                        count_objects(map, count1);
-                                        simplify(map);
-                                        count_objects(map, count2);
-                                        if (count2[X] == 0) {
-                                                goto done;
-                                        }
-                                        bool removed = count1[A] > count2[A] ||
-                                                       count1[P] > count2[P];
-                                        if (validate(map, &solution, false,
-                                                     removed)) {
-                                                /* must be a bug */
-                                                printf("validation failure "
-                                                       "after refinement\n");
-                                                dump_map(orig);
-                                                dump_map(refinedmap);
-                                                dump_map(map);
-                                                exit(1);
-                                        }
-
-#if 1
-                                        solve_cleanup();
-                                        struct solution
-                                                solution_after_refinement;
-                                        n = alloc_node();
-                                        map_copy(n->map, map);
-                                        result = solve(
-                                                n, limit, false,
-                                                &solution_after_refinement);
-                                        if (result != SOLVE_SOLVED ||
-                                            (!removed &&
-                                             solution_after_refinement
-                                                             .nmoves !=
-                                                     solution.nmoves) ||
-                                            (removed &&
-                                             solution_after_refinement.nmoves >
-                                                     solution.nmoves)) {
-                                                printf("refinement changed "
-                                                       "the solution!\n");
-                                                dump_map(orig);
-                                                dump_map(refinedmap);
-                                                dump_map(map);
-                                                exit(1);
-                                        }
-#endif
-                                        align_to_top_left(map);
-
+                                if (try_refine(map, &solution, limit)) {
                                         /*
-                                         * XXX: refinement can change
-                                         * the score
+                                         * XXX: refinement can change the score
                                          */
                                         char filename[100];
                                         snprintf(filename, sizeof(filename),
                                                  "generated-score-%05u-moves-%"
-                                                 "03u-"
-                                                 "seed-%016" PRIx64
+                                                 "03u-seed-%016" PRIx64
                                                  "-refined.c",
                                                  score, solution.nmoves, seed);
                                         dump_map_c(map, filename);
