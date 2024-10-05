@@ -34,13 +34,13 @@ struct dir {
 extern const struct dir dirs[4];
 
 struct stage_meta {
-        int nplayers;
+        unsigned int nplayers;
         struct player {
                 loc_t loc;
         } players[max_players];
-        int nbombs;
+        unsigned int nbombs;
 
-        int stage_height;
+        unsigned int stage_height;
 };
 
 bool is_light(uint8_t objidx);

@@ -27,7 +27,7 @@ enum sprite_idx {
 	SPIDX_END
 };
 
-const uint8_t sprites[] = {
+const uint8_t sprites_8[] = {
 		/* PERSON */
         0b00011000,
         0b10011001,
@@ -143,6 +143,8 @@ const uint8_t sprites[] = {
         0b01111110,
 };
 
+uint8_t scaled_sprites_16[2 * 16 * SPIDX_END];
+
 /* clang-format on */
 
 const struct obj {
@@ -218,11 +220,18 @@ const struct obj {
         } while (0)
 
 static unsigned int frame = 0;
-#define scale(x) ((x) << 3)
-#define sprite(x) (&sprites[(x) << 3])
+
+const uint8_t *sprites[] = {
+        sprites_8,
+        scaled_sprites_16,
+};
+
+unsigned int scale_idx = 0;
+#define scale(x) ((x) << (scale_idx + 3))
+#define sprite(x) (&sprites[scale_idx][(x) << (scale_idx * 2 + 3)])
 
 static unsigned int beamidx = 0;
-static int cur_player_idx;
+static unsigned int cur_player_idx;
 
 #define moving_nsteps 4
 static unsigned int moving_step = 0;
@@ -343,7 +352,11 @@ mark_redraw_all_objects()
 {
         /* XXX this assumes how mark_redraw_object is implemented */
         mark_redraw_object(0);
-        mark_redraw_object(genloc(map_width - 1, meta.stage_height - 1));
+        /*
+         * XXX -2 to avoid overwriting the status line. ("STAGE 0000" etc)
+         * (assuming only W appears in the bottom line)
+         */
+        mark_redraw_object(genloc(map_width - 1, meta.stage_height - 2));
 }
 
 void
@@ -434,6 +447,35 @@ draw_beam()
         }
 }
 
+static unsigned int
+set_unit(unsigned int n)
+{
+        ASSERT(n == 8 || n == 16);
+        unsigned int orig = (scale_idx + 1) * 8;
+        scale_idx = n / 8 - 1;
+        return orig;
+}
+
+static void
+prepare_scaled_sprites(void)
+{
+        unsigned int i;
+        for (i = 0; i < 8 * SPIDX_END; i++) {
+                uint8_t orig = sprites_8[i];
+                uint16_t scaled = 0;
+                unsigned int j;
+                for (j = 0; j < 8; j++) {
+                        if ((orig & (1 << j)) != 0) {
+                                scaled |= 3 << (j * 2);
+                        }
+                }
+                scaled_sprites_16[i * 4] = scaled >> 8;
+                scaled_sprites_16[i * 4 + 1] = (uint8_t)scaled;
+                scaled_sprites_16[i * 4 + 2] = scaled >> 8;
+                scaled_sprites_16[i * 4 + 3] = (uint8_t)scaled;
+        }
+}
+
 void
 draw_object(int x, int y, uint8_t objidx)
 {
@@ -511,6 +553,8 @@ draw_message()
                 return;
         }
         int start_y = (scale(meta.stage_height) + 7) / 8 + 1;
+
+        unsigned int orig_unit = set_unit(8);
         *DRAW_COLORS = 0x04;
         text(draw_info.message, 0, start_y * 8);
         int x = 0;
@@ -529,6 +573,7 @@ draw_message()
                 }
                 x++;
         }
+        set_unit(orig_unit);
 }
 
 void
@@ -536,8 +581,16 @@ load_stage()
 {
         struct map_info info;
         decode_stage(state.cur_stage, map, &info);
+
+        unsigned int unit = 8;
+        if (info.w <= 10 && info.h <= 10 && info.message == NULL) {
+                unit = 16;
+        }
+        set_unit(unit);
+
         /* move to the center of the screen */
-        int d = (map_width - info.w) / 2;
+        unsigned int disp_width = map_width * 8 / unit;
+        int d = (disp_width - info.w) / 2;
         if (d > 0) {
                 memmove(&map[d], map, (size_t)(map_width * map_height - d));
                 memset(map, 0, (size_t)d);
@@ -736,6 +789,8 @@ start()
         load_stage();
 
         rng_init(&rng, 0);
+
+        prepare_scaled_sprites();
 }
 
 void
@@ -780,7 +835,9 @@ update()
                                         const struct player *p =
                                                 player_at(&meta, undo->loc);
                                         ASSERT(p != NULL);
-                                        cur_player_idx = p - meta.players;
+                                        cur_player_idx =
+                                                (unsigned int)(p -
+                                                               meta.players);
                                         ASSERT(cur_player() == p);
 
                                         /* undo, recalculate beam, redo */
