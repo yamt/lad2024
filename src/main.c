@@ -587,7 +587,8 @@ draw_message()
         if (draw_info.message == NULL) {
                 return;
         }
-        int start_y = (scale(draw_info.message_y) + 7) / 8 + 1;
+        tracef("message_y %d", draw_info.message_y);
+        int start_y = (int)draw_info.message_y;
 
         unsigned int orig_unit = set_unit(8);
         *DRAW_COLORS = 0x04;
@@ -648,7 +649,7 @@ load_stage()
 
         calc_stage_meta(map, &meta);
         meta.stage_height = info.h + (unsigned int)dy;
-        draw_info.message_y = map_height - lines - 1;
+        draw_info.message_y = map_height - lines;
         draw_info.message = info.message;
         cur_player_idx = 0;
         mark_redraw_all();
