@@ -603,13 +603,22 @@ load_stage()
 
         /* move to the center of the screen */
         unsigned int disp_width = map_width * 8 / unit;
-        int d = (disp_width - info.w) / 2;
-        if (d > 0) {
-                memmove(&map[d], map, (size_t)(map_width * map_height - d));
-                memset(map, 0, (size_t)d);
+        int dx = (disp_width - info.w) / 2;
+        int dy = 0;
+        if (info.message == NULL) {
+                unsigned int disp_height = map_height * 8 / unit;
+                dy = (disp_height - info.h) / 2;
         }
+
+        if (dx > 0 || dy > 0) {
+                loc_t loc = genloc(dx, dy);
+                memmove(&map[loc], map,
+                        (size_t)(map_width * map_height - loc));
+                memset(map, 0, (size_t)loc);
+        }
+
         calc_stage_meta(map, &meta);
-        meta.stage_height = info.h;
+        meta.stage_height = info.h + (unsigned int)dy;
         draw_info.message = info.message;
         cur_player_idx = 0;
         mark_redraw_all();
