@@ -99,7 +99,7 @@ move_object(map_t map, loc_t nloc, loc_t oloc)
 struct player *
 player_at(struct stage_meta *meta, loc_t loc)
 {
-        int i;
+        unsigned int i;
         for (i = 0; i < meta->nplayers; i++) {
                 struct player *p = &meta->players[i];
                 if (p->loc == loc) {
@@ -112,8 +112,8 @@ player_at(struct stage_meta *meta, loc_t loc)
 void
 calc_stage_meta(map_t map, struct stage_meta *meta)
 {
-        int nplayers = 0;
-        int nbombs = 0;
+        unsigned int nplayers = 0;
+        unsigned int nbombs = 0;
         loc_t loc;
         for (loc = 0; loc < map_width * map_height; loc++) {
                 uint8_t objidx = map[loc];

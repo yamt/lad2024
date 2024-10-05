@@ -28,7 +28,7 @@ decode_stage(uint32_t stage_number, map_t map, struct map_info *info)
                 x = 0;
                 y++;
         }
-        info->w = xmax;
-        info->h = y;
+        info->w = (unsigned int)xmax;
+        info->h = (unsigned int)y;
         info->message = stage->message;
 }

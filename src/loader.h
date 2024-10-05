@@ -1,8 +1,8 @@
 #include "rule.h"
 
 struct map_info {
-        int w;
-        int h;
+        unsigned int w;
+        unsigned int h;
         const char *message;
 };
 
