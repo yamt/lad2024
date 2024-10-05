@@ -519,6 +519,19 @@ draw_objects()
         }
 }
 
+static void
+bordered_text(const char *msg, int x, int y)
+{
+        uint16_t saved_colors = *DRAW_COLORS;
+        *DRAW_COLORS = 0x01;
+        text(msg, x + 1, y);
+        text(msg, x, y - 1);
+        text(msg, x - 1, y);
+        text(msg, x, y + 1);
+        *DRAW_COLORS = saved_colors;
+        text(msg, x, y);
+}
+
 void
 digits(unsigned int v, int x, int y)
 {
@@ -527,14 +540,14 @@ digits(unsigned int v, int x, int y)
         buf[1] = '0' + ((v / 10) % 10);
         buf[2] = '0' + (v % 10);
         buf[3] = 0;
-        text(buf, x, y);
+        bordered_text(buf, x, y);
 }
 
 void
 draw_message()
 {
         *DRAW_COLORS = 0x04;
-        text("STAGE     (   %)", (20 - 7 - 3 - 6) * 8, 19 * 8);
+        bordered_text("STAGE     (   %)", (20 - 7 - 3 - 6) * 8, 19 * 8);
         if ((state.clear_bitmap[state.cur_stage / 32] &
              1 << (state.cur_stage % 32)) == 0) {
                 *DRAW_COLORS = 0x02;
@@ -556,7 +569,7 @@ draw_message()
 
         unsigned int orig_unit = set_unit(8);
         *DRAW_COLORS = 0x04;
-        text(draw_info.message, 0, start_y * 8);
+        bordered_text(draw_info.message, 0, start_y * 8);
         int x = 0;
         int y = start_y;
         const uint8_t *p = (const uint8_t *)draw_info.message;
