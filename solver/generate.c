@@ -239,6 +239,8 @@ main(int argc, char **argv)
         uint64_t nsucceed = 0;
         uint64_t ngood = 0;
         uint64_t nrefined = 0;
+        unsigned int max_iterations_solved = 0;
+        unsigned int max_iterations_impossible = 0;
         while (1) {
                 map_t map;
                 struct rng rng;
@@ -275,6 +277,9 @@ main(int argc, char **argv)
                         exit(1);
                 }
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
+                        if (max_iterations_solved < solution.iterations) {
+                                max_iterations_solved = solution.iterations;
+                        }
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
                                 struct evaluation ev;
@@ -310,6 +315,10 @@ main(int argc, char **argv)
                                 }
                         }
                 } else if (result == SOLVE_IMPOSSIBLE) {
+                        if (max_iterations_impossible < solution.iterations) {
+                                max_iterations_impossible =
+                                        solution.iterations;
+                        }
                         nimpossible++;
                 } else {
                         ngiveup++;
@@ -318,13 +327,15 @@ main(int argc, char **argv)
                        " (%.3f) simple-impossible %" PRIu64
                        " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
                        " (%.3f) success %" PRIu64 " (%.3f) good %" PRIu64
-                       " (%.3f) refined %" PRIu64 " (%.3f)\n",
+                       " (%.3f) refined %" PRIu64
+                       " (%.3f) max iter %u (succ) / %u (imp)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
                        nsimpleimpossible, (float)nsimpleimpossible / ntotal,
                        nimpossible, (float)nimpossible / ntotal, ngiveup,
                        (float)ngiveup / ntotal, nsucceed,
                        (float)nsucceed / ntotal, ngood, (float)ngood / ntotal,
-                       nrefined, (float)nrefined / ntotal);
+                       nrefined, (float)nrefined / ntotal,
+                       max_iterations_solved, max_iterations_impossible);
                 printf("cleaning\n");
                 solve_cleanup();
                 seed++;
