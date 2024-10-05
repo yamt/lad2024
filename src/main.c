@@ -8,27 +8,27 @@
 #include "rule.h"
 #include "wasm4.h"
 
-/* clang-format off */
-
 enum sprite_idx {
-	SPIDX_NONE = -1,
-	SPIDX_PERSON = 0,
-	SPIDX_PERSON1,
-	SPIDX_PERSON2,
-	SPIDX_ROBOT,
-	SPIDX_ROBOT1,
-	SPIDX_ROBOT2,
-	SPIDX_BOX,
-	SPIDX_BOMB,
-	SPIDX_BOMB1,
-	SPIDX_BOMB2,
-	SPIDX_LIGHT,
-	SPIDX_WALL,
-	SPIDX_END
+        SPIDX_NONE = -1,
+        SPIDX_PERSON = 0,
+        SPIDX_PERSON1,
+        SPIDX_PERSON2,
+        SPIDX_ROBOT,
+        SPIDX_ROBOT1,
+        SPIDX_ROBOT2,
+        SPIDX_BOX,
+        SPIDX_BOMB,
+        SPIDX_BOMB1,
+        SPIDX_BOMB2,
+        SPIDX_LIGHT,
+        SPIDX_WALL,
+        SPIDX_END
 };
 
+/* clang-format off */
+
 const uint8_t sprites_8[] = {
-		/* PERSON */
+        /* PERSON */
         0b00011000,
         0b10011001,
         0b01111110,
@@ -56,7 +56,7 @@ const uint8_t sprites_8[] = {
         0b00100100,
         0b00100100,
 
-		/* ROBOT */
+        /* ROBOT */
         0b00000100,
         0b00111100,
         0b01011010,
@@ -84,7 +84,7 @@ const uint8_t sprites_8[] = {
         0b01111110,
         0b01111110,
 
-		/* BOX */
+        /* BOX */
         0b00000000,
         0b01110110,
         0b11110111,
@@ -122,7 +122,7 @@ const uint8_t sprites_8[] = {
         0b10111101,
         0b01111110,
 
-		/* LIGHT */
+        /* LIGHT */
         0b11111000,
         0b01111110,
         0b11111111,
@@ -132,7 +132,7 @@ const uint8_t sprites_8[] = {
         0b11111110,
         0b11111000,
 
-		/* WALL */
+        /* WALL */
         0b01111110,
         0b11111111,
         0b10000001,
@@ -143,9 +143,9 @@ const uint8_t sprites_8[] = {
         0b01111110,
 };
 
-uint8_t scaled_sprites_16[2 * 16 * SPIDX_END];
-
 /* clang-format on */
+
+uint8_t scaled_sprites_16[2 * 16 * SPIDX_END];
 
 const struct obj {
         enum sprite_idx sprite;
