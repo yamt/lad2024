@@ -241,5 +241,5 @@ solve_cleanup(void)
 
 struct solver_param solver_default_param = {
         .limit = (size_t)8 * 1024 * 1024 * 1024,
-        .max_iterations = 1000000,
+        .max_iterations = 10000000,
 };
