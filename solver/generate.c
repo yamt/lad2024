@@ -117,9 +117,11 @@ generate(struct genctx *ctx)
         }
 #endif
         unsigned int count[END];
+        bool connect = false;
         do {
-                room(ctx, false);
+                room(ctx, connect);
                 count_objects(ctx->map, count);
+                connect = true;
         } while (100 * count[_] / map_size < 30);
 
 #if 0
