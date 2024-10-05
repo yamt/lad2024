@@ -155,7 +155,8 @@ generate(struct genctx *ctx)
 }
 
 bool
-try_refine(map_t map, struct solution *solution, size_t limit)
+try_refine(map_t map, struct solution *solution,
+           const struct solver_param *param)
 {
         map_t orig;
         map_copy(orig, map);
@@ -189,7 +190,7 @@ try_refine(map_t map, struct solution *solution, size_t limit)
         struct node *n = alloc_node();
         map_copy(n->map, map);
         unsigned int result =
-                solve(n, limit, false, &solution_after_refinement);
+                solve(n, param, false, &solution_after_refinement);
         if (result != SOLVE_SOLVED ||
             (!removed &&
              solution_after_refinement.nmoves != solution->nmoves) ||
@@ -262,9 +263,8 @@ main(int argc, char **argv)
                 struct node *n = alloc_node();
                 map_copy(n->map, map);
                 struct solution solution;
-                // size_t limit = (size_t)4 * 1024 * 1024 * 1024; /* 4GB */
-                size_t limit = (size_t)8 * 1024 * 1024 * 1024; /* 8GB */
-                unsigned int result = solve(n, limit, false, &solution);
+                unsigned int result =
+                        solve(n, &solver_default_param, false, &solution);
                 if (result == SOLVE_SOLVED &&
                     validate(map, &solution, false, false)) {
                         /* must be a bug */
@@ -292,7 +292,8 @@ main(int argc, char **argv)
                         }
                         nsucceed++;
                         if (result == SOLVE_SOLVED && score >= 10) {
-                                if (try_refine(map, &solution, limit)) {
+                                if (try_refine(map, &solution,
+                                               &solver_default_param)) {
                                         /*
                                          * XXX: refinement can change the score
                                          */
