@@ -30,7 +30,7 @@ void
 room(struct genctx *ctx, bool connect)
 {
         const struct bb *bb = &ctx->bb;
-        int rw = rng_rand(ctx->rng, 2, 4);
+        int rw = rng_rand(ctx->rng, 1, 5);
         int rh = 6 - rw;
         if (bb->w < rw + 2 || bb->h < rh + 2) {
                 return;
