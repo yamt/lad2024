@@ -267,7 +267,7 @@ struct stage_draw_info {
         const char *message;
 } draw_info;
 
-#define max_stages 200
+#define max_stages 300
 #define save_data_version 1
 struct save_data {
         uint32_t version;
