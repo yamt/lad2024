@@ -603,7 +603,7 @@ draw_message()
 
         unsigned int orig_unit = set_unit(8);
         *DRAW_COLORS = 0x04;
-        bordered_text(draw_info.message, 0, start_y * 8);
+        text(draw_info.message, 0, start_y * 8);
         int x = 0;
         int y = start_y;
         const uint8_t *p = (const uint8_t *)draw_info.message;
