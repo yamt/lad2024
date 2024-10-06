@@ -31,6 +31,11 @@ OBJS += evaluater.o
 OBJS += refine.o
 OBJS += validate.o
 
+ALL_OBJS += ${OBJS}
+ALL_OBJS += ${SOLVER_OBJS}
+ALL_OBJS += ${GENERATOR_OBJS}
+ALL_OBJS += ${RNG_TEST_OBJS}
+
 BINS = solver generator rng_test
 
 .PHONY: all
@@ -57,6 +62,4 @@ rng_test: $(RNG_TEST_OBJS) $(OBJS)
 .PHONY: clean
 clean:
 	rm -f $(BINS)
-	rm -f $(OBJS)
-	rm -f $(SOLVER_OBJS)
-	rm -f $(GENERATOR_OBJS)
+	rm -f $(ALL_OBJS)
