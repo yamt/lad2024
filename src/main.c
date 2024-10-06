@@ -603,7 +603,7 @@ draw_message()
         if (draw_info.message == NULL) {
                 return;
         }
-        tracef("message_y %d", draw_info.message_y);
+        // tracef("message_y %d", draw_info.message_y);
         int start_y = (int)draw_info.message_y;
 
         unsigned int orig_unit = set_unit(8);
@@ -641,7 +641,7 @@ load_stage()
         }
         ASSERT(info.w <= map_width);
         ASSERT(info.h + lines <= map_height);
-        tracef("w %d h %d lines %d", info.w, info.h, lines);
+        // tracef("w %d h %d lines %d", info.w, info.h, lines);
         unsigned int unit = 8;
         if (info.w * 16 / 8 <= map_width &&
             info.h * 16 / 8 + lines <= map_height) {
