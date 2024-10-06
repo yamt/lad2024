@@ -662,6 +662,7 @@ load_stage()
         meta.stage_height = info.h + (unsigned int)dy;
         draw_info.message_y = map_height - lines;
         draw_info.message = info.message;
+        ASSERT(meta.stage_height * unit <= draw_info.message_y * 8);
         cur_player_idx = 0;
         mark_redraw_all();
         moving_step = 0;
