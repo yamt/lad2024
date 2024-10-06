@@ -205,6 +205,8 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                 thresh = last_thresh + 1;
                                 if (thresh > n->steps) {
                                         printf("too many registered nodes\n");
+                                        solution->giveup_reason =
+                                                GIVEUP_MEMORY;
                                         return SOLVE_GIVENUP;
                                 }
                         }
@@ -218,6 +220,7 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                 }
                 if (processed >= param->max_iterations) {
                         printf("giving up\n");
+                        solution->giveup_reason = GIVEUP_ITERATIONS;
                         return SOLVE_GIVENUP;
                 }
         }
