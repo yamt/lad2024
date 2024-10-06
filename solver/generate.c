@@ -289,17 +289,11 @@ main(int argc, char **argv)
                                 score = ev.score;
                         }
                         if (score >= 10) {
-                                char filename[100];
-                                snprintf(filename, sizeof(filename),
-                                         "generated-score-%05u-moves-%03u-"
-                                         "seed-%016" PRIx64 ".c",
-                                         score, solution.nmoves, seed);
-                                dump_map_c(map, filename);
-                                ngood++;
-                        }
-                        nsucceed++;
-                        if (result == SOLVE_SOLVED && score >= 10) {
-                                if (try_refine(map, &solution,
+                                const char *suffix = "";
+                                map_t orig;
+                                map_copy(orig, map);
+                                if (result == SOLVE_SOLVED &&
+                                    try_refine(map, &solution,
                                                &solver_default_param)) {
                                         /*
                                          * XXX: refinement can change the score
@@ -307,12 +301,20 @@ main(int argc, char **argv)
                                         char filename[100];
                                         snprintf(filename, sizeof(filename),
                                                  "generated-score-%05u-moves-%"
-                                                 "03u-seed-%016" PRIx64
-                                                 "-refined.c",
+                                                 "03u-seed-%016" PRIx64 ".c",
                                                  score, solution.nmoves, seed);
                                         dump_map_c(map, filename);
+                                        suffix = ".orig";
                                         nrefined++;
                                 }
+                                char filename[100];
+                                snprintf(filename, sizeof(filename),
+                                         "generated-score-%05u-moves-%03u-"
+                                         "seed-%016" PRIx64 ".c%s",
+                                         score, solution.nmoves, seed, suffix);
+                                dump_map_c(orig, filename);
+                                ngood++;
+                                nsucceed++;
                         }
                 } else if (result == SOLVE_IMPOSSIBLE) {
                         if (max_iterations_impossible < solution.iterations) {
