@@ -663,17 +663,33 @@ load_stage()
                 memset(map, 0, (size_t)loc);
         }
 
+        /*
+         * reset misc global mutables states
+         * XXX maybe it's simpler to group them and reset with a memset.
+         *
+         * frame: no need to reset
+         * need_redraw/redraw_rect: will be set by mark_redraw_all
+         * draw_info: will be set below
+         * state: should not be reset
+         * map: already set
+         * beam_map: will be set by update_beam
+         * rng: no need to reset
+         * bomb_animate_loc: no need to reset
+         */
+        cur_player_idx = 0;
+        moving_step = 0;
+        memset(undos, 0, sizeof(undos));
+        undo_idx = 0;
+        undoing = false;
+        bomb_animate_step = 0;
+
         calc_stage_meta(map, &meta);
         meta.stage_height = info.h + (unsigned int)dy;
         draw_info.message_y = map_height - lines;
         draw_info.message = info.message;
         ASSERT(meta.stage_height * unit <= draw_info.message_y * 8);
-        cur_player_idx = 0;
+
         mark_redraw_all();
-        moving_step = 0;
-        memset(undos, 0, sizeof(undos));
-        undo_idx = 0;
-        undoing = false;
         update_beam();
 }
 
