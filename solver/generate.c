@@ -235,7 +235,8 @@ main(int argc, char **argv)
         uint64_t ngeneratefail = 0;
         uint64_t nsimpleimpossible = 0;
         uint64_t nimpossible = 0;
-        uint64_t ngiveup = 0;
+        uint64_t ngiveup_memory = 0;
+        uint64_t ngiveup_iterations = 0;
         uint64_t nsucceed = 0;
         uint64_t ngood = 0;
         uint64_t nrefined = 0;
@@ -323,21 +324,29 @@ main(int argc, char **argv)
                         }
                         nimpossible++;
                 } else {
-                        ngiveup++;
+                        if (solution.giveup_reason == GIVEUP_MEMORY) {
+                                ngiveup_memory++;
+                        } else {
+                                ngiveup_iterations++;
+                        }
                 }
                 printf("total %" PRIu64 " genfail %" PRIu64
                        " (%.3f) simple-impossible %" PRIu64
-                       " (%.3f) impossible %" PRIu64 " (%.3f) giveup %" PRIu64
-                       " (%.3f) success %" PRIu64 " (%.3f) good %" PRIu64
+                       " (%.3f) impossible %" PRIu64 " (%.3f)"
+                       " giveup (mem) %" PRIu64 " (%.3f)"
+                       " giveup (iter) %" PRIu64 " (%.3f)"
+                       " success %" PRIu64 " (%.3f) good %" PRIu64
                        " (%.3f) refined %" PRIu64
                        " (%.3f) max iter %u (succ) / %u (imp)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
                        nsimpleimpossible, (float)nsimpleimpossible / ntotal,
-                       nimpossible, (float)nimpossible / ntotal, ngiveup,
-                       (float)ngiveup / ntotal, nsucceed,
-                       (float)nsucceed / ntotal, ngood, (float)ngood / ntotal,
-                       nrefined, (float)nrefined / ntotal,
-                       max_iterations_solved, max_iterations_impossible);
+                       nimpossible, (float)nimpossible / ntotal,
+                       ngiveup_memory, (float)ngiveup_memory / ntotal,
+                       ngiveup_iterations, (float)ngiveup_iterations / ntotal,
+                       nsucceed, (float)nsucceed / ntotal, ngood,
+                       (float)ngood / ntotal, nrefined,
+                       (float)nrefined / ntotal, max_iterations_solved,
+                       max_iterations_impossible);
                 printf("cleaning\n");
                 solve_cleanup();
                 seed++;
