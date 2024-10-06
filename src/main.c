@@ -8,6 +8,13 @@
 #include "rule.h"
 #include "wasm4.h"
 
+#define ASSERT(cond)                                                          \
+        do {                                                                  \
+                if (!(cond)) {                                                \
+                        __builtin_trap();                                     \
+                }                                                             \
+        } while (0)
+
 enum sprite_idx {
         SPIDX_NONE = -1,
         SPIDX_PERSON = 0,
@@ -27,7 +34,7 @@ enum sprite_idx {
 
 /* clang-format off */
 
-const uint8_t sprites_8[] = {
+static const uint8_t sprites_8[] = {
         /* PERSON */
         0b00011000,
         0b10011001,
@@ -145,9 +152,7 @@ const uint8_t sprites_8[] = {
 
 /* clang-format on */
 
-uint8_t scaled_sprites_16[2 * 16 * SPIDX_END];
-
-const struct obj {
+static const struct obj {
         enum sprite_idx sprite;
         uint8_t color;
         uint8_t flags;
@@ -212,19 +217,17 @@ const struct obj {
                 },
 };
 
-#define ASSERT(cond)                                                          \
-        do {                                                                  \
-                if (!(cond)) {                                                \
-                        __builtin_trap();                                     \
-                }                                                             \
-        } while (0)
+/* this one is mostly static */
+static uint8_t scaled_sprites_16[2 * 16 * SPIDX_END];
 
-static unsigned int frame = 0;
-
-const uint8_t *sprites[] = {
+static const uint8_t *sprites[] = {
         sprites_8,
         scaled_sprites_16,
 };
+
+/* global mutable states */
+
+static unsigned int frame = 0;
 
 unsigned int scale_idx = 0;
 #define scale(x) ((x) << (scale_idx + 3))
@@ -261,9 +264,9 @@ static struct redraw_rect {
         int ymax;
 } redraw_rect;
 
-struct stage_meta meta;
+static struct stage_meta meta;
 
-struct stage_draw_info {
+static struct stage_draw_info {
         unsigned int message_y;
         const char *message;
 } draw_info;
@@ -277,8 +280,8 @@ struct save_data {
         uint32_t clear_bitmap[(max_stages + 32 - 1) / 32];
 } state;
 
-map_t map;
-map_t beam[2];
+static map_t map;
+static map_t beam[2];
 
 static struct rng rng;
 
@@ -286,6 +289,8 @@ static struct rng rng;
 #define bomb_animate_nframes 5
 static unsigned int bomb_animate_step;
 static loc_t bomb_animate_loc;
+
+/* end of global mutable states */
 
 bool
 is_cur_player(loc_t loc)
