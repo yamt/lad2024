@@ -14,6 +14,10 @@ struct solution {
         struct node_list moves;
         unsigned int nmoves;
         unsigned int iterations;
+        enum giveup_reason {
+                GIVEUP_MEMORY,
+                GIVEUP_ITERATIONS,
+        } giveup_reason;
 };
 
 struct solver_param {
