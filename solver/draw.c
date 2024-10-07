@@ -126,3 +126,27 @@ rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
                 }
         }
 }
+
+void
+hmirror(map_t map, int w, int h)
+{
+        int x;
+        int y;
+        for (y = 0; y < h; y++) {
+                for (x = 0; x < w / 2; x++) {
+                        map[genloc(x, y)] = map[genloc(w - x - 1, y)];
+                }
+        }
+}
+
+void
+vmirror(map_t map, int w, int h)
+{
+        int x;
+        int y;
+        for (y = 0; y < h / 2; y++) {
+                for (x = 0; x < w; x++) {
+                        map[genloc(x, y)] = map[genloc(x, h - y - 1)];
+                }
+        }
+}
