@@ -29,6 +29,7 @@ OBJS += node.o
 OBJS += pool.o
 OBJS += rng.o
 OBJS += solver.o
+OBJS += analyze.o
 OBJS += simplify.o
 OBJS += evaluater.o
 OBJS += refine.o
