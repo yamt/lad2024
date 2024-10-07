@@ -125,6 +125,11 @@ generate(struct genctx *ctx)
         } while (100 * count[_] / map_size < 30);
 
 #if 0
+        hmirror(ctx->map, ctx->bb.w, ctx->bb.h);
+        vmirror(ctx->map, ctx->bb.w, ctx->bb.h);
+#endif
+
+#if 0
         random_ichimatsu(ctx);
 #endif
 
