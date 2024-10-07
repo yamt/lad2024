@@ -78,7 +78,7 @@ forget_old(unsigned int thresh)
                                 break;
                         }
                         LIST_REMOVE(h, n, hashq);
-                        free(n);
+                        free_node(n);
                         removed++;
                 }
         }
@@ -158,7 +158,7 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                             n2->map, beam_map, true);
                                 if (add(n2)) {
                                         duplicated++;
-                                        free(n2);
+                                        free_node(n2);
                                         continue;
                                 }
                                 registered++;
@@ -232,6 +232,9 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
 void
 solve_cleanup(void)
 {
+#if 1
+        free_all_nodes();
+#else
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
                 struct node_list *h = &hash_heads[i];
@@ -239,9 +242,10 @@ solve_cleanup(void)
                 struct node *next;
                 for (n = LIST_FIRST(h); n != NULL; n = next) {
                         next = LIST_NEXT(n, hashq);
-                        free(n);
+                        free_node(n);
                 }
         }
+#endif
 }
 
 struct solver_param solver_default_param = {

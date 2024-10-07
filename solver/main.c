@@ -45,6 +45,7 @@ main(int argc, char **argv)
                 exit(2);
         }
 
+        node_allocator_init();
         if (stage_number > 0) {
                 struct evaluation ev;
                 load_and_evaluate_stage(stage_number, &ev);

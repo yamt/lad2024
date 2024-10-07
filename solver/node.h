@@ -19,7 +19,10 @@ struct node {
 
 LIST_HEAD_NAMED(struct node, node_list);
 
+void node_allocator_init(void);
 struct node *alloc_node(void);
+void free_node(struct node *node);
+void free_all_nodes(void);
 loc_t next_loc(const struct node *n);
 loc_t pushed_obj_loc(const struct node *n);
 

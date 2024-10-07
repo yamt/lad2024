@@ -242,6 +242,7 @@ main(int argc, char **argv)
         uint64_t nrefined = 0;
         unsigned int max_iterations_solved = 0;
         unsigned int max_iterations_impossible = 0;
+        node_allocator_init();
         while (1) {
                 map_t map;
                 struct rng rng;
