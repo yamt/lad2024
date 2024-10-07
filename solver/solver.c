@@ -120,8 +120,19 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
         add(root);
         registered++;
 
+        unsigned int curstep = 0;
+        unsigned int prev_nnodes = 1;
+        unsigned int prev_queued = 1;
         struct node *n;
         while ((n = LIST_FIRST(&todo)) != NULL) {
+                if (n->steps != curstep) {
+                        unsigned int nnodes = queued - prev_queued;
+                        printf("step %u nnodes %u (%.3f)\n", n->steps, nnodes,
+                               (float)nnodes / prev_nnodes);
+                        curstep = n->steps;
+                        prev_nnodes = nnodes;
+                        prev_queued = queued;
+                }
                 LIST_REMOVE(&todo, n, q);
                 struct stage_meta meta;
                 map_t beam_map;
@@ -187,10 +198,12 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                 processed++;
                 if (verbose && (processed % 100000) == 0) {
                         dump_map(n->map);
-                        printf("%u / %u (%u) / %u dup %u (%.3f) step %u\n",
+                        printf("%u / %u (%u) / %u dup %u (%.3f) step %u (%.3f "
+                               "left)\n",
                                processed, queued, queued - processed,
                                registered, duplicated,
-                               (float)duplicated / processed, n->steps);
+                               (float)duplicated / processed, n->steps,
+                               (float)(prev_queued - processed) / prev_nnodes);
                         // dump_hash();
                 }
                 if (registered > limit) {
@@ -210,9 +223,12 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                         return SOLVE_GIVENUP;
                                 }
                         }
-                        printf("removing old nodes (step thresh %u / %u, "
+                        printf("removing old nodes (step thresh %u / %u (%.3f "
+                               "left), "
                                "processed %u)\n",
-                               thresh, n->steps, processed);
+                               thresh, n->steps,
+                               (float)(prev_queued - processed) / prev_nnodes,
+                               processed);
                         unsigned int removed = forget_old(thresh);
                         printf("removed %u / %u nodes\n", removed, registered);
                         registered -= removed;
