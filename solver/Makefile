@@ -26,6 +26,7 @@ OBJS += bb.o
 OBJS += dump.o
 OBJS += draw.o
 OBJS += node.o
+OBJS += pool.o
 OBJS += rng.o
 OBJS += solver.o
 OBJS += simplify.o
