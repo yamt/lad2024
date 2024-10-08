@@ -14,3 +14,4 @@ bool calc_reachable_from_A(const map_t map, const map_t movable,
                            map_t reachable);
 void calc_movable(const map_t map, map_t movable);
 bool is_simple_movable_object(uint8_t objidx);
+bool tsumi(const map_t map);

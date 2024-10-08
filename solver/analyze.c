@@ -25,11 +25,18 @@ visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
 }
 
 void
+update_reachable_from(const map_t map, const map_t movable, loc_t loc,
+                      map_t reachable)
+{
+        visit(map, movable, loc, reachable);
+}
+
+void
 calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                     map_t reachable)
 {
         map_fill(reachable, 0);
-        visit(map, movable, loc, reachable);
+        update_reachable_from(map, movable, loc, reachable);
 }
 
 /*
@@ -50,6 +57,21 @@ calc_reachable_from_A(const map_t map, const map_t movable, map_t reachable)
         }
         calc_reachable_from(map, movable, loc, reachable);
         return false;
+}
+
+void
+calc_reachable_from_any_A(const map_t map, const map_t movable,
+                          map_t reachable)
+{
+        /* XXX cheaper to take stage meta */
+        map_fill(reachable, 0);
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t objidx = map[loc];
+                if (objidx == A) {
+                        update_reachable_from(map, movable, loc, reachable);
+                }
+        }
 }
 
 bool
@@ -162,4 +184,31 @@ calc_movable(const map_t map, map_t movable)
                         }
                 }
         } while (more);
+}
+
+bool
+tsumi(const map_t map)
+{
+        map_t movable;
+        calc_movable(map, movable);
+        map_t reachable;
+        calc_reachable_from_any_A(map, movable, reachable);
+
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t objidx = map[loc];
+                if (objidx == X) {
+                        /*
+                         * note: calc_movable mark an X UNMOVABLE only when
+                         * impossible to be collected.
+                         */
+                        if (movable[loc] == UNMOVABLE) {
+                                return true;
+                        }
+                        if (reachable[loc] == 0) {
+                                return true;
+                        }
+                }
+        }
+        return false;
 }
