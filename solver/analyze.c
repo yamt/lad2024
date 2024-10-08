@@ -57,9 +57,8 @@ is_simple_movable_object(uint8_t objidx)
 {
         /*
          * players can move by themselves.
-         * bomb can be collected.
          */
-        return can_push(objidx) && !is_player(objidx) && objidx != X;
+        return can_push(objidx) && !is_player(objidx);
 }
 
 bool
@@ -104,12 +103,40 @@ calc_movable(const map_t map, map_t movable)
                         }
                         bool might_move = false;
                         enum diridx dir;
-                        for (dir = 0; dir < 2; dir++) {
-                                loc_t d = dirs[dir].loc_diff;
-                                if (!occupied(map, movable, loc + d) &&
-                                    !occupied(map, movable, loc - d)) {
-                                        might_move = true;
-                                        break;
+                        if (objidx == X) {
+                                /*
+                                 * note: X is considerd UNMOVABLE only if
+                                 * surrounded by UNMOVABLE objects
+                                 *
+                                 * eg.
+                                 * _____
+                                 * _BB__
+                                 * _BXB_ all X and B are UNMOVABLE
+                                 * __BB_
+                                 * _____
+                                 *
+                                 * eg.
+                                 * _____
+                                 * _BB__
+                                 * _BXB_ all X and B are MOVABLE
+                                 * _BB__
+                                 * _____
+                                 */
+                                for (dir = 0; dir < 4; dir++) {
+                                        loc_t d = dirs[dir].loc_diff;
+                                        if (!occupied(map, movable, loc + d)) {
+                                                might_move = true;
+                                                break;
+                                        }
+                                }
+                        } else {
+                                for (dir = 0; dir < 2; dir++) {
+                                        loc_t d = dirs[dir].loc_diff;
+                                        if (!occupied(map, movable, loc + d) &&
+                                            !occupied(map, movable, loc - d)) {
+                                                might_move = true;
+                                                break;
+                                        }
                                 }
                         }
                         if (might_move) {
