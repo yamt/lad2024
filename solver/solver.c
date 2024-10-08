@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "analyze.h"
 #include "defs.h"
 #include "dump.h"
 #include "hash.h"
@@ -110,6 +111,7 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
         unsigned int registered = 0;
         unsigned int processed = 0;
         unsigned int duplicated = 0;
+        unsigned int ntsumi = 0;
 
         unsigned int last_thresh = 0;
 
@@ -134,6 +136,10 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                         prev_queued = queued;
                 }
                 LIST_REMOVE(&todo, n, q);
+                if (tsumi(n->map)) {
+                        ntsumi++;
+                        goto skip;
+                }
                 struct stage_meta meta;
                 map_t beam_map;
                 calc_stage_meta(n->map, &meta);
@@ -195,14 +201,16 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                 queued++;
                         }
                 }
+skip:
                 processed++;
                 if (verbose && (processed % 100000) == 0) {
                         dump_map(n->map);
-                        printf("%u / %u (%u) / %u dup %u (%.3f) step %u (%.3f "
+                        printf("%u / %u (%u) / %u dup %u (%.3f) tsumi %u step "
+                               "%u (%.3f "
                                "left)\n",
                                processed, queued, queued - processed,
                                registered, duplicated,
-                               (float)duplicated / processed, n->steps,
+                               (float)duplicated / processed, ntsumi, n->steps,
                                (float)(prev_queued - processed) / prev_nnodes);
                         // dump_hash();
                 }
