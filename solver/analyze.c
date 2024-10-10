@@ -6,10 +6,10 @@
 void
 visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
 {
-        if (reachable[loc]) {
+        if (reachable[loc] != UNREACHABLE) {
                 return;
         }
-        reachable[loc] = 1;
+        reachable[loc] = REACHABLE;
         uint8_t objidx = map[loc];
         if (objidx != _ && movable[loc] == UNMOVABLE) {
                 return;
@@ -35,7 +35,7 @@ void
 calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                     map_t reachable)
 {
-        map_fill(reachable, 0);
+        map_fill(reachable, UNREACHABLE);
         update_reachable_from(map, movable, loc, reachable);
 }
 
@@ -64,7 +64,7 @@ calc_reachable_from_any_A(const map_t map, const map_t movable,
                           map_t reachable)
 {
         /* XXX cheaper to take stage meta */
-        map_fill(reachable, 0);
+        map_fill(reachable, UNREACHABLE);
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
@@ -205,7 +205,7 @@ tsumi(const map_t map)
                         if (movable[loc] == UNMOVABLE) {
                                 return true;
                         }
-                        if (reachable[loc] == 0) {
+                        if (reachable[loc] == UNREACHABLE) {
                                 return true;
                         }
                 }

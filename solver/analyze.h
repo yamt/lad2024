@@ -3,10 +3,21 @@
 #include "defs.h"
 #include "rule.h"
 
-#define UNVISITED 0
-#define VISITED 1
-#define MOVABLE 2
-#define UNMOVABLE 3
+/*
+ * reachability values
+ */
+#define REACHABLE 1
+#define UNREACHABLE 0
+
+/*
+ * "movable" values
+ *
+ * UNMOVABLE doesn't allow false positives.
+ */
+#define UNVISITED 0 /* internal use */
+#define VISITED 1   /* internal use */
+#define MOVABLE 2   /* movable (or collectable for bombs) */
+#define UNMOVABLE 3 /* impossible to move (or collect) */
 
 void calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                          map_t reachable);
