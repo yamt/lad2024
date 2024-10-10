@@ -237,6 +237,7 @@ main(int argc, char **argv)
                 exit(1);
         }
         const unsigned int score_thresh = 200;
+        const unsigned int nmoves_thresh = 50;
         uint64_t seed = random_seed();
         uint64_t ntotal = 0;
         uint64_t ngeneratefail = 0;
@@ -297,7 +298,8 @@ main(int argc, char **argv)
                                        ev.score);
                                 score = ev.score;
                         }
-                        if (score >= score_thresh) {
+                        if (score >= score_thresh ||
+                            solution.nmoves >= nmoves_thresh) {
                                 const char *suffix = "";
                                 map_t orig;
                                 map_copy(orig, map);
