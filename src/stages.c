@@ -113,7 +113,10 @@ const struct stage stages[] = {
         .message =
         "You can select a\n"
         "stage to play with\n"
-        "\x81+\x85 and \x81+\x84.",
+        "\x81+\x85 and \x81+\x84.\n"
+        "\n"
+        "Hold it for a while\n"
+        "to move faster.\n"
     },
 
     {
