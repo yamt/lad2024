@@ -1,11 +1,11 @@
 #include <string.h>
 
+#include "analyze.h"
 #include "defs.h"
 #include "dump.h"
 #include "maputil.h"
 #include "rule.h"
 #include "simplify.h"
-#include "analyze.h"
 
 bool
 simplify_unreachable(map_t map, const map_t movable)
@@ -18,7 +18,7 @@ simplify_unreachable(map_t map, const map_t movable)
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
-                if (objidx != W && !reachable[loc]) {
+                if (objidx != W && reachable[loc] == UNREACHABLE) {
                         map[loc] = W;
                         modified = true;
                 }

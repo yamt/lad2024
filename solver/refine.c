@@ -1,8 +1,8 @@
 #include <assert.h>
 
+#include "analyze.h"
 #include "maputil.h"
 #include "refine.h"
-#include "simplify.h"
 #include "solver.h"
 
 /*
@@ -40,7 +40,7 @@ refine(map_t map, const struct solution *solution)
         do {
                 more = false;
                 for (loc = 0; loc < map_size; loc++) {
-                        if (!reachable[loc]) {
+                        if (reachable[loc] == UNREACHABLE) {
                                 continue;
                         }
                         uint8_t objidx = map[loc];
