@@ -240,9 +240,16 @@ static const uint8_t *sprites[] = {
 
 static unsigned int frame = 0;
 
-unsigned int scale_idx = 0;
-#define scale(x) ((x) << (scale_idx + 3))
-#define sprite(x) (&sprites[scale_idx][(x) << (scale_idx * 2 + 3)])
+static struct proj {
+        unsigned int scale_idx;
+        int x_offset;
+        int y_offset;
+} proj;
+
+#define scale(x) ((x) << (proj.scale_idx + 3))
+#define scale_x(x) (scale(x) + proj.x_offset)
+#define scale_y(y) (scale(y) + proj.y_offset)
+#define sprite(x) (&sprites[proj.scale_idx][(x) << (proj.scale_idx * 2 + 3)])
 
 static unsigned int beamidx = 0;
 static unsigned int cur_player_idx;
@@ -443,7 +450,8 @@ draw_beam()
                                 } else {
                                         *DRAW_COLORS = 1;
                                 }
-                                rect(scale(x), scale(y), scale(1), scale(1));
+                                rect(scale_x(x), scale_y(y), scale(1),
+                                     scale(1));
                         } else {
                                 if (alt) {
                                         *DRAW_COLORS = 3;
@@ -451,11 +459,12 @@ draw_beam()
                                         *DRAW_COLORS = 1;
                                 }
                                 if (horizontal) {
-                                        rect(scale(x) + dx, scale(y),
+                                        rect(scale_x(x) + dx, scale_y(y),
                                              (uint32_t)(scale(1) - dx),
                                              scale(1));
                                 } else {
-                                        rect(scale(x), scale(y) + dy, scale(1),
+                                        rect(scale_x(x), scale_y(y) + dy,
+                                             scale(1),
                                              (uint32_t)(scale(1) - dy));
                                 }
                                 if (cur) {
@@ -464,10 +473,10 @@ draw_beam()
                                         *DRAW_COLORS = 1;
                                 }
                                 if (horizontal) {
-                                        rect(scale(x), scale(y), (uint32_t)dx,
-                                             scale(1));
+                                        rect(scale_x(x), scale_y(y),
+                                             (uint32_t)dx, scale(1));
                                 } else {
-                                        rect(scale(x), scale(y), scale(1),
+                                        rect(scale_x(x), scale_y(y), scale(1),
                                              (uint32_t)dy);
                                 }
                         }
@@ -475,13 +484,13 @@ draw_beam()
         }
 }
 
-static unsigned int
-set_unit(unsigned int n)
+static void
+set_proj(int x, int y, unsigned int n)
 {
         ASSERT(n == 8 || n == 16);
-        unsigned int orig = (scale_idx + 1) * 8;
-        scale_idx = n / 8 - 1;
-        return orig;
+        proj.x_offset = x;
+        proj.y_offset = y;
+        proj.scale_idx = n / 8 - 1;
 }
 
 static void
@@ -530,8 +539,8 @@ draw_object(int x, int y, uint8_t objidx)
                 dx = loc_x(loc_diff);
                 dy = loc_y(loc_diff);
         }
-        blit(sprite((unsigned int)obj->sprite + i), scale(x) + dx,
-             scale(y) + dy, scale(1), scale(1), obj->flags);
+        blit(sprite((unsigned int)obj->sprite + i), scale_x(x) + dx,
+             scale_y(y) + dy, scale(1), scale(1), obj->flags);
 }
 
 void
@@ -593,6 +602,19 @@ count_message_lines(const char *message)
 }
 
 void
+draw_outside(void)
+{
+        if (proj.x_offset > 0) {
+                *DRAW_COLORS = 1;
+                rect(0, 0, (unsigned int)proj.x_offset, map_height * 20);
+        }
+        if (proj.y_offset > 0) {
+                *DRAW_COLORS = 1;
+                rect(0, 0, map_width * 8, (unsigned int)proj.y_offset);
+        }
+}
+
+void
 draw_message()
 {
         *DRAW_COLORS = 0x04;
@@ -617,7 +639,8 @@ draw_message()
         // tracef("message_y %d", draw_info.message_y);
         int start_y = (int)draw_info.message_y;
 
-        unsigned int orig_unit = set_unit(8);
+        struct proj saved_proj = proj;
+        set_proj(0, 0, 8);
         *DRAW_COLORS = 0x04;
         text(draw_info.message, 0, start_y * 8);
         int x = 0;
@@ -636,7 +659,7 @@ draw_message()
                 }
                 x++;
         }
-        set_unit(orig_unit);
+        proj = saved_proj;
 }
 
 void
@@ -654,19 +677,42 @@ load_stage()
         ASSERT(info.h + lines <= map_height);
         // tracef("w %d h %d lines %d", info.w, info.h, lines);
         unsigned int unit = 8;
-        if (info.w * 16 / 8 <= map_width &&
-            info.h * 16 / 8 + lines <= map_height) {
+        int xoff = 0;
+        int yoff = 0;
+        if (info.w * 16 / 8 <= map_width + 2 &&
+            ((lines != 0 && info.h * 16 / 8 + lines <= map_height) ||
+             (lines == 0 && info.h * 16 / 8 + lines <= map_height + 2))) {
+                if (info.w * 16 / 8 > map_width) {
+                        xoff = -8;
+                } else if (((map_width * 8 / 16 - info.w) % 2) == 1) {
+                        xoff = 8;
+                }
+                if (info.h * 16 / 8 + lines > map_height) {
+                        yoff = -8;
+                } else if ((((map_height - lines) * 8 / 16 - info.h) % 2) ==
+                           1) {
+                        yoff = 8;
+                }
                 unit = 16;
         }
-        set_unit(unit);
+        set_proj(xoff, yoff, unit);
 
-        /* move to the center of the screen */
-        unsigned int disp_width = map_width * 8 / unit;
-        unsigned int disp_height = (map_height - lines) * 8 / unit;
-        int dx = (disp_width - info.w) / 2;
-        int dy = 0;
-        dy = (disp_height - info.h) / 2;
-
+        /*
+         * move to the center of the screen
+         *
+         * we do this way instead of using larger x/y offset to set_proj
+         * because this logic predates set_proj offset. probably we can
+         * simplify this a bit.
+         */
+        unsigned int disp_width =
+                (unsigned int)(map_width * 8 - xoff * 2) / unit;
+        unsigned int disp_height =
+                (unsigned int)((int)(map_height - lines) * 8 - yoff * 2) /
+                unit;
+        int dx = (int)(disp_width - info.w) / 2;
+        int dy = (int)(disp_height - info.h) / 2;
+        ASSERT(dx < map_width);
+        ASSERT(dy < map_height);
         if (dx > 0 || dy > 0) {
                 loc_t loc = genloc(dx, dy);
                 memmove(&map[loc], map,
@@ -698,7 +744,15 @@ load_stage()
         meta.stage_height = info.h + (unsigned int)dy;
         draw_info.message_y = map_height - lines;
         draw_info.message = info.message;
-        ASSERT(meta.stage_height * unit <= draw_info.message_y * 8);
+#if 0
+        tracef("stage %d h %d lines %d stage_height %d unit %d yoff %d "
+               "message_y %d",
+               state.cur_stage + 1, info.h, lines, meta.stage_height, unit,
+               yoff, draw_info.message_y);
+#endif
+        ASSERT(draw_info.message == NULL ||
+               (int)(meta.stage_height * unit) + yoff <=
+                       (int)draw_info.message_y * 8);
 
         mark_redraw_all();
         update_beam();
@@ -981,6 +1035,7 @@ update()
         draw_beam();
         draw_objects();
         if ((need_redraw & MESSAGE) != 0) {
+                draw_outside(); /* abuse MESSAGE */
                 draw_message();
         }
 
