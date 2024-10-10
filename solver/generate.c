@@ -323,8 +323,8 @@ main(int argc, char **argv)
                                          score, solution.nmoves, seed, suffix);
                                 dump_map_c(orig, filename);
                                 ngood++;
-                                nsucceed++;
                         }
+                        nsucceed++;
                 } else if (result == SOLVE_IMPOSSIBLE) {
                         if (max_iterations_impossible < solution.iterations) {
                                 max_iterations_impossible =
