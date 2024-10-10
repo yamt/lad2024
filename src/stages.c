@@ -70,7 +70,9 @@ const struct stage stages[] = {
         C_A".\n"
         "\n"
         C_A" can push objects\n"
-        "like "C_R" and other "C_A".",
+        "like "C_R" and other "C_A".\n"
+        "\n"
+        "\x81+\x87 to undo.",
     },
 
     {
