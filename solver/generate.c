@@ -235,6 +235,7 @@ main(int argc, char **argv)
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
+        const unsigned int score_thresh = 200;
         uint64_t seed = random_seed();
         uint64_t ntotal = 0;
         uint64_t ngeneratefail = 0;
@@ -295,7 +296,7 @@ main(int argc, char **argv)
                                        ev.score);
                                 score = ev.score;
                         }
-                        if (score >= 10) {
+                        if (score >= score_thresh) {
                                 const char *suffix = "";
                                 map_t orig;
                                 map_copy(orig, map);
