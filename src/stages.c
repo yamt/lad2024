@@ -33,13 +33,13 @@ const struct stage stages[] = {
 
     {
         .data = (const uint8_t[]){
-            _, _, W, W, W, END,
-            _, W, _, _, X, W, END,
-            W, R, _, X, _, X, W, END,
-            W, _, X, _, A, _, W, END,
-            W, X, _, X, _, L, W, END,
-            _, W, _, _, U, W, END,
-            _, _, W, W, W, END,
+            _, _, W, W, W, W, W, END,
+            _, W, _, _, _, _, D, W, END,
+            W, R, _, _, X, _, _, X, W, END,
+            W, _, X, _, _, _, A, _, W, END,
+            W, X, _, _, X, _, _, L, W, END,
+            _, W, _, _, U, _, X, W, END,
+            _, _, W, W, W, W, W, END,
             END,
         },
         .message =
