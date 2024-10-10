@@ -27,7 +27,7 @@ struct genctx {
 };
 
 void
-room(struct genctx *ctx, bool connect)
+room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
         const struct bb *bb = &ctx->bb;
         int rw = rng_rand(ctx->rng, 1, 5);
@@ -39,8 +39,9 @@ room(struct genctx *ctx, bool connect)
         do {
                 int rx = rng_rand(ctx->rng, bb->x + 1, bb->x + bb->w - rw - 1);
                 int ry = rng_rand(ctx->rng, bb->y + 1, bb->y + bb->h - rh - 1);
-                if (!connect ||
-                    anyeq(ctx->map, rx - 1, ry - 1, rw + 2, rh + 2, _)) {
+                if ((!connect ||
+                     anyeq(ctx->map, rx - 1, ry - 1, rw + 2, rh + 2, _)) &&
+                    (!avoid_overlap || !anyeq(ctx->map, rx, ry, rw, rh, _))) {
                         rect(ctx->map, rx, ry, rw, rh, _);
                         break;
                 }
@@ -113,13 +114,13 @@ generate(struct genctx *ctx)
 #if 0
         n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
-                room(ctx, i > 0);
+                room(ctx, false, i > 0);
         }
 #endif
         unsigned int count[END];
         bool connect = false;
         do {
-                room(ctx, connect);
+                room(ctx, true, connect);
                 count_objects(ctx->map, count);
                 connect = true;
         } while (100 * count[_] / map_size < 30);
