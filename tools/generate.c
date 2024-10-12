@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "analyze.h"
 #include "bb.h"
 #include "defs.h"
 #include "draw.h"
@@ -242,6 +243,7 @@ main(int argc, char **argv)
         uint64_t ntotal = 0;
         uint64_t ngeneratefail = 0;
         uint64_t nsimpleimpossible = 0;
+        uint64_t ntsumi = 0;
         uint64_t nimpossible = 0;
         uint64_t ngiveup_memory = 0;
         uint64_t ngiveup_iterations = 0;
@@ -269,6 +271,11 @@ main(int argc, char **argv)
                 align_to_top_left(map);
                 if (simple_impossible_check(map)) {
                         nsimpleimpossible++;
+                        seed++;
+                        continue;
+                }
+                if (tsumi(map)) {
+                        ntsumi++;
                         seed++;
                         continue;
                 }
@@ -340,23 +347,24 @@ main(int argc, char **argv)
                                 ngiveup_iterations++;
                         }
                 }
-                printf("total %" PRIu64 " genfail %" PRIu64
-                       " (%.3f) simple-impossible %" PRIu64
-                       " (%.3f) impossible %" PRIu64 " (%.3f)"
-                       " giveup (mem) %" PRIu64 " (%.3f)"
-                       " giveup (iter) %" PRIu64 " (%.3f)"
-                       " success %" PRIu64 " (%.3f) good %" PRIu64
-                       " (%.3f) refined %" PRIu64
-                       " (%.3f) max iter %u (succ) / %u (imp)\n",
+                printf("total %" PRIu64 " genfail %" PRIu64 " (%.3f)\n"
+                       "simple-impossible %" PRIu64 " (%.3f)"
+                       " tsumi %" PRIu64 " (%.3f)"
+                       " impossible %" PRIu64 " (%.3f)\n"
+                       "giveup (mem) %" PRIu64 " (%.3f)"
+                       " giveup (iter) %" PRIu64 " (%.3f)\n"
+                       "success %" PRIu64 " (%.3f) good %" PRIu64 " (%.3f)"
+                       " refined %" PRIu64 " (%.3f)\n"
+                       "max iter %u (succ) / %u (imp)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
                        nsimpleimpossible, (float)nsimpleimpossible / ntotal,
-                       nimpossible, (float)nimpossible / ntotal,
-                       ngiveup_memory, (float)ngiveup_memory / ntotal,
-                       ngiveup_iterations, (float)ngiveup_iterations / ntotal,
-                       nsucceed, (float)nsucceed / ntotal, ngood,
-                       (float)ngood / ntotal, nrefined,
-                       (float)nrefined / ntotal, max_iterations_solved,
-                       max_iterations_impossible);
+                       ntsumi, (float)ntsumi / ntotal, nimpossible,
+                       (float)nimpossible / ntotal, ngiveup_memory,
+                       (float)ngiveup_memory / ntotal, ngiveup_iterations,
+                       (float)ngiveup_iterations / ntotal, nsucceed,
+                       (float)nsucceed / ntotal, ngood, (float)ngood / ntotal,
+                       nrefined, (float)nrefined / ntotal,
+                       max_iterations_solved, max_iterations_impossible);
                 printf("cleaning\n");
                 solve_cleanup();
                 seed++;
