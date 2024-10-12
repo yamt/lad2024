@@ -534,7 +534,7 @@ draw_object(int x, int y, uint8_t objidx)
         }
         if ((is_player(objidx) || can_push(objidx)) && is_moving(loc)) {
                 const struct dir *dir = &dirs[moving_dir];
-                int prop = 8 * (moving_nsteps - moving_step) / moving_nsteps;
+                int prop = scale(moving_nsteps - moving_step) / moving_nsteps;
                 int loc_diff = -dir->loc_diff * prop;
                 dx = loc_x(loc_diff);
                 dy = loc_y(loc_diff);
