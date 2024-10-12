@@ -124,7 +124,8 @@ calc_movable(const map_t map, map_t movable)
                                 more = true;
                                 continue;
                         }
-                        bool might_move = false;
+                        bool might_push = false;
+                        bool might_collect = false;
                         enum diridx dir;
                         if (objidx == X) {
                                 /*
@@ -148,22 +149,27 @@ calc_movable(const map_t map, map_t movable)
                                 for (dir = 0; dir < 4; dir++) {
                                         loc_t d = dirs[dir].loc_diff;
                                         if (!occupied(map, movable, loc + d)) {
-                                                might_move = true;
-                                                break;
-                                        }
-                                }
-                        } else {
-                                for (dir = 0; dir < 2; dir++) {
-                                        loc_t d = dirs[dir].loc_diff;
-                                        if (!occupied(map, movable, loc + d) &&
-                                            !occupied(map, movable, loc - d)) {
-                                                might_move = true;
+                                                might_collect = true;
                                                 break;
                                         }
                                 }
                         }
-                        if (might_move) {
+                        for (dir = 0; dir < 2; dir++) {
+                                loc_t d = dirs[dir].loc_diff;
+                                if (!occupied(map, movable, loc + d) &&
+                                    !occupied(map, movable, loc - d)) {
+                                        might_push = true;
+                                        break;
+                                }
+                        }
+                        if (might_push || might_collect) {
                                 movable[loc] = MOVABLE;
+                                if (might_push) {
+                                        movable[loc] |= PUSHABLE;
+                                }
+                                if (might_push) {
+                                        movable[loc] |= COLLECTABLE;
+                                }
                                 /*
                                  * note: mark neighbors unvisited.
                                  * this might effectively degrade them
@@ -246,13 +252,7 @@ calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
                         continue;
                 }
                 enum diridx dir;
-                /*
-                 * XXX notyet; we don't mark X UNMOVABLE unless
-                 * it's obviously uncollectable. maybe we shoud
-                 * distinguish collectability from pushability.
-                 */
-#if 0
-                if (movable[loc] == UNMOVABLE) {
+                if ((movable[loc] & PUSHABLE) == 0) {
                         /*
                          * the easy case.
                          */
@@ -264,7 +264,6 @@ calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
                         }
                         continue;
                 }
-#endif
                 for (dir = 0; dir < 4; dir++) {
                         loc_t d = dirs[dir].loc_diff;
                         loc_t d2 = dirs[(dir + 1) % 4].loc_diff;
