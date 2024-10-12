@@ -8,12 +8,8 @@
 #include "simplify.h"
 
 bool
-simplify_unreachable(map_t map, const map_t movable)
+turn_unreachable_to_W(map_t map, const map_t reachable)
 {
-        map_t reachable;
-        if (calc_reachable_from_A(map, movable, reachable)) {
-                return false;
-        }
         bool modified = false;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
@@ -68,9 +64,11 @@ simplify(map_t map)
 {
         map_t movable;
         calc_movable(map, movable);
-
         turn_unmovable_to_W(map, movable);
-        simplify_unreachable(map, movable);
+        map_t reachable;
+        if (!calc_reachable_from_A(map, movable, reachable)) {
+                turn_unreachable_to_W(map, reachable);
+        }
 
         /*
          * remove redundant W outside of the map
