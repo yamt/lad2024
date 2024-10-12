@@ -167,7 +167,7 @@ calc_movable(const map_t map, map_t movable)
                                 /*
                                  * note: mark neighbors unvisited.
                                  * this might effectively degrade them
-                                 * from 3 to 2.
+                                 * from UNMOVABLE to MOVABLE.
                                  */
                                 for (dir = 0; dir < 4; dir++) {
                                         loc_t d = dirs[dir].loc_diff;
@@ -176,7 +176,10 @@ calc_movable(const map_t map, map_t movable)
                                                 continue;
                                         }
                                         if (movable[nloc] == UNMOVABLE) {
-                                                movable[nloc] = 0;
+                                                /*
+                                                 * need to investigate again
+                                                 */
+                                                movable[nloc] = UNVISITED;
                                                 more = true;
                                         }
                                 }
@@ -201,7 +204,7 @@ tsumi(const map_t map)
                 if (objidx == X) {
                         /*
                          * note: calc_movable mark an X UNMOVABLE only when
-                         * impossible to be collected.
+                         * it's impossible to be collected.
                          */
                         if (movable[loc] == UNMOVABLE) {
                                 return true;
