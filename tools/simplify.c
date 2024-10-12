@@ -72,7 +72,7 @@ simplify(map_t map)
 
         /*
          * remove redundant W outside of the map
-         * REVISIT: maybe it's simpler to unify with simplify_unreachable
+         * REVISIT: maybe it's simpler to unify with turn_unreachable_to_W
          */
         struct size size;
         measure_size(map, &size);
