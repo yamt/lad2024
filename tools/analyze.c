@@ -9,11 +9,12 @@ visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
         if (reachable[loc] != UNREACHABLE) {
                 return;
         }
-        reachable[loc] = REACHABLE;
         uint8_t objidx = map[loc];
         if (objidx != _ && movable[loc] == UNMOVABLE) {
+                reachable[loc] = REACHABLE_WALL;
                 return;
         }
+        reachable[loc] = REACHABLE;
         enum diridx dir;
         for (dir = 0; dir < 4; dir++) {
                 loc_t nloc = loc + dirs[dir].loc_diff;

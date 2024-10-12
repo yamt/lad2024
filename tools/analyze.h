@@ -7,6 +7,7 @@
  * reachability values
  */
 #define REACHABLE 1
+#define REACHABLE_WALL 2 /* an unmovable object acting as a wall */
 #define UNREACHABLE 0
 
 /*
