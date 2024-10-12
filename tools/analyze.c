@@ -218,21 +218,21 @@ calc_movable(const map_t map, map_t movable)
 
 bool
 surrounded_dir(const map_t map, const map_t movable, loc_t loc, loc_t d1,
-               loc_t d2)
+               loc_t d2, bool easy)
 {
         while (true) {
-                loc_t nloc;
-
-                nloc = loc + d1;
-                if (in_map(nloc) && !occupied(map, movable, nloc)) {
+                loc_t nloc2 = loc + d2;
+                if (occupied(map, movable, nloc2)) {
+                        return true;
+                }
+                loc_t nloc1 = nloc2 + d1;
+                if (!occupied(map, movable, nloc1)) {
                         break;
                 }
-                nloc = loc + d2;
-                if (in_map(nloc) && !occupied(map, movable, nloc)) {
-                        loc = nloc;
-                        continue;
+                if (easy) {
+                        return true;
                 }
-                return true;
+                loc = nloc2;
         }
         return false;
 }
@@ -252,26 +252,19 @@ calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
                         continue;
                 }
                 enum diridx dir;
-                if ((movable[loc] & PUSHABLE) == 0) {
-                        /*
-                         * the easy case.
-                         */
-                        for (dir = 0; dir < 4; dir++) {
-                                loc_t nloc = loc + dirs[dir].loc_diff;
-                                if (occupied(map, movable, nloc)) {
-                                        surrounded[loc] |= SUR(dir);
-                                }
-                        }
-                        continue;
-                }
+                bool easy = (movable[loc] & PUSHABLE) == 0;
                 for (dir = 0; dir < 4; dir++) {
                         loc_t d = dirs[dir].loc_diff;
+                        loc_t nloc = loc + d;
+                        if (!occupied(map, movable, nloc)) {
+                                continue;
+                        }
                         loc_t d2 = dirs[(dir + 1) % 4].loc_diff;
-                        if (!surrounded_dir(map, movable, loc, d, d2)) {
+                        if (!surrounded_dir(map, movable, loc, d, d2, easy)) {
                                 continue;
                         }
                         loc_t d3 = dirs[(dir + 3) % 4].loc_diff;
-                        if (!surrounded_dir(map, movable, loc, d, d3)) {
+                        if (!surrounded_dir(map, movable, loc, d, d3, easy)) {
                                 continue;
                         }
                         surrounded[loc] |= SUR(dir);
