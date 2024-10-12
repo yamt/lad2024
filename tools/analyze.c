@@ -167,7 +167,7 @@ calc_movable(const map_t map, map_t movable)
                                 if (might_push) {
                                         movable[loc] |= PUSHABLE;
                                 }
-                                if (might_push) {
+                                if (might_collect) {
                                         movable[loc] |= COLLECTABLE;
                                 }
                                 /*
