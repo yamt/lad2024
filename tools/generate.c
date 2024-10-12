@@ -30,8 +30,8 @@ void
 room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
         const struct bb *bb = &ctx->bb;
-        int rw = rng_rand(ctx->rng, 1, 5);
-        int rh = 6 - rw;
+        int rw = rng_rand(ctx->rng, 1, 4);
+        int rh = 5 - rw;
         if (bb->w < rw + 2 || bb->h < rh + 2) {
                 return;
         }
