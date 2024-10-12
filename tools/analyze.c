@@ -10,7 +10,7 @@ visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
                 return;
         }
         uint8_t objidx = map[loc];
-        if (objidx != _ && movable[loc] == UNMOVABLE) {
+        if (objidx != _ && is_UNMOVABLE(movable[loc])) {
                 reachable[loc] = REACHABLE_WALL;
                 return;
         }
@@ -94,7 +94,7 @@ occupied(const map_t map, const map_t movable, loc_t loc)
         if (objidx == W) {
                 return true;
         }
-        if (is_simple_movable_object(objidx) && movable[loc] != MOVABLE) {
+        if (is_simple_movable_object(objidx) && !is_MOVABLE(movable[loc])) {
                 return true;
         }
         return false;
@@ -110,7 +110,7 @@ calc_movable(const map_t map, map_t movable)
                 more = false;
                 loc_t loc;
                 for (loc = 0; loc < map_size; loc++) {
-                        if (movable[loc] != 0) {
+                        if ((movable[loc]) != UNVISITED) {
                                 continue;
                         }
                         uint8_t objidx = map[loc];
@@ -175,7 +175,7 @@ calc_movable(const map_t map, map_t movable)
                                         if (!in_map(nloc)) {
                                                 continue;
                                         }
-                                        if (movable[nloc] == UNMOVABLE) {
+                                        if (is_UNMOVABLE(movable[nloc])) {
                                                 /*
                                                  * need to investigate again
                                                  */

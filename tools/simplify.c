@@ -35,7 +35,7 @@ turn_unmovable_to_W(map_t map, const map_t movable)
                 if (!is_simple_movable_object(objidx)) {
                         continue;
                 }
-                if (movable[loc] != UNMOVABLE) {
+                if (!is_UNMOVABLE(movable[loc])) {
                         continue;
                 }
                 if (is_light(objidx)) {
@@ -46,7 +46,7 @@ turn_unmovable_to_W(map_t map, const map_t movable)
                          * UU
                          */
                         loc_t nloc = loc + dirs[light_dir(objidx)].loc_diff;
-                        if (!in_map(nloc) || (movable[nloc] == UNMOVABLE &&
+                        if (!in_map(nloc) || (is_MOVABLE(movable[nloc]) &&
                                               block_beam(map[nloc]))) {
                                 map[loc] = W;
                                 modified = true;

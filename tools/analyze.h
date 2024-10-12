@@ -20,6 +20,9 @@
 #define MOVABLE 2   /* movable (or collectable for bombs) */
 #define UNMOVABLE 3 /* impossible to move (or collect) */
 
+#define is_MOVABLE(x) ((x) == MOVABLE)
+#define is_UNMOVABLE(x) ((x) == UNMOVABLE)
+
 void calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                          map_t reachable);
 bool calc_reachable_from_A(const map_t map, const map_t movable,
