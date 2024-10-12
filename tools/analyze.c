@@ -190,6 +190,96 @@ calc_movable(const map_t map, map_t movable)
         } while (more);
 }
 
+/*
+ * _W___
+ * W____
+ * WX___ X is SUR(LEFT).  it can't be collected with LIGHT(RIGHT).
+ * W____
+ * _WW__
+ *
+ * W____
+ * WX___ X is SUR(LEFT)|SUR(DOWN).  you need LIGHT(LEFT) or LIGHT(DOWN).
+ * _WW__ this is an easy case as the X is UNMOVABLE.
+ *
+ * note: if X is SUR(dir), it can't be collected with LIGHT(opposite(dir)).
+ * ie. you need a light with other dir in the map.
+ */
+
+#define SUR(dir) DIRBIT(dir)
+#define DIRBIT(dir) (1U << (dir))
+#define LIGHT(dir) (L + (dir))
+#define opposite(dir) (((dir) + 2) % 4)
+
+bool
+surrounded_dir(const map_t map, const map_t movable, loc_t loc, loc_t d1,
+               loc_t d2)
+{
+        while (true) {
+                loc_t nloc;
+
+                nloc = loc + d1;
+                if (in_map(nloc) && !occupied(map, movable, nloc)) {
+                        break;
+                }
+                nloc = loc + d2;
+                if (in_map(nloc) && !occupied(map, movable, nloc)) {
+                        loc = nloc;
+                        continue;
+                }
+                return true;
+        }
+        return false;
+}
+
+void
+calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
+{
+        map_fill(surrounded, 0);
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t objidx = map[loc];
+                /*
+                 * for now, we only care X.
+                 * can this be useful for other objects?
+                 */
+                if (objidx != X) {
+                        continue;
+                }
+                enum diridx dir;
+                /*
+                 * XXX notyet; we don't mark X UNMOVABLE unless
+                 * it's obviously uncollectable. maybe we shoud
+                 * distinguish collectability from pushability.
+                 */
+#if 0
+                if (movable[loc] == UNMOVABLE) {
+                        /*
+                         * the easy case.
+                         */
+                        for (dir = 0; dir < 4; dir++) {
+                                loc_t nloc = loc + dirs[dir].loc_diff;
+                                if (occupied(map, movable, nloc)) {
+                                        surrounded[loc] |= SUR(dir);
+                                }
+                        }
+                        continue;
+                }
+#endif
+                for (dir = 0; dir < 4; dir++) {
+                        loc_t d = dirs[dir].loc_diff;
+                        loc_t d2 = dirs[(dir + 1) % 4].loc_diff;
+                        if (!surrounded_dir(map, movable, loc, d, d2)) {
+                                continue;
+                        }
+                        loc_t d3 = dirs[(dir + 3) % 4].loc_diff;
+                        if (!surrounded_dir(map, movable, loc, d, d3)) {
+                                continue;
+                        }
+                        surrounded[loc] |= SUR(dir);
+                }
+        }
+}
+
 bool
 tsumi(const map_t map)
 {
@@ -197,6 +287,10 @@ tsumi(const map_t map)
         calc_movable(map, movable);
         map_t reachable;
         calc_reachable_from_any_A(map, movable, reachable);
+        map_t surrounded;
+        calc_surrounded(map, movable, surrounded);
+        unsigned int counts[END];
+        count_objects(map, counts);
 
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
@@ -211,6 +305,23 @@ tsumi(const map_t map)
                         }
                         if (reachable[loc] == UNREACHABLE) {
                                 return true;
+                        }
+                        uint8_t sur = surrounded[loc];
+                        if (sur != 0) {
+                                enum diridx dir;
+                                for (dir = 0; dir < 4; dir++) {
+                                        if ((sur & SUR(dir)) != 0) {
+                                                continue;
+                                        }
+                                        if (counts[LIGHT(opposite(dir))] ==
+                                            0) {
+                                                continue;
+                                        }
+                                        break;
+                                }
+                                if (dir >= 4) {
+                                        return true;
+                                }
                         }
                 }
         }
