@@ -19,9 +19,11 @@
 #define VISITED 1   /* internal use */
 #define MOVABLE 2   /* movable (or collectable for bombs) */
 #define UNMOVABLE 3 /* impossible to move (or collect) */
+#define PUSHABLE 0x10
+#define COLLECTABLE 0x20
 
-#define is_MOVABLE(x) ((x) == MOVABLE)
-#define is_UNMOVABLE(x) ((x) == UNMOVABLE)
+#define is_MOVABLE(x) (((x) & 0xf) == MOVABLE)
+#define is_UNMOVABLE(x) (((x) & 0xf) == UNMOVABLE)
 
 void calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                          map_t reachable);
