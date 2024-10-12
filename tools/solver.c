@@ -189,7 +189,9 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                         solution->iterations = processed;
                                         if (last_thresh) {
                                                 dump_map(n2->map);
-                                                printf("proven solvable\n");
+                                                printf("proven solvable "
+                                                       "(steps=%u)\n",
+                                                       solution->nmoves);
                                                 return SOLVE_SOLVABLE;
                                         }
                                         printf("solved!\n");
