@@ -30,6 +30,10 @@ occupied(const map_t map, const map_t movable, loc_t loc)
         if (objidx == W) {
                 return true;
         }
+        /*
+         * NOTE: this function is also used by calc_movable itself.
+         * in that case, !is_MOVABLE here means UNMOVABLE or UNVISITED.
+         */
         if (is_simple_movable_object(objidx) && !is_MOVABLE(movable[loc])) {
                 return true;
         }
