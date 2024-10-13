@@ -422,10 +422,12 @@ tsumi(const map_t map)
         calc_movable(map, movable);
         map_t reachable;
         calc_reachable_from_any_A(map, movable, reachable);
+#if 0
         map_t surrounded;
         calc_surrounded(map, movable, surrounded);
         unsigned int counts[END];
         count_objects(map, counts);
+#endif
 
         map_t light_reachable[4];
         enum diridx dir;
@@ -462,6 +464,7 @@ tsumi(const map_t map)
                         if (reachable[loc] == UNREACHABLE) {
                                 return true;
                         }
+#if 0
                         uint8_t sur = surrounded[loc];
                         if (sur != 0) {
                                 enum diridx dir;
@@ -479,6 +482,7 @@ tsumi(const map_t map)
                                         return true;
                                 }
                         }
+#endif
                         map_t bomb_reachable;
                         map_fill(bomb_reachable, UNREACHABLE);
                         update_reachable_by_push_from(map, movable, loc,
