@@ -227,6 +227,16 @@ random_seed(void)
 int
 main(int argc, char **argv)
 {
+        bool seed_specified = false;
+        uint64_t seed;
+        if (argc == 2) {
+                char *ep;
+                seed = strtoumax(argv[1], &ep, 16);
+                seed_specified = true;
+        }
+        if (!seed_specified) {
+                seed = random_seed();
+        }
         struct genctx ctx;
         ctx.bb.x = 0;
         ctx.bb.y = 0;
@@ -239,7 +249,6 @@ main(int argc, char **argv)
         }
         const unsigned int score_thresh = 200;
         const unsigned int nmoves_thresh = 50;
-        uint64_t seed = random_seed();
         uint64_t ntotal = 0;
         uint64_t ngeneratefail = 0;
         uint64_t nsimpleimpossible = 0;
@@ -253,7 +262,7 @@ main(int argc, char **argv)
         unsigned int max_iterations_solved = 0;
         unsigned int max_iterations_impossible = 0;
         node_allocator_init();
-        while (1) {
+        do {
                 map_t map;
                 struct rng rng;
                 rng_init(&rng, seed);
@@ -368,5 +377,5 @@ main(int argc, char **argv)
                 printf("cleaning\n");
                 solve_cleanup();
                 seed++;
-        }
+        } while (!seed_specified);
 }
