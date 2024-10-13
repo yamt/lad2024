@@ -3,14 +3,44 @@
 #include "maputil.h"
 #include "rule.h"
 
+bool
+is_simple_movable_object(uint8_t objidx)
+{
+        /*
+         * players can move by themselves.
+         */
+        return can_push(objidx) && !is_player(objidx);
+}
+
+/*
+ * return if the specified location is permanently occupied.
+ *
+ * false-positive is not ok
+ * false-negative is ok
+ */
+bool
+occupied(const map_t map, const map_t movable, loc_t loc)
+{
+        if (!in_map(loc)) {
+                return true;
+        }
+        uint8_t objidx = map[loc];
+        if (objidx == W) {
+                return true;
+        }
+        if (is_simple_movable_object(objidx) && !is_MOVABLE(movable[loc])) {
+                return true;
+        }
+        return false;
+}
+
 void
 visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
 {
         if (reachable[loc] != UNREACHABLE) {
                 return;
         }
-        uint8_t objidx = map[loc];
-        if (objidx != _ && is_UNMOVABLE(movable[loc])) {
+        if (occupied(map, movable, loc)) {
                 reachable[loc] = REACHABLE_WALL;
                 return;
         }
@@ -73,31 +103,6 @@ calc_reachable_from_any_A(const map_t map, const map_t movable,
                         update_reachable_from(map, movable, loc, reachable);
                 }
         }
-}
-
-bool
-is_simple_movable_object(uint8_t objidx)
-{
-        /*
-         * players can move by themselves.
-         */
-        return can_push(objidx) && !is_player(objidx);
-}
-
-bool
-occupied(const map_t map, const map_t movable, loc_t loc)
-{
-        if (!in_map(loc)) {
-                return true;
-        }
-        uint8_t objidx = map[loc];
-        if (objidx == W) {
-                return true;
-        }
-        if (is_simple_movable_object(objidx) && !is_MOVABLE(movable[loc])) {
-                return true;
-        }
-        return false;
 }
 
 void
