@@ -276,10 +276,19 @@ calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
                         continue;
                 }
                 enum diridx dir;
+#if 0 /* broken; see the XXX comment in calc_movable */
                 bool easy = (movable[loc] & PUSHABLE) == 0;
+#else
+                bool easy = false;
+#endif
                 for (dir = 0; dir < 4; dir++) {
                         loc_t d = dirs[dir].loc_diff;
                         loc_t nloc = loc + d;
+                        /*
+                         * XXX this occupied should check the case of light
+                         * as surrounded_dir does. maybe this should be
+                         * moved to surrounded_dir.
+                         */
                         if (!occupied(map, movable, nloc)) {
                                 continue;
                         }
