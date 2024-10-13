@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "analyze.h"
 #include "defs.h"
 #include "maputil.h"
@@ -291,6 +293,116 @@ calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
         }
 }
 
+void
+visit_push(const map_t map, const map_t movable, loc_t loc, map_t reachable)
+{
+        if (reachable[loc] != UNREACHABLE) {
+                return;
+        }
+        reachable[loc] = REACHABLE;
+        enum diridx dir;
+        for (dir = 0; dir < 2; dir++) {
+                loc_t d = dirs[dir].loc_diff;
+                if (occupied(map, movable, loc + d) ||
+                    occupied(map, movable, loc - d)) {
+                        return;
+                }
+                loc_t nloc;
+                nloc = loc + d;
+                if (in_map(nloc)) {
+                        visit_push(map, movable, nloc, reachable);
+                }
+                nloc = loc - d;
+                if (in_map(nloc)) {
+                        visit_push(map, movable, nloc, reachable);
+                }
+        }
+}
+
+void
+update_reachable_by_push_from(const map_t map, const map_t movable, loc_t loc,
+                              map_t reachable)
+{
+        visit_push(map, movable, loc, reachable);
+}
+
+void
+update_possible_beam(const map_t map, const map_t movable,
+                     const map_t light_reachable, enum diridx dir, map_t beam)
+{
+        loc_t d = dirs[dir].loc_diff;
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                if (!light_reachable[loc]) {
+                        continue;
+                }
+                loc_t nloc = loc + d;
+                while (true) {
+                        if (beam[nloc]) {
+                                break;
+                        }
+                        if (!in_map(nloc)) {
+                                break;
+                        }
+                        if (is_UNMOVABLE(movable[nloc])) {
+                                assert(block_beam(map[nloc]));
+                                break;
+                        }
+                        beam[nloc] = 1;
+                        nloc += d;
+                }
+        }
+}
+
+bool
+possibly_collectable(const map_t bomb_reachable, const map_t possible_beam[4])
+{
+        /*
+         * there are only a few patterns where
+         * a bomb is collectable:
+         *
+         * ___
+         * _X_
+         * _A_
+         * ___
+         * _U_
+         *
+         * ____
+         * _AX_
+         * ____
+         * _U__
+         *
+         * that is,
+         * possible_beam[dir][A_loc] &&
+         * (bomb_reachable[A_loc + dir_loc_diff(dir)] ||
+         *  bomb_reachable[A_loc + dir_loc_diff(dir + 1)] ||
+         *  bomb_reachable[A_loc + dir_loc_diff(dir - 1)])
+         */
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                enum diridx dir;
+                for (dir = 0; dir < 4; dir++) {
+                        if (!possible_beam[loc]) {
+                                continue;
+                        }
+                        loc_t nloc;
+                        nloc = loc + dir_loc_diff(dir);
+                        if (in_map(nloc) && bomb_reachable[nloc]) {
+                                return true;
+                        }
+                        nloc = loc + dir_loc_diff((dir + 1) % 4);
+                        if (in_map(nloc) && bomb_reachable[nloc]) {
+                                return true;
+                        }
+                        nloc = loc + dir_loc_diff((dir + 3) % 4);
+                        if (in_map(nloc) && bomb_reachable[nloc]) {
+                                return true;
+                        }
+                }
+        }
+        return false;
+}
+
 bool
 tsumi(const map_t map)
 {
@@ -303,7 +415,30 @@ tsumi(const map_t map)
         unsigned int counts[END];
         count_objects(map, counts);
 
+        map_t light_reachable[4];
+        enum diridx dir;
+        for (dir = 0; dir < 4; dir++) {
+                map_fill(light_reachable[dir], UNREACHABLE);
+        }
         loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t objidx = map[loc];
+                if (!is_light(objidx)) {
+                        continue;
+                }
+                enum diridx dir = light_dir(objidx);
+                update_reachable_by_push_from(map, movable, loc,
+                                              light_reachable[dir]);
+        }
+        map_t possible_beam[4];
+        for (dir = 0; dir < 4; dir++) {
+                map_fill(possible_beam[dir], 0);
+        }
+        for (dir = 0; dir < 4; dir++) {
+                update_possible_beam(map, movable, light_reachable[dir], dir,
+                                     possible_beam[dir]);
+        }
+
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
@@ -333,6 +468,14 @@ tsumi(const map_t map)
                                 if (dir >= 4) {
                                         return true;
                                 }
+                        }
+                        map_t bomb_reachable;
+                        map_fill(bomb_reachable, UNREACHABLE);
+                        update_reachable_by_push_from(map, movable, loc,
+                                                      bomb_reachable);
+                        if (!possibly_collectable(bomb_reachable,
+                                                  possible_beam)) {
+                                return true;
                         }
                 }
         }
