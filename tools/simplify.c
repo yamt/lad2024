@@ -46,7 +46,7 @@ turn_unmovable_to_W(map_t map, const map_t movable)
                          * UU
                          */
                         loc_t nloc = loc + dirs[light_dir(objidx)].loc_diff;
-                        if (!in_map(nloc) || (is_MOVABLE(movable[nloc]) &&
+                        if (!in_map(nloc) || (is_UNMOVABLE(movable[nloc]) &&
                                               block_beam(map[nloc]))) {
                                 map[loc] = W;
                                 modified = true;
