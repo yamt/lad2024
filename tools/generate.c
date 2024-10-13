@@ -213,6 +213,13 @@ try_refine1(map_t map, struct solution *solution,
                 dump_map_c(map, "refine-bug-refined");
                 exit(1);
         }
+
+        /* note: solve_cleanup() above invalidated nodes on solution->moves */
+        LIST_HEAD_INIT(&solution->moves);
+        while ((n = LIST_FIRST(&solution_after_refinement.moves)) != NULL) {
+                LIST_REMOVE(&solution_after_refinement.moves, n, q);
+                LIST_INSERT_TAIL(&solution->moves, n, q);
+        }
 #endif
         return true;
 }
