@@ -12,7 +12,8 @@
 #include "solver.h"
 
 unsigned int
-load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev)
+load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev,
+                        unsigned int *nmoves)
 {
         struct node *n = alloc_node();
         struct map_info info;
@@ -30,6 +31,9 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev)
         if (result == SOLVE_SOLVED) {
                 evaluate(n, &solution.moves, ev);
         }
+        if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
+                *nmoves = solution.nmoves;
+        }
         solve_cleanup();
         return result;
 }
@@ -37,38 +41,53 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev)
 int
 main(int argc, char **argv)
 {
-        if (argc != 2) {
+        if (argc != 2 && argc != 3) {
                 exit(2);
         }
         int stage_number = atoi(argv[1]);
+        int stage_number_max;
         if (stage_number < 0 || stage_number > nstages) {
                 exit(2);
         }
+        if (argc == 3) {
+                stage_number_max = atoi(argv[2]);
+                if (stage_number_max < 0 || stage_number > nstages) {
+                        exit(2);
+                }
+        } else {
+                stage_number_max = stage_number;
+        }
+        if (stage_number == 0) {
+            stage_number = 1;
+		}
+        if (stage_number_max == 0) {
+            stage_number_max = nstages;
+        }
 
         node_allocator_init();
-        if (stage_number > 0) {
+        struct result {
+                unsigned int solve_flags;
+                unsigned int nmoves;
                 struct evaluation ev;
-                load_and_evaluate_stage(stage_number, &ev);
-        } else {
-                struct result {
-                        unsigned int solve_flags;
-                        struct evaluation ev;
-                } *results;
-                results = calloc(sizeof(results), nstages);
-                if (results == NULL) {
+        } *results;
+        results = calloc(sizeof(results), nstages);
+        if (results == NULL) {
+                exit(1);
+        }
+        unsigned int i;
+        for (i = stage_number - 1; i < stage_number_max; i++) {
+                struct result *r = &results[i];
+                r->solve_flags = load_and_evaluate_stage(i + 1, &r->ev,
+                                                         &r->nmoves);
+                if (r->solve_flags == SOLVE_IMPOSSIBLE) {
+                        printf("stage %u is impossible!\n", i + 1);
                         exit(1);
                 }
-                unsigned int i;
-                for (i = 0; i < nstages; i++) {
-                        struct result *r = &results[i];
-                        r->solve_flags =
-                                load_and_evaluate_stage(i + 1, &r->ev);
-                }
-                for (i = 0; i < nstages; i++) {
-                        struct result *r = &results[i];
-                        printf("stage %u solve_flags %u score %u\n", i + 1,
-                               r->solve_flags, r->ev.score);
-                }
-                free(results);
         }
+        for (i = stage_number - 1; i < stage_number_max; i++) {
+                struct result *r = &results[i];
+                printf("stage %u solve_flags %u score %u nmoves %u\n",
+                       i + 1, r->solve_flags, r->ev.score, r->nmoves);
+        }
+        free(results);
 }
