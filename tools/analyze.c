@@ -181,6 +181,9 @@ calc_movable(const map_t map, map_t movable)
                                  * note: mark neighbors unvisited.
                                  * this might effectively degrade them
                                  * from UNMOVABLE to MOVABLE.
+                                 *
+                                 * XXX we need to update COLLECTABLE/PUSHABLE
+                                 * of neighbor objects as well.
                                  */
                                 for (dir = 0; dir < 4; dir++) {
                                         loc_t d = dirs[dir].loc_diff;
