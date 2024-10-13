@@ -164,8 +164,8 @@ generate(struct genctx *ctx)
 }
 
 bool
-try_refine(map_t map, struct solution *solution,
-           const struct solver_param *param)
+try_refine1(map_t map, struct solution *solution,
+            const struct solver_param *param)
 {
         map_t orig;
         map_copy(orig, map);
@@ -211,8 +211,17 @@ try_refine(map_t map, struct solution *solution,
                 exit(1);
         }
 #endif
-        align_to_top_left(map);
+        return true;
+}
 
+bool
+try_refine(map_t map, struct solution *solution,
+           const struct solver_param *param)
+{
+        while (try_refine1(map, solution, param)) {
+                /* nothing */
+        }
+        align_to_top_left(map);
         return true;
 }
 
