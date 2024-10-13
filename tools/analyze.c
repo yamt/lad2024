@@ -226,6 +226,20 @@ surrounded_dir(const map_t map, const map_t movable, loc_t loc, loc_t d1,
                         return true;
                 }
                 loc_t nloc1 = nloc2 + d1;
+                if (in_map(nloc1)) {
+                        uint8_t objidx = map[nloc1];
+                        if (is_light(objidx) &&
+                            dirs[opposite(light_dir(objidx))].loc_diff == d1) {
+                                /*
+                                 * eg. (d1 == LEFT, d2 == UP)
+                                 *
+                                 * _WW
+                                 * WR_
+                                 * _WX
+                                 */
+                                break;
+                        }
+                }
                 if (!occupied(map, movable, nloc1)) {
                         break;
                 }
