@@ -32,6 +32,7 @@ struct dir {
 };
 
 extern const struct dir dirs[4];
+#define dir_loc_diff(dir) dirs[dir].loc_diff
 
 struct stage_meta {
         unsigned int nplayers;
