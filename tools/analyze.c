@@ -433,8 +433,6 @@ tsumi(const map_t map)
         map_t possible_beam[4];
         for (dir = 0; dir < 4; dir++) {
                 map_fill(possible_beam[dir], 0);
-        }
-        for (dir = 0; dir < 4; dir++) {
                 update_possible_beam(map, movable, light_reachable[dir], dir,
                                      possible_beam[dir]);
         }
