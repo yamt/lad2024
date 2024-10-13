@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "defs.h"
 #include "node.h"
 #include "pool.h"
 
@@ -43,4 +44,18 @@ loc_t
 pushed_obj_loc(const struct node *n)
 {
         return n->loc + dirs[n->dir].loc_diff * 2;
+}
+
+bool
+is_trivial(const struct node *n, const map_t beam)
+{
+        if ((n->flags & (MOVE_PUSH | MOVE_GET_BOMB)) != 0) {
+                return false;
+        }
+        loc_t nloc = next_loc(n);
+        bool is_robot = n->map[nloc] == A;
+        if ((beam[nloc] != 0) != is_robot) {
+                return false;
+        }
+        return true;
 }

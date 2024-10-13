@@ -112,6 +112,7 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
         unsigned int processed = 0;
         unsigned int duplicated = 0;
         unsigned int ntsumi = 0;
+        unsigned int ntsumicheck = 0;
 
         unsigned int last_thresh = 0;
 
@@ -136,19 +137,22 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                         prev_queued = queued;
                 }
                 LIST_REMOVE(&todo, n, q);
-                if (tsumi(n->map)) {
-                        ntsumi++;
-                        goto skip;
+                map_t beam_map;
+                calc_beam(n->map, beam_map);
+                if (!is_trivial(n, beam_map)) {
+                        ntsumicheck++;
+                        if (tsumi(n->map)) {
+                                ntsumi++;
+                                goto skip;
+                        }
                 }
                 struct stage_meta meta;
-                map_t beam_map;
                 calc_stage_meta(n->map, &meta);
                 assert(meta.nplayers > 0);
                 assert(meta.nplayers <= max_players);
                 if (n->steps > 0) {
                         /* prefer to continue moving the same player */
-                        struct player *p = player_at(
-                                &meta, n->loc + dirs[n->dir].loc_diff);
+                        struct player *p = player_at(&meta, next_loc(n));
                         assert(p != NULL);
                         if (p != &meta.players[0]) {
                                 struct player tmp = meta.players[0];
@@ -156,7 +160,6 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                 *p = tmp;
                         }
                 }
-                calc_beam(n->map, beam_map);
                 unsigned int i;
                 for (i = 0; i < meta.nplayers; i++) {
                         struct player *p = &meta.players[i];
@@ -207,12 +210,14 @@ skip:
                 processed++;
                 if (verbose && (processed % 100000) == 0) {
                         dump_map(n->map);
-                        printf("%u / %u (%u) / %u dup %u (%.3f) tsumi %u step "
+                        printf("%u / %u (%u) / %u dup %u (%.3f) tsumi %u/%u "
+                               "step "
                                "%u (%.3f "
                                "left)\n",
                                processed, queued, queued - processed,
                                registered, duplicated,
-                               (float)duplicated / processed, ntsumi, n->steps,
+                               (float)duplicated / processed, ntsumi,
+                               ntsumicheck, n->steps,
                                (float)(prev_queued - processed) / prev_nnodes);
                         // dump_hash();
                 }

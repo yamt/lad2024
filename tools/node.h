@@ -1,6 +1,8 @@
 #if !defined(_LAD_SOLVER_NODE_H)
 #define _LAD_SOLVER_NODE_H
 
+#include <stdbool.h>
+
 #include "list.h"
 #include "rule.h"
 
@@ -25,5 +27,6 @@ void free_node(struct node *node);
 void free_all_nodes(void);
 loc_t next_loc(const struct node *n);
 loc_t pushed_obj_loc(const struct node *n);
+bool is_trivial(const struct node *n, const map_t map);
 
 #endif /* !defined(_LAD_SOLVER_NODE_H) */
