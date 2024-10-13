@@ -204,10 +204,13 @@ try_refine1(map_t map, struct solution *solution,
             (!removed &&
              solution_after_refinement.nmoves != solution->nmoves) ||
             (removed && solution_after_refinement.nmoves > solution->nmoves)) {
+                /* must be a bug */
                 printf("refinement changed the solution!\n");
                 dump_map(orig);
                 dump_map(refinedmap);
                 dump_map(map);
+                dump_map_c(orig, "refine-bug-orig");
+                dump_map_c(map, "refine-bug-refined");
                 exit(1);
         }
 #endif
