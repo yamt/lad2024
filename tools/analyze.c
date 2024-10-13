@@ -305,7 +305,7 @@ visit_push(const map_t map, const map_t movable, loc_t loc, map_t reachable)
                 loc_t d = dirs[dir].loc_diff;
                 if (occupied(map, movable, loc + d) ||
                     occupied(map, movable, loc - d)) {
-                        return;
+                        continue;
                 }
                 loc_t nloc;
                 nloc = loc + d;
