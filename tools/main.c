@@ -41,7 +41,7 @@ main(int argc, char **argv)
                 exit(2);
         }
         int stage_number = atoi(argv[1]);
-        if (stage_number < 0) {
+        if (stage_number < 0 || stage_number > nstages) {
                 exit(2);
         }
 
