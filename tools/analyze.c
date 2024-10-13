@@ -382,7 +382,7 @@ possibly_collectable(const map_t bomb_reachable, const map_t possible_beam[4])
         for (loc = 0; loc < map_size; loc++) {
                 enum diridx dir;
                 for (dir = 0; dir < 4; dir++) {
-                        if (!possible_beam[loc]) {
+                        if (!possible_beam[dir][loc]) {
                                 continue;
                         }
                         loc_t nloc;
