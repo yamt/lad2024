@@ -254,7 +254,7 @@ static struct proj {
 static unsigned int beamidx = 0;
 static unsigned int cur_player_idx;
 
-#define moving_nsteps 8
+#define moving_nsteps 4
 static unsigned int moving_step = 0;
 static bool undoing = false;
 #define moving_dir undos[undo_idx].dir
