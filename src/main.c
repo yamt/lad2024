@@ -688,7 +688,11 @@ load_stage()
                         xoff = 8;
                 }
                 if (info.h * 16 / 8 + lines > map_height) {
-                        yoff = -8;
+                        /*
+                         * note: -9 to avoid interfering the
+                         * "STAGE ..." line.
+                         */
+                        yoff = -9;
                 } else if ((((map_height - lines) * 8 / 16 - info.h) % 2) ==
                            1) {
                         yoff = 8;
