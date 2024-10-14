@@ -11,6 +11,7 @@
 #define SOLVE_SOLVABLE 0x04
 
 struct solution {
+        bool detached;
         struct node_list moves;
         unsigned int nmoves;
         unsigned int iterations;
@@ -31,3 +32,6 @@ struct node;
 unsigned int solve(struct node *root, const struct solver_param *param,
                    bool verbose, struct solution *solution);
 void solve_cleanup(void);
+
+void detach_solution(struct solution *solution);
+void clear_solution(struct solution *solution);
