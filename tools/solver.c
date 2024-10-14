@@ -100,6 +100,8 @@ unsigned int
 solve(struct node *root, const struct solver_param *param, bool verbose,
       struct solution *solution)
 {
+        solution->detached = false;
+
         LIST_HEAD_INIT(&todo);
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
@@ -283,3 +285,40 @@ struct solver_param solver_default_param = {
         .limit = (size_t)8 * 1024 * 1024 * 1024,
         .max_iterations = 100000000,
 };
+
+void
+detach_solution(struct solution *solution)
+{
+        if (solution->detached) {
+                return;
+        }
+        struct node_list h;
+        LIST_HEAD_INIT(&h);
+        struct node *n;
+        LIST_FOREACH(n, &solution->moves, q) {
+                struct node *nn = malloc(sizeof(*nn));
+                memcpy(nn, n, sizeof(*nn));
+                nn->parent = NULL;
+                LIST_INSERT_TAIL(&h, nn, q);
+        }
+        /* XXX nicer to have a "splice" api */
+        LIST_HEAD_INIT(&solution->moves);
+        while ((n = LIST_FIRST(&h)) != NULL) {
+                LIST_REMOVE(&h, n, q);
+                LIST_INSERT_TAIL(&solution->moves, n, q);
+        }
+        solution->detached = true;
+}
+
+void
+clear_solution(struct solution *solution)
+{
+        if (!solution->detached) {
+                return;
+        }
+        struct node *n;
+        while ((n = LIST_FIRST(&solution->moves)) != NULL) {
+                LIST_REMOVE(&solution->moves, n, q);
+                free(n);
+        }
+}

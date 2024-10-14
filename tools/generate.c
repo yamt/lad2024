@@ -194,6 +194,7 @@ try_refine1(map_t map, struct solution *solution,
         }
 
 #if 1
+        detach_solution(solution);
         solve_cleanup();
         struct solution solution_after_refinement;
         struct node *n = alloc_node();
@@ -213,13 +214,7 @@ try_refine1(map_t map, struct solution *solution,
                 dump_map_c(map, "refine-bug-refined");
                 exit(1);
         }
-
-        /* note: solve_cleanup() above invalidated nodes on solution->moves */
-        LIST_HEAD_INIT(&solution->moves);
-        while ((n = LIST_FIRST(&solution_after_refinement.moves)) != NULL) {
-                LIST_REMOVE(&solution_after_refinement.moves, n, q);
-                LIST_INSERT_TAIL(&solution->moves, n, q);
-        }
+        clear_solution(&solution_after_refinement);
 #endif
         return true;
 }
@@ -394,6 +389,7 @@ main(int argc, char **argv)
                        nrefined, (float)nrefined / ntotal,
                        max_iterations_solved, max_iterations_impossible);
                 printf("cleaning\n");
+                clear_solution(&solution);
                 solve_cleanup();
                 seed++;
         } while (!seed_specified);
