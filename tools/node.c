@@ -1,6 +1,8 @@
+#include <assert.h>
 #include <stdlib.h>
 
 #include "defs.h"
+#include "maputil.h"
 #include "node.h"
 #include "pool.h"
 
@@ -58,4 +60,22 @@ is_trivial(const struct node *n, const map_t beam)
                 return false;
         }
         return true;
+}
+
+void
+prev_map(const struct node *n, map_t map)
+{
+        map_copy(map, n->map);
+
+        /* undo */
+        assert(map[n->loc] == _);
+        assert(is_player(map[next_loc(n)]));
+        assert((~n->flags & (MOVE_GET_BOMB | MOVE_PUSH)) != 0);
+        move_object(map, n->loc, next_loc(n));
+        if ((n->flags & MOVE_GET_BOMB) != 0) {
+                map[next_loc(n)] = X;
+        } else if ((n->flags & MOVE_PUSH) != 0) {
+                assert(can_push(map[pushed_obj_loc(n)]));
+                move_object(map, next_loc(n), pushed_obj_loc(n));
+        }
 }
