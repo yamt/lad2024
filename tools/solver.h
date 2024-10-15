@@ -7,7 +7,7 @@
 #define SOLVE_IMPOSSIBLE 0x02
 #define SOLVE_GIVENUP 0x03
 
-/* proven to be solvable, but returning no solution */
+/* proven to be solvable, but only returning a partial solution */
 #define SOLVE_SOLVABLE 0x04
 
 struct solution {
@@ -29,7 +29,7 @@ struct solver_param {
 extern struct solver_param solver_default_param;
 
 struct node;
-unsigned int solve(struct node *root, const struct solver_param *param,
+unsigned int solve(const map_t map, const struct solver_param *param,
                    bool verbose, struct solution *solution);
 void solve_cleanup(void);
 

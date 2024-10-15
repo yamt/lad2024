@@ -15,21 +15,22 @@ unsigned int
 load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev,
                         unsigned int *nmoves)
 {
-        struct node *n = alloc_node();
+        map_t map;
         struct map_info info;
         printf("stage %u\n", stage_number);
-        decode_stage(stage_number - 1, n->map, &info);
+        decode_stage(stage_number - 1, map, &info);
         if (info.w > map_width || info.h > map_height) {
                 printf("info %u %u\n", info.w, info.h);
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
-        dump_map(n->map);
+        dump_map(map);
 
         struct solution solution;
-        unsigned int result = solve(n, &solver_default_param, true, &solution);
+        unsigned int result =
+                solve(map, &solver_default_param, true, &solution);
         if (result == SOLVE_SOLVED) {
-                evaluate(n, &solution.moves, ev);
+                evaluate(map, &solution.moves, ev);
         }
         if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                 *nmoves = solution.nmoves;

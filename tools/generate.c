@@ -85,7 +85,6 @@ void
 random_ichimatsu(struct genctx *ctx)
 {
         struct rng *rng = ctx->rng;
-        int i;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 if (ctx->map[loc] == _ && ((loc_x(loc) + loc_y(loc)) & 1)) {
@@ -197,10 +196,8 @@ try_refine1(map_t map, struct solution *solution,
         detach_solution(solution);
         solve_cleanup();
         struct solution solution_after_refinement;
-        struct node *n = alloc_node();
-        map_copy(n->map, map);
         unsigned int result =
-                solve(n, param, false, &solution_after_refinement);
+                solve(map, param, false, &solution_after_refinement);
         if (result != SOLVE_SOLVED ||
             (!removed &&
              solution_after_refinement.nmoves != solution->nmoves) ||
@@ -304,11 +301,9 @@ main(int argc, char **argv)
                 }
                 dump_map(map);
                 printf("solving (seed %" PRIx64 ")\n", seed);
-                struct node *n = alloc_node();
-                map_copy(n->map, map);
                 struct solution solution;
                 unsigned int result =
-                        solve(n, &solver_default_param, false, &solution);
+                        solve(map, &solver_default_param, false, &solution);
                 if (result == SOLVE_SOLVED &&
                     validate(map, &solution, false, false)) {
                         /* must be a bug */
@@ -323,13 +318,14 @@ main(int argc, char **argv)
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
                                 struct evaluation ev;
-                                evaluate(n, &solution.moves, &ev);
+                                evaluate(map, &solution.moves, &ev);
                                 printf("seed %" PRIx64 " score %u\n", seed,
                                        ev.score);
                                 score = ev.score;
                         }
                         if (score >= score_thresh ||
-                            solution.nmoves >= nmoves_thresh) {
+                            solution.nmoves >= nmoves_thresh ||
+                            seed_specified) {
                                 const char *suffix = "";
                                 map_t orig;
                                 map_copy(orig, map);
