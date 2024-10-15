@@ -14,7 +14,7 @@
 #include "simplify.h"
 
 void
-evaluate(const struct node *root, const struct node_list *solution,
+evaluate(const map_t map, const struct node_list *solution,
          struct evaluation *ev)
 {
         unsigned int nswitch = 0;
@@ -80,7 +80,7 @@ evaluate(const struct node *root, const struct node_list *solution,
         printf("nbeam_changed %u\n", nbeam_changed);
         printf("nsuicide %u\n", nsuicide);
         map_t simplified_map;
-        map_copy(simplified_map, root->map);
+        map_copy(simplified_map, map);
         simplify(simplified_map);
         struct size size;
         measure_size(simplified_map, &size);

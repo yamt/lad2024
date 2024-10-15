@@ -87,20 +87,25 @@ forget_old(unsigned int thresh)
 }
 
 void
-return_solution(struct node *n, struct node_list *solution)
+return_solution(struct node *n, struct node_list *solution,
+                unsigned int thresh)
 {
-        LIST_HEAD_INIT(solution);
+        assert(LIST_EMPTY(solution));
         do {
+                if (n->steps <= thresh) {
+                        break;
+                }
                 LIST_INSERT_HEAD(solution, n, q);
                 n = n->parent;
         } while (n->parent != NULL);
 }
 
 unsigned int
-solve(struct node *root, const struct solver_param *param, bool verbose,
-      struct solution *solution)
+solve1(const map_t map, const struct solver_param *param, bool verbose,
+       const map_t goal, struct solution *solution)
 {
         solution->detached = false;
+        LIST_HEAD_INIT(&solution->moves);
 
         LIST_HEAD_INIT(&todo);
         unsigned int i;
@@ -118,6 +123,8 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
 
         unsigned int last_thresh = 0;
 
+        struct node *root = alloc_node();
+        map_copy(root->map, map);
         root->parent = NULL;
         root->steps = 0;
         LIST_INSERT_TAIL(&todo, root, q);
@@ -190,8 +197,15 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                 n2->dir = dir;
                                 n2->flags = flags;
                                 if (meta2.nbombs == 0) {
+                                        if (goal != NULL) {
+                                                printf("solved "
+                                                       "unexpectedly!\n");
+                                                exit(1); /* must be a bug */
+                                        }
                                         solution->nmoves = n2->steps;
                                         solution->iterations = processed;
+                                        return_solution(n2, &solution->moves,
+                                                        last_thresh);
                                         if (last_thresh) {
                                                 dump_map(n2->map);
                                                 printf("proven solvable "
@@ -200,8 +214,17 @@ solve(struct node *root, const struct solver_param *param, bool verbose,
                                                 return SOLVE_SOLVABLE;
                                         }
                                         printf("solved!\n");
-                                        return_solution(n2, &solution->moves);
                                         // dump_hash();
+                                        return SOLVE_SOLVED;
+                                } else if (goal != NULL &&
+                                           !memcmp(goal, n2->map, map_size)) {
+                                        solution->nmoves = n2->steps;
+                                        solution->iterations = processed;
+                                        return_solution(n2, &solution->moves,
+                                                        last_thresh);
+                                        if (last_thresh) {
+                                                return SOLVE_SOLVABLE;
+                                        }
                                         return SOLVE_SOLVED;
                                 }
                                 LIST_INSERT_TAIL(&todo, n2, q);
@@ -262,6 +285,58 @@ skip:
         return SOLVE_IMPOSSIBLE;
 }
 
+unsigned int
+solve(const map_t map, const struct solver_param *param, bool verbose,
+      struct solution *solution)
+{
+        unsigned int result;
+        result = solve1(map, param, verbose, NULL, solution);
+        while (result == SOLVE_SOLVABLE) {
+                {
+                        struct node *n = LIST_FIRST(&solution->moves);
+                        printf("step %u (the first known state):\n", n->steps);
+                        dump_map(n->map);
+                }
+                {
+                        struct node *n =
+                                LIST_LAST(&solution->moves, struct node, q);
+                        printf("step %u (the final state):\n", n->steps);
+                        dump_map(n->map);
+                }
+
+                detach_solution(solution);
+                solve_cleanup();
+                struct node *n = LIST_FIRST(&solution->moves);
+                assert(n->steps > 1);
+                struct solution solution2;
+                map_t goal;
+                prev_map(n, goal);
+                printf("re-solving up to the intermediate goal (step %u):\n",
+                       n->steps - 1);
+                dump_map(goal);
+                result = solve1(map, param, false, goal, &solution2);
+                if (result != SOLVE_SOLVED && result != SOLVE_SOLVABLE) {
+                        printf("solve() returned an unexpected result %u\n",
+                               result);
+                        exit(1); /* must be a bug */
+                }
+                assert(LIST_FIRST(&solution->moves)->steps ==
+                       LIST_LAST(&solution2.moves, struct node, q)->steps + 1);
+                detach_solution(&solution2);
+                solve_cleanup();
+                assert(solution->detached == solution2.detached);
+                LIST_SPLICE_HEAD(&solution->moves, &solution2.moves, q);
+                {
+                        struct node t;
+                        LIST_INSERT_TAIL(&solution->moves, &t, q);
+                        LIST_REMOVE(&solution->moves, &t, q);
+                }
+        }
+        assert(result != SOLVE_SOLVED ||
+               LIST_FIRST(&solution->moves)->steps == 1);
+        return result;
+}
+
 void
 solve_cleanup(void)
 {
@@ -292,21 +367,21 @@ detach_solution(struct solution *solution)
         if (solution->detached) {
                 return;
         }
+        /*
+         * make a copy of nodes using malloc so that it's independent
+         * from the solver state (thus usable after solve_cleanup)
+         */
         struct node_list h;
         LIST_HEAD_INIT(&h);
         struct node *n;
         LIST_FOREACH(n, &solution->moves, q) {
                 struct node *nn = malloc(sizeof(*nn));
-                memcpy(nn, n, sizeof(*nn));
+                *nn = *n;
                 nn->parent = NULL;
                 LIST_INSERT_TAIL(&h, nn, q);
         }
-        /* XXX nicer to have a "splice" api */
         LIST_HEAD_INIT(&solution->moves);
-        while ((n = LIST_FIRST(&h)) != NULL) {
-                LIST_REMOVE(&h, n, q);
-                LIST_INSERT_TAIL(&solution->moves, n, q);
-        }
+        LIST_SPLICE_TAIL(&solution->moves, &h, q);
         solution->detached = true;
 }
 
@@ -316,8 +391,12 @@ clear_solution(struct solution *solution)
         if (!solution->detached) {
                 return;
         }
+        /*
+         * free malloc'ed nodes
+         */
         struct node *n;
         while ((n = LIST_FIRST(&solution->moves)) != NULL) {
+                assert(n->parent == NULL);
                 LIST_REMOVE(&solution->moves, n, q);
                 free(n);
         }
