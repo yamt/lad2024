@@ -4,6 +4,7 @@
 #include "maputil.h"
 #include "refine.h"
 #include "solver.h"
+#include "validate.h"
 
 /*
  * remove unnecessary spaces.
@@ -50,11 +51,15 @@ refine(map_t map, const struct solution *solution)
                         if (used[loc]) {
                                 continue;
                         }
+                        if (objidx == B) {
+                                map[loc] = W;
+                                continue;
+                        }
                         enum diridx dir;
                         for (dir = 0; dir < 4; dir++) {
                                 loc_t nloc;
                                 nloc = loc + dirs[dir].loc_diff;
-                                if (map[nloc] != W) {
+                                if (in_map(nloc) && map[nloc] != W) {
                                         continue;
                                 }
                                 nloc = loc + dirs[(dir + 1) % 4].loc_diff;
@@ -65,6 +70,35 @@ refine(map_t map, const struct solution *solution)
                                 modified = true;
                                 more = true;
                                 break;
+                        }
+                }
+
+                for (loc = 0; loc < map_size; loc++) {
+                        if (reachable[loc] == UNREACHABLE) {
+                                continue;
+                        }
+                        uint8_t objidx = map[loc];
+                        uint8_t try = objidx;
+#if 0 /* disabled because a light can work as an obstacles for P. */
+                        if (is_light(objidx)) {
+                                if (used[loc]) {
+                                        try = B;
+                                } else {
+                                        try = W;
+                                }
+                        } else
+#endif
+                        if (objidx == _ && !used[loc]) {
+                                try = W;
+                        } else {
+                                continue;
+                        }
+                        map[loc] = try;
+                        if (validate(map, solution, false, false)) {
+                                map[loc] = objidx;
+                        } else {
+                                modified = true;
+                                more = true;
                         }
                 }
         } while (more);
