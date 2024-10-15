@@ -88,7 +88,7 @@ random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
                         if (map[loc] != _) {
                                 continue;
                         }
-                        uint8_t objidx;
+                        uint8_t objidx = END;
                         unsigned int r = rng_rand(rng, 0, total - 1);
                         for (i = 0; i < nfreq; i++) {
                                 const struct freq *f = &freq[i];
@@ -99,6 +99,7 @@ random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
                                 r -= f->freq;
                         }
                         assert(i < nfreq);
+                        assert(objidx != END);
                         map[loc] = objidx;
                 }
         }
