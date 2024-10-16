@@ -133,6 +133,13 @@ generate(struct genctx *ctx)
 #endif
 
 #if 0
+#define min(a, b) ((a > b) ? (b) : (a))
+        int r = (min(map_width, map_height) - 3) / 2;
+        circle(ctx->map, map_width / 2, map_height / 2, r, _);
+        circle(ctx->map, map_width / 2, map_height / 2, r * 2 / 5, W);
+#endif
+
+#if 0
         n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
                 room(ctx, false, i > 0);
