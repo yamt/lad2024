@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h>
 
 #include "analyze.h"
@@ -22,6 +23,25 @@ turn_unreachable_to_W(map_t map, const map_t reachable)
         return modified;
 }
 
+bool
+permanently_blocked(const map_t map, const map_t movable, loc_t loc)
+{
+        /*
+         * detect trivial cases like:
+         *
+         * RL
+         * UU
+         */
+        uint8_t objidx = map[loc];
+        assert(is_light(objidx));
+        loc_t nloc = loc + dirs[light_dir(objidx)].loc_diff;
+        if (!in_map(nloc) ||
+            (is_UNMOVABLE(movable[nloc]) && block_beam(map[nloc]))) {
+                return true;
+        }
+        return false;
+}
+
 /* turn unmovable objects to W */
 bool
 turn_unmovable_to_W(map_t map, const map_t movable)
@@ -39,15 +59,7 @@ turn_unmovable_to_W(map_t map, const map_t movable)
                         continue;
                 }
                 if (is_light(objidx)) {
-                        /*
-                         * detect trivial cases like:
-                         *
-                         * RL
-                         * UU
-                         */
-                        loc_t nloc = loc + dirs[light_dir(objidx)].loc_diff;
-                        if (!in_map(nloc) || (is_UNMOVABLE(movable[nloc]) &&
-                                              block_beam(map[nloc]))) {
+                        if (permanently_blocked(map, movable, loc)) {
                                 map[loc] = W;
                                 modified = true;
                         }
