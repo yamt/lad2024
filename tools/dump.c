@@ -8,16 +8,18 @@
 void
 dump_map_raw(const map_t map)
 {
+        struct size size;
+        measure_size(map, &size);
         int x;
         int y;
         printf("  ");
-        for (x = 0; x < map_width; x++) {
+        for (x = size.xmin; x <= size.xmax; x++) {
                 printf("%2u", x);
         }
         printf("\n");
-        for (y = 0; y < map_height; y++) {
+        for (y = size.ymin; y <= size.ymax; y++) {
                 printf("%2u", y);
-                for (x = 0; x < map_width; x++) {
+                for (x = size.xmin; x <= size.xmax; x++) {
                         loc_t loc = genloc(x, y);
                         uint8_t objidx = map[loc];
                         printf("%2x", objidx);
