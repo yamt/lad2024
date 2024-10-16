@@ -356,11 +356,6 @@ solve_cleanup(void)
 #endif
 }
 
-struct solver_param solver_default_param = {
-        .limit = (size_t)8 * 1024 * 1024 * 1024,
-        .max_iterations = 100000000,
-};
-
 void
 detach_solution(struct solution *solution)
 {
@@ -401,3 +396,8 @@ clear_solution(struct solution *solution)
                 free(n);
         }
 }
+
+struct solver_param solver_default_param = {
+        .limit = (size_t)8 * 1024 * 1024 * 1024,
+        .max_iterations = 100000000,
+};
