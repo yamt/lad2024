@@ -3,6 +3,7 @@
 #include "bb.h"
 #include "defs.h"
 #include "draw.h"
+#include "maputil.h"
 #include "rng.h"
 
 bool
@@ -125,6 +126,21 @@ rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
         for (y = 0; y < rh; y++) {
                 for (x = 0; x < rw; x++) {
                         map[genloc(rx + x, ry + y)] = objidx;
+                }
+        }
+}
+
+void
+circle(map_t map, int ox, int oy, int r, uint8_t objidx)
+{
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                int x = loc_x(loc);
+                int y = loc_y(loc);
+                int dx = x - ox;
+                int dy = y - oy;
+                if (dx * dx + dy * dy <= r * r) {
+                        map[loc] = objidx;
                 }
         }
 }
