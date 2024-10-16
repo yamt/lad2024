@@ -12,6 +12,8 @@ SOLVER_OBJS = main.o
 
 GENERATOR_OBJS = generate.o
 
+REFINER_OBJS = refine_main.o
+
 RNG_TEST_OBJS = rng_test.o
 
 STAGE_UNIQ_OBJS = stage_uniq.o
@@ -41,7 +43,7 @@ ALL_OBJS += ${GENERATOR_OBJS}
 ALL_OBJS += ${RNG_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 
-BINS = solver generator rng_test stage_uniq
+BINS = solver generator refiner rng_test stage_uniq
 
 .PHONY: all
 all: $(BINS)
@@ -55,6 +57,11 @@ generator: $(GENERATOR_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(GENERATOR_OBJS) $(OBJS)
+
+refiner: $(REFINER_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(REFINER_OBJS) $(OBJS)
 
 rng_test: $(RNG_TEST_OBJS) $(OBJS)
 	$(CC) \
