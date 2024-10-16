@@ -112,11 +112,34 @@ generate(struct genctx *ctx)
         int n;
 
 #if 0
+        /* X */
+#define min(a, b) ((a > b) ? (b) : (a))
+        {
+                int sx = 3;
+                int sy = 2;
+                int smin = min(map_width - sx, map_height - sy);
+                for (i = 1; i < smin - 1; i++) {
+                        rect(ctx->map, i, i, sx, sy, _);
+                }
+        }
+        {
+                int sx = 2;
+                int sy = 3;
+                int smin = min(map_width - sx, map_height - sy);
+                for (i = 1; i < smin - 1; i++) {
+                        rect(ctx->map, smin - i, i, sx, sy, _);
+                }
+        }
+#endif
+
+#if 0
         n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
                 room(ctx, false, i > 0);
         }
 #endif
+
+#if 1
         unsigned int count[END];
         bool connect = false;
         do {
@@ -124,6 +147,7 @@ generate(struct genctx *ctx)
                 count_objects(ctx->map, count);
                 connect = true;
         } while (100 * count[_] / map_size < 30);
+#endif
 
 #if 0
         hmirror(ctx->map, ctx->bb.w, ctx->bb.h);
