@@ -1,8 +1,12 @@
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "analyze.h"
+#include "dump.h"
 #include "maputil.h"
 #include "refine.h"
+#include "simplify.h"
 #include "solver.h"
 #include "validate.h"
 
@@ -102,5 +106,70 @@ refine(map_t map, const struct solution *solution)
                         }
                 }
         } while (more);
+        return modified;
+}
+
+bool
+try_refine1(map_t map, struct solution *solution,
+            const struct solver_param *param)
+{
+        map_t orig;
+        map_copy(orig, map);
+        if (!refine(map, solution)) {
+                return false;
+        }
+        map_t refinedmap;
+        map_copy(refinedmap, map);
+        unsigned int count1[END];
+        unsigned int count2[END];
+        count_objects(map, count1);
+        simplify(map);
+        count_objects(map, count2);
+        if (count2[X] == 0) {
+                return false;
+        }
+        bool removed = count1[A] > count2[A] || count1[P] > count2[P];
+        if (validate(map, solution, false, removed)) {
+                /* must be a bug */
+                printf("validation failure after refinement\n");
+                dump_map(orig);
+                dump_map(refinedmap);
+                dump_map(map);
+                exit(1);
+        }
+
+#if 1
+        detach_solution(solution);
+        solve_cleanup();
+        struct solution solution_after_refinement;
+        unsigned int result =
+                solve(map, param, false, &solution_after_refinement);
+        if (result != SOLVE_SOLVED ||
+            (!removed &&
+             solution_after_refinement.nmoves != solution->nmoves) ||
+            (removed && solution_after_refinement.nmoves > solution->nmoves)) {
+                /* must be a bug */
+                printf("refinement changed the solution!\n");
+                dump_map(orig);
+                dump_map(refinedmap);
+                dump_map(map);
+                dump_map_c(orig, "refine-bug-orig");
+                dump_map_c(map, "refine-bug-refined");
+                exit(1);
+        }
+        clear_solution(&solution_after_refinement);
+#endif
+        return true;
+}
+
+bool
+try_refine(map_t map, struct solution *solution,
+           const struct solver_param *param)
+{
+        bool modified = false;
+        while (try_refine1(map, solution, param)) {
+                modified = true;
+        }
+        align_to_top_left(map);
         return modified;
 }
