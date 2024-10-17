@@ -53,8 +53,11 @@ main(int argc, char **argv)
         }
         if (argc == 3) {
                 stage_number_max = atoi(argv[2]);
-                if (stage_number_max < 0 || stage_number > nstages) {
+                if (stage_number_max < 0) {
                         exit(2);
+                }
+                if (stage_number_max > nstages) {
+                        stage_number_max = nstages;
                 }
         } else {
                 stage_number_max = stage_number;
