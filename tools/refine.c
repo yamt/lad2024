@@ -49,7 +49,11 @@ refine(map_t map, const struct solution *solution)
                                 continue;
                         }
                         uint8_t objidx = map[loc];
-                        if (objidx == W || is_light(objidx)) {
+                        if (objidx == W) {
+                                continue;
+                        }
+                        if (is_light(objidx) &&
+                            !permanently_blocked(map, movable, loc)) {
                                 continue;
                         }
                         if (used[loc]) {
