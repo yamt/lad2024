@@ -75,7 +75,7 @@ main(int argc, char **argv)
                 unsigned int nmoves;
                 struct evaluation ev;
         } *results;
-        results = calloc(sizeof(results), nstages);
+        results = calloc(sizeof(*results), nstages);
         if (results == NULL) {
                 exit(1);
         }
