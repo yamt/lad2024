@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stddef.h>
 
 #include "analyze.h"
 #include "defs.h"
@@ -41,7 +42,8 @@ occupied(const map_t map, const map_t movable, loc_t loc)
 }
 
 void
-visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
+visit(const map_t map, const map_t movable, const map_t beam, loc_t loc,
+      map_t reachable)
 {
         if (reachable[loc] != UNREACHABLE) {
                 return;
@@ -51,21 +53,48 @@ visit(const map_t map, const map_t movable, loc_t loc, map_t reachable)
                 return;
         }
         reachable[loc] = REACHABLE;
+        if (beam != NULL && !beam[loc]) {
+                /*
+                 * beam != NULL implies A.
+                 * !beam[loc] means this location can't be beamed.
+                 *
+                 * here, this A can't move by itself. however, it
+                 * might be able to be pushed by other A or P.
+                 */
+                enum diridx dir;
+                for (dir = 0; dir < 2; dir++) {
+                        loc_t d = dirs[dir].loc_diff;
+                        if (occupied(map, movable, loc + d) ||
+                            occupied(map, movable, loc - d)) {
+                                continue;
+                        }
+                        loc_t nloc;
+                        nloc = loc + d;
+                        if (in_map(nloc)) {
+                                visit(map, movable, beam, nloc, reachable);
+                        }
+                        nloc = loc - d;
+                        if (in_map(nloc)) {
+                                visit(map, movable, beam, nloc, reachable);
+                        }
+                }
+                return;
+        }
         enum diridx dir;
         for (dir = 0; dir < 4; dir++) {
                 loc_t nloc = loc + dirs[dir].loc_diff;
                 if (!in_map(nloc)) {
                         continue;
                 }
-                visit(map, movable, nloc, reachable);
+                visit(map, movable, beam, nloc, reachable);
         }
 }
 
 void
-update_reachable_from(const map_t map, const map_t movable, loc_t loc,
-                      map_t reachable)
+update_reachable_from(const map_t map, const map_t movable, const map_t beam,
+                      loc_t loc, map_t reachable)
 {
-        visit(map, movable, loc, reachable);
+        visit(map, movable, beam, loc, reachable);
 }
 
 void
@@ -73,7 +102,7 @@ calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                     map_t reachable)
 {
         map_fill(reachable, UNREACHABLE);
-        update_reachable_from(map, movable, loc, reachable);
+        update_reachable_from(map, movable, NULL, loc, reachable);
 }
 
 /*
@@ -98,7 +127,7 @@ calc_reachable_from_A(const map_t map, const map_t movable, map_t reachable)
 
 void
 calc_reachable_from_any_A(const map_t map, const map_t movable,
-                          map_t reachable)
+                          const map_t beam, map_t reachable)
 {
         /* XXX cheaper to take stage meta */
         map_fill(reachable, UNREACHABLE);
@@ -106,7 +135,8 @@ calc_reachable_from_any_A(const map_t map, const map_t movable,
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == A) {
-                        update_reachable_from(map, movable, loc, reachable);
+                        update_reachable_from(map, movable, beam, loc,
+                                              reachable);
                 }
         }
 }
@@ -390,7 +420,8 @@ update_possible_beam(const map_t map, const map_t movable,
 }
 
 bool
-possibly_collectable(const map_t bomb_reachable, const map_t possible_beam[4])
+possibly_collectable(const map_t bomb_reachable, const map_t any_A_reachable,
+                     const map_t possible_beam[4])
 {
         /*
          * there are only a few patterns where
@@ -415,6 +446,9 @@ possibly_collectable(const map_t bomb_reachable, const map_t possible_beam[4])
          */
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
+                if (!any_A_reachable[loc]) {
+                        continue;
+                }
                 enum diridx dir;
                 for (dir = 0; dir < 4; dir++) {
                         if (!possible_beam[dir][loc]) {
@@ -438,13 +472,17 @@ possibly_collectable(const map_t bomb_reachable, const map_t possible_beam[4])
         return false;
 }
 
+/*
+ * returns true if the map is impossible to clear. ("tsumi")
+ *
+ * false negative is ok.
+ * false positive is not ok. (considered a bug)
+ */
 bool
 tsumi(const map_t map)
 {
         map_t movable;
         calc_movable(map, movable);
-        map_t reachable;
-        calc_reachable_from_any_A(map, movable, reachable);
 #if 0
         map_t surrounded;
         calc_surrounded(map, movable, surrounded);
@@ -474,6 +512,17 @@ tsumi(const map_t map)
                                      possible_beam[dir]);
         }
 
+        map_t possible_beam_any;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t v = 0;
+                for (dir = 0; dir < 4; dir++) {
+                        v |= possible_beam[dir][loc];
+                }
+                possible_beam_any[loc] = v;
+        }
+        map_t reachable;
+        calc_reachable_from_any_A(map, movable, possible_beam_any, reachable);
+
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
@@ -482,9 +531,6 @@ tsumi(const map_t map)
                          * it's impossible to be collected.
                          */
                         if (movable[loc] == UNMOVABLE) {
-                                return true;
-                        }
-                        if (reachable[loc] == UNREACHABLE) {
                                 return true;
                         }
 #if 0
@@ -510,7 +556,7 @@ tsumi(const map_t map)
                         map_fill(bomb_reachable, UNREACHABLE);
                         update_reachable_by_push_from(map, movable, loc,
                                                       bomb_reachable);
-                        if (!possibly_collectable(bomb_reachable,
+                        if (!possibly_collectable(bomb_reachable, reachable,
                                                   possible_beam)) {
                                 return true;
                         }
