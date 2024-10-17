@@ -127,6 +127,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
         map_copy(root->map, map);
         root->parent = NULL;
         root->steps = 0;
+        root->flags = 0;
         LIST_INSERT_TAIL(&todo, root, q);
         queued++;
         add(root);
