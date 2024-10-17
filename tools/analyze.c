@@ -420,9 +420,13 @@ update_possible_beam(const map_t map, const map_t movable,
 }
 
 bool
-possibly_collectable(const map_t bomb_reachable, const map_t any_A_reachable,
-                     const map_t possible_beam[4])
+possibly_collectable(const map_t map, const map_t movable, loc_t X_loc,
+                     const map_t any_A_reachable, const map_t possible_beam[4])
 {
+        assert(map[X_loc] == X);
+        map_t bomb_reachable;
+        map_fill(bomb_reachable, UNREACHABLE);
+        update_reachable_by_push_from(map, movable, X_loc, bomb_reachable);
         /*
          * there are only a few patterns where
          * a bomb is collectable:
@@ -528,8 +532,9 @@ tsumi(const map_t map)
                 }
                 possible_beam_any[loc] = v;
         }
-        map_t reachable;
-        calc_reachable_from_any_A(map, movable, possible_beam_any, reachable);
+        map_t any_A_reachable;
+        calc_reachable_from_any_A(map, movable, possible_beam_any,
+                                  any_A_reachable);
 
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
@@ -560,11 +565,8 @@ tsumi(const map_t map)
                                 }
                         }
 #endif
-                        map_t bomb_reachable;
-                        map_fill(bomb_reachable, UNREACHABLE);
-                        update_reachable_by_push_from(map, movable, loc,
-                                                      bomb_reachable);
-                        if (!possibly_collectable(bomb_reachable, reachable,
+                        if (!possibly_collectable(map, movable, loc,
+                                                  any_A_reachable,
                                                   possible_beam)) {
                                 return true;
                         }
