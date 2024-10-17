@@ -88,11 +88,12 @@ main(int argc, char **argv)
                         printf("stage %u is impossible!\n", i + 1);
                         exit(1);
                 }
-        }
-        for (i = stage_number - 1; i < stage_number_max; i++) {
-                struct result *r = &results[i];
-                printf("stage %u solve_flags %u score %u nmoves %u\n", i + 1,
-                       r->solve_flags, r->ev.score, r->nmoves);
+                unsigned int j;
+                for (j = stage_number - 1; j < i; j++) {
+                        struct result *r = &results[j];
+                        printf("stage %u solve_flags %u score %u nmoves %u\n",
+                               j + 1, r->solve_flags, r->ev.score, r->nmoves);
+                }
         }
         free(results);
 }
