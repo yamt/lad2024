@@ -135,15 +135,25 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
         unsigned int curstep = 0;
         unsigned int prev_nnodes = 1;
         unsigned int prev_queued = 1;
+        unsigned int prev_ntsumi = 0;
+        unsigned int prev_ntsumicheck = 0;
         struct node *n;
         while ((n = LIST_FIRST(&todo)) != NULL) {
                 if (n->steps != curstep) {
                         unsigned int nnodes = queued - prev_queued;
-                        printf("step %u nnodes %u (%.3f)\n", n->steps, nnodes,
-                               (float)nnodes / prev_nnodes);
+                        printf("step %u nnodes %u (%.3f) tsumicheck %.3f "
+                               "tsumi %.3f (%.3f)\n",
+                               n->steps, nnodes, (float)nnodes / prev_nnodes,
+                               (float)(ntsumicheck - prev_ntsumicheck) /
+                                       prev_nnodes,
+                               (float)(ntsumi - prev_ntsumi) / prev_nnodes,
+                               (float)(ntsumi - prev_ntsumi) /
+                                       (ntsumicheck - prev_ntsumicheck));
                         curstep = n->steps;
                         prev_nnodes = nnodes;
                         prev_queued = queued;
+                        prev_ntsumi = ntsumi;
+                        prev_ntsumicheck = ntsumicheck;
                 }
                 LIST_REMOVE(&todo, n, q);
                 map_t beam_map;
@@ -236,13 +246,15 @@ skip:
                 if (verbose && (processed % 100000) == 0) {
                         dump_map(n->map);
                         printf("%u / %u (%u) / %u dup %u (%.3f) tsumi %u/%u "
+                               "(%.3f) "
                                "step "
                                "%u (%.3f "
                                "left)\n",
                                processed, queued, queued - processed,
                                registered, duplicated,
                                (float)duplicated / processed, ntsumi,
-                               ntsumicheck, n->steps,
+                               ntsumicheck, (float)ntsumi / ntsumicheck,
+                               n->steps,
                                (float)(prev_queued - processed) / prev_nnodes);
                         // dump_hash();
                 }
