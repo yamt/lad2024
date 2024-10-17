@@ -142,14 +142,15 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
         while ((n = LIST_FIRST(&todo)) != NULL) {
                 if (n->steps != curstep) {
                         unsigned int nnodes = queued - prev_queued;
+                        unsigned int nt = ntsumicheck - prev_ntsumicheck;
                         printf("step %u nnodes %u (%.3f) tsumicheck %.3f "
                                "tsumi %.3f (%.3f)\n",
                                n->steps, nnodes, (float)nnodes / prev_nnodes,
                                (float)(ntsumicheck - prev_ntsumicheck) /
                                        prev_nnodes,
                                (float)(ntsumi - prev_ntsumi) / prev_nnodes,
-                               (float)(ntsumi - prev_ntsumi) /
-                                       (ntsumicheck - prev_ntsumicheck));
+                               (nt > 0) ? (float)(ntsumi - prev_ntsumi) / nt
+                                        : (float)0);
                         curstep = n->steps;
                         prev_nnodes = nnodes;
                         prev_queued = queued;
