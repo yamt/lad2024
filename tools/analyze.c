@@ -472,6 +472,32 @@ possibly_collectable(const map_t bomb_reachable, const map_t any_A_reachable,
         return false;
 }
 
+void
+calc_possible_beam(const map_t map, const map_t movable,
+                   map_t possible_beam[4])
+{
+        map_t light_reachable[4];
+        enum diridx dir;
+        for (dir = 0; dir < 4; dir++) {
+                map_fill(light_reachable[dir], UNREACHABLE);
+        }
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t objidx = map[loc];
+                if (!is_light(objidx)) {
+                        continue;
+                }
+                enum diridx dir = light_dir(objidx);
+                update_reachable_by_push_from(map, movable, loc,
+                                              light_reachable[dir]);
+        }
+        for (dir = 0; dir < 4; dir++) {
+                map_fill(possible_beam[dir], 0);
+                update_possible_beam(map, movable, light_reachable[dir], dir,
+                                     possible_beam[dir]);
+        }
+}
+
 /*
  * returns true if the map is impossible to clear. ("tsumi")
  *
@@ -489,32 +515,14 @@ tsumi(const map_t map)
         unsigned int counts[END];
         count_objects(map, counts);
 #endif
-
-        map_t light_reachable[4];
-        enum diridx dir;
-        for (dir = 0; dir < 4; dir++) {
-                map_fill(light_reachable[dir], UNREACHABLE);
-        }
-        loc_t loc;
-        for (loc = 0; loc < map_size; loc++) {
-                uint8_t objidx = map[loc];
-                if (!is_light(objidx)) {
-                        continue;
-                }
-                enum diridx dir = light_dir(objidx);
-                update_reachable_by_push_from(map, movable, loc,
-                                              light_reachable[dir]);
-        }
         map_t possible_beam[4];
-        for (dir = 0; dir < 4; dir++) {
-                map_fill(possible_beam[dir], 0);
-                update_possible_beam(map, movable, light_reachable[dir], dir,
-                                     possible_beam[dir]);
-        }
+        calc_possible_beam(map, movable, possible_beam);
 
         map_t possible_beam_any;
+        loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t v = 0;
+                enum diridx dir;
                 for (dir = 0; dir < 4; dir++) {
                         v |= possible_beam[dir][loc];
                 }
