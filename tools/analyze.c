@@ -502,6 +502,26 @@ calc_possible_beam(const map_t map, const map_t movable,
         }
 }
 
+void
+calc_reachable_from_any_A_with_possible_beam(const map_t map,
+                                             const map_t movable,
+                                             const map_t possible_beam[4],
+                                             map_t any_A_reachable)
+{
+        map_t possible_beam_any;
+        loc_t loc;
+        for (loc = 0; loc < map_size; loc++) {
+                uint8_t v = 0;
+                enum diridx dir;
+                for (dir = 0; dir < 4; dir++) {
+                        v |= possible_beam[dir][loc];
+                }
+                possible_beam_any[loc] = v;
+        }
+        calc_reachable_from_any_A(map, movable, possible_beam_any,
+                                  any_A_reachable);
+}
+
 /*
  * returns true if the map is impossible to clear. ("tsumi")
  *
@@ -521,21 +541,11 @@ tsumi(const map_t map)
 #endif
         map_t possible_beam[4];
         calc_possible_beam(map, movable, possible_beam);
-
-        map_t possible_beam_any;
-        loc_t loc;
-        for (loc = 0; loc < map_size; loc++) {
-                uint8_t v = 0;
-                enum diridx dir;
-                for (dir = 0; dir < 4; dir++) {
-                        v |= possible_beam[dir][loc];
-                }
-                possible_beam_any[loc] = v;
-        }
         map_t any_A_reachable;
-        calc_reachable_from_any_A(map, movable, possible_beam_any,
-                                  any_A_reachable);
+        calc_reachable_from_any_A_with_possible_beam(
+                map, movable, possible_beam, any_A_reachable);
 
+        loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
