@@ -38,6 +38,8 @@ load_and_refine_stage(unsigned int stage_number)
                 snprintf(filename, sizeof(filename), "refined-%03u.c",
                          stage_number);
                 dump_map_c(map, filename);
+        } else {
+                printf("nothing to refine\n");
         }
         clear_solution(&solution);
         solve_cleanup();
