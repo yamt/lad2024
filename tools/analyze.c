@@ -335,6 +335,25 @@ visit_push(const map_t map, const map_t movable, loc_t loc, map_t reachable)
         }
 }
 
+bool
+permanently_blocked(const map_t map, const map_t movable, loc_t loc)
+{
+        /*
+         * detect trivial cases like:
+         *
+         * RL
+         * UU
+         */
+        uint8_t objidx = map[loc];
+        assert(is_light(objidx));
+        loc_t nloc = loc + dirs[light_dir(objidx)].loc_diff;
+        if (!in_map(nloc) ||
+            (is_UNMOVABLE(movable[nloc]) && block_beam(map[nloc]))) {
+                return true;
+        }
+        return false;
+}
+
 void
 update_reachable_by_push_from(const map_t map, const map_t movable, loc_t loc,
                               map_t reachable)
