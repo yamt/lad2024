@@ -27,14 +27,16 @@ struct genctx {
         struct bb bb;
 };
 
-void
+bool
 room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
+        const int max = 6;
+        const int min = 2;
         const struct bb *bb = &ctx->bb;
-        int rw = rng_rand(ctx->rng, 1, 4);
-        int rh = 5 - rw;
+        int rw = rng_rand(ctx->rng, min, max);
+        int rh = max + min - rw;
         if (bb->w < rw + 2 || bb->h < rh + 2) {
-                return;
+                return true;
         }
         int tries = 32;
         do {
@@ -44,9 +46,10 @@ room(struct genctx *ctx, bool avoid_overlap, bool connect)
                      anyeq(ctx->map, rx - 1, ry - 1, rw + 2, rh + 2, _)) &&
                     (!avoid_overlap || !anyeq(ctx->map, rx, ry, rw, rh, _))) {
                         rect(ctx->map, rx, ry, rw, rh, _);
-                        break;
+                        return false;
                 }
         } while (tries--);
+        return true;
 }
 
 bool
@@ -142,7 +145,9 @@ generate(struct genctx *ctx)
 #if 0
         n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
-                room(ctx, false, i > 0);
+                if (room(ctx, false, i > 0)) {
+                    return true;
+                }
         }
 #endif
 
@@ -150,7 +155,9 @@ generate(struct genctx *ctx)
         unsigned int count[END];
         bool connect = false;
         do {
-                room(ctx, true, connect);
+                if (room(ctx, true, connect)) {
+                        return true;
+                }
                 count_objects(ctx->map, count);
                 connect = true;
         } while (100 * count[_] / map_size < 30);
