@@ -15,15 +15,11 @@
  *
  * UNMOVABLE doesn't allow false positives.
  */
-#define UNVISITED 0 /* internal use */
-#define VISITED 1   /* internal use */
-#define MOVABLE 2   /* movable (or collectable for bombs) */
-#define UNMOVABLE 3 /* impossible to move (or collect) */
-#define PUSHABLE 0x10
-#define COLLECTABLE 0x20
+#define NEEDVISIT 0x10 /* internal use */
+#define PUSHABLE 0x01
+#define COLLECTABLE 0x02
 
-#define is_MOVABLE(x) (((x) & 0xf) == MOVABLE)
-#define is_UNMOVABLE(x) (((x) & 0xf) == UNMOVABLE)
+#define is_UNMOVABLE(x) (((x) & (PUSHABLE | COLLECTABLE)) == 0)
 
 void calc_reachable_from(const map_t map, const map_t movable, loc_t loc,
                          map_t reachable);
