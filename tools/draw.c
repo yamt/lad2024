@@ -71,8 +71,8 @@ random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
         };
 
         struct freq freq[] = {
-                {_, 48}, {X, 3}, {B, 12}, {U, 3},
-                {R, 3},  {D, 3}, {L, 3},  {W, 12},
+                {_, 16}, {X, 5}, {B, 2}, {U, 2},
+                {R, 2},  {D, 2}, {L, 2}, {W, 1},
         };
         unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
         unsigned int total = 0;
