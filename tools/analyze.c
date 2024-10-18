@@ -559,7 +559,7 @@ bool
 tsumi(const map_t map)
 {
         map_t movable;
-        calc_movable(map, true, movable);
+        calc_movable(map, false, movable);
 #if 0
         map_t surrounded;
         calc_surrounded(map, movable, surrounded);
@@ -567,17 +567,19 @@ tsumi(const map_t map)
         count_objects(map, counts);
 #endif
         map_t possible_beam[4];
+retry:
         calc_possible_beam(map, movable, possible_beam);
         map_t any_A_reachable;
         calc_reachable_from_any_A_with_possible_beam(
                 map, movable, possible_beam, any_A_reachable);
 
+        bool all_collectable = true;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
-                        if ((movable[loc] & COLLECTABLE) == 0) {
-                                return true;
+                        if ((movable[loc] & COLLECTABLE) != 0) {
+                                continue;
                         }
 #if 0
                         uint8_t sur = surrounded[loc];
@@ -598,12 +600,21 @@ tsumi(const map_t map)
                                 }
                         }
 #endif
-                        if (!possibly_collectable(map, movable, loc,
-                                                  any_A_reachable,
-                                                  possible_beam)) {
-                                return true;
+                        if (possibly_collectable(map, movable, loc,
+                                                 any_A_reachable,
+                                                 possible_beam)) {
+                                if (set_movable_bits(movable, loc,
+                                                     COLLECTABLE)) {
+                                        /*
+                                         * propagate the change to neighbours
+                                         */
+                                        update_movable(map, false, movable);
+                                }
+                                /* restart with the updated movable map */
+                                goto retry;
                         }
+                        all_collectable = false;
                 }
         }
-        return false;
+        return !all_collectable;
 }
