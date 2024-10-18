@@ -56,7 +56,7 @@ void
 simplify(map_t map)
 {
         map_t movable;
-        calc_movable(map, movable);
+        calc_movable(map, true, movable);
         turn_unmovable_to_W(map, movable);
         map_t reachable;
         if (!calc_reachable_from_A(map, movable, reachable)) {

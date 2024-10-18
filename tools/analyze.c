@@ -140,11 +140,43 @@ calc_reachable_from_any_A(const map_t map, const map_t movable,
         }
 }
 
-void
-calc_movable(const map_t map, map_t movable)
+bool
+set_movable_bits(map_t movable, loc_t loc, uint8_t new)
 {
-        map_fill(movable, NEEDVISIT);
+        uint8_t old = movable[loc];
+        movable[loc] = (old & ~NEEDVISIT) | new;
+        /*
+         * note: when we are degrading from UNMOVABLE
+         * to MOVABLE, mark neighbors unvisited.
+         * this might effectively degrade them
+         * from UNMOVABLE to MOVABLE too.
+         */
+        if (!is_UNMOVABLE(old)) {
+                return false;
+        }
+        bool more = false;
+        enum diridx dir;
+        for (dir = 0; dir < 4; dir++) {
+                loc_t d = dirs[dir].loc_diff;
+                loc_t nloc = loc + d;
+                if (!in_map(nloc)) {
+                        continue;
+                }
+                /*
+                 * investigate again
+                 * unless both bits are already set
+                 */
+                if ((~movable[nloc] & (PUSHABLE | COLLECTABLE)) != 0) {
+                        movable[nloc] |= NEEDVISIT;
+                        more = true;
+                }
+        }
+        return more;
+}
 
+void
+update_movable(const map_t map, bool do_collect, map_t movable)
+{
         bool more;
         do {
                 more = false;
@@ -156,12 +188,10 @@ calc_movable(const map_t map, map_t movable)
                         uint8_t objidx = map[loc];
                         if (objidx == W) {
                                 movable[loc] &= ~NEEDVISIT;
-                                more = true;
                                 continue;
                         }
                         if (!is_simple_movable_object(objidx)) {
                                 movable[loc] &= ~NEEDVISIT;
-                                more = true;
                                 continue;
                         }
                         /*
@@ -171,7 +201,7 @@ calc_movable(const map_t map, map_t movable)
                         bool might_push = false;
                         bool might_collect = false;
                         enum diridx dir;
-                        if (objidx == X) {
+                        if (do_collect && objidx == X) {
                                 /*
                                  * note: X is considerd UNMOVABLE only if
                                  * surrounded by UNMOVABLE objects
@@ -215,7 +245,6 @@ calc_movable(const map_t map, map_t movable)
                                 }
                         }
                         if (might_push || might_collect) {
-                                uint8_t old = movable[loc];
                                 uint8_t new = 0;
                                 if (might_push) {
                                         new |= PUSHABLE;
@@ -223,37 +252,19 @@ calc_movable(const map_t map, map_t movable)
                                 if (might_collect) {
                                         new |= COLLECTABLE;
                                 }
-                                movable[loc] = new; /* clear NEEDVISIT */
-                                /*
-                                 * note: when we are degrading from UNMOVABLE
-                                 * to MOVABLE, mark neighbors unvisited.
-                                 * this might effectively degrade them
-                                 * from UNMOVABLE to MOVABLE too.
-                                 */
-                                if (!is_UNMOVABLE(old)) {
-                                        continue;
-                                }
-                                for (dir = 0; dir < 4; dir++) {
-                                        loc_t d = dirs[dir].loc_diff;
-                                        loc_t nloc = loc + d;
-                                        if (!in_map(nloc)) {
-                                                continue;
-                                        }
-                                        /*
-                                         * investigate again
-                                         * unless both bits are already set
-                                         */
-                                        if ((~movable[nloc] &
-                                             (PUSHABLE | COLLECTABLE)) != 0) {
-                                                movable[nloc] |= NEEDVISIT;
-                                                more = true;
-                                        }
-                                }
+                                more |= set_movable_bits(movable, loc, new);
                         } else {
                                 movable[loc] &= ~NEEDVISIT;
                         }
                 }
         } while (more);
+}
+
+void
+calc_movable(const map_t map, bool do_collect, map_t movable)
+{
+        map_fill(movable, NEEDVISIT);
+        update_movable(map, do_collect, movable);
 }
 
 /*
@@ -548,7 +559,7 @@ bool
 tsumi(const map_t map)
 {
         map_t movable;
-        calc_movable(map, movable);
+        calc_movable(map, true, movable);
 #if 0
         map_t surrounded;
         calc_surrounded(map, movable, surrounded);

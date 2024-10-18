@@ -23,7 +23,7 @@ refine(map_t map, const struct solution *solution)
         map_t movable;
         map_t reachable;
 
-        calc_movable(map, movable);
+        calc_movable(map, true, movable);
         bool failed = calc_reachable_from_A(map, movable, reachable);
         assert(!failed);
 
