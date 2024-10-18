@@ -146,7 +146,7 @@ generate(struct genctx *ctx)
         n = rng_rand(rng, 1, 16);
         for (i = 0; i < n; i++) {
                 if (room(ctx, false, i > 0)) {
-                    return true;
+                        return true;
                 }
         }
 #endif
