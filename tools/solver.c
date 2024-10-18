@@ -100,6 +100,8 @@ return_solution(struct node *n, struct node_list *solution,
         } while (n->parent != NULL);
 }
 
+#define BRANCH_HIST_NBUCKETS 9
+
 unsigned int
 solve1(const map_t map, const struct solver_param *param, bool verbose,
        const map_t goal, struct solution *solution)
@@ -114,14 +116,24 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
         }
 
         size_t limit = param->limit / sizeof(struct node);
-        unsigned int queued = 0;
-        unsigned int registered = 0;
-        unsigned int processed = 0;
-        unsigned int duplicated = 0;
-        unsigned int ntsumi = 0;
-        unsigned int ntsumicheck = 0;
+        struct stats {
+                unsigned int queued;
+                unsigned int registered;
+                unsigned int processed;
+                unsigned int duplicated;
+                unsigned int ntsumi;
+                unsigned int ntsumicheck;
+                unsigned int nnodes; /* queued for this step */
+        };
+        struct stats stats;
+        struct stats ostats;
+        memset(&stats, 0, sizeof(stats));
 
+        unsigned int curstep = 0;
         unsigned int last_thresh = 0;
+
+        unsigned int branch_hist[BRANCH_HIST_NBUCKETS];
+        memset(branch_hist, 0, sizeof(branch_hist));
 
         struct node *root = alloc_node();
         map_copy(root->map, map);
@@ -129,41 +141,53 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
         root->steps = 0;
         root->flags = 0;
         LIST_INSERT_TAIL(&todo, root, q);
-        queued++;
+        stats.queued++;
         add(root);
-        registered++;
+        stats.registered++;
 
-        unsigned int curstep = 0;
-        unsigned int prev_nnodes = 1;
-        unsigned int prev_queued = 1;
-        unsigned int prev_ntsumi = 0;
-        unsigned int prev_ntsumicheck = 0;
+        stats.nnodes = 1;
+
+        ostats = stats;
         struct node *n;
         while ((n = LIST_FIRST(&todo)) != NULL) {
+                assert(stats.ntsumi <= stats.ntsumicheck);
+                assert(stats.processed <= stats.queued);
                 if (n->steps != curstep) {
-                        unsigned int nnodes = queued - prev_queued;
-                        unsigned int nt = ntsumicheck - prev_ntsumicheck;
+#define D(X) (stats.X - ostats.X)
+                        assert(ostats.queued == stats.processed);
+                        assert(ostats.nnodes == D(processed));
+                        stats.nnodes = D(queued);
+                        unsigned int nt = D(ntsumicheck);
                         printf("step %u nnodes %u (%.3f) tsumicheck %.3f "
                                "tsumi %.3f (%.3f)\n",
-                               n->steps, nnodes, (float)nnodes / prev_nnodes,
-                               (float)(ntsumicheck - prev_ntsumicheck) /
-                                       prev_nnodes,
-                               (float)(ntsumi - prev_ntsumi) / prev_nnodes,
-                               (nt > 0) ? (float)(ntsumi - prev_ntsumi) / nt
-                                        : (float)0);
+                               n->steps, stats.nnodes,
+                               (float)stats.nnodes / ostats.nnodes,
+                               (float)D(ntsumicheck) / ostats.nnodes,
+                               (float)D(ntsumi) / ostats.nnodes,
+                               (nt > 0) ? (float)D(ntsumi) / nt : (float)0);
+                        printf("branch hist:");
+                        unsigned int i;
+                        unsigned int total = 0;
+                        for (i = 0; i < BRANCH_HIST_NBUCKETS; i++) {
+                                total += branch_hist[i];
+                        }
+                        assert(total == D(processed) - D(ntsumi));
+                        for (i = 0; i < BRANCH_HIST_NBUCKETS; i++) {
+                                printf(" %d (%.2f)", branch_hist[i],
+                                       (float)branch_hist[i] / total);
+                        }
+                        printf("\n");
+                        memset(branch_hist, 0, sizeof(branch_hist));
                         curstep = n->steps;
-                        prev_nnodes = nnodes;
-                        prev_queued = queued;
-                        prev_ntsumi = ntsumi;
-                        prev_ntsumicheck = ntsumicheck;
+                        ostats = stats;
                 }
                 LIST_REMOVE(&todo, n, q);
                 map_t beam_map;
                 calc_beam(n->map, beam_map);
                 if (!is_trivial(n, beam_map)) {
-                        ntsumicheck++;
+                        stats.ntsumicheck++;
                         if (tsumi(n->map)) {
-                                ntsumi++;
+                                stats.ntsumi++;
                                 goto skip;
                         }
                 }
@@ -181,6 +205,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                 *p = tmp;
                         }
                 }
+                unsigned int nbranches = 0;
                 unsigned int i;
                 for (i = 0; i < meta.nplayers; i++) {
                         struct player *p = &meta.players[i];
@@ -198,11 +223,11 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                 player_move(&meta2, &meta2.players[i], dir,
                                             n2->map, beam_map, true);
                                 if (add(n2)) {
-                                        duplicated++;
+                                        stats.duplicated++;
                                         free_node(n2);
                                         continue;
                                 }
-                                registered++;
+                                stats.registered++;
                                 n2->parent = n;
                                 n2->steps = n->steps + 1;
                                 n2->loc = p->loc;
@@ -215,7 +240,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                                 exit(1); /* must be a bug */
                                         }
                                         solution->nmoves = n2->steps;
-                                        solution->iterations = processed;
+                                        solution->iterations = stats.processed;
                                         return_solution(n2, &solution->moves,
                                                         last_thresh);
                                         if (last_thresh) {
@@ -231,7 +256,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                 } else if (goal != NULL &&
                                            !memcmp(goal, n2->map, map_size)) {
                                         solution->nmoves = n2->steps;
-                                        solution->iterations = processed;
+                                        solution->iterations = stats.processed;
                                         return_solution(n2, &solution->moves,
                                                         last_thresh);
                                         if (last_thresh) {
@@ -240,27 +265,36 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                         return SOLVE_SOLVED;
                                 }
                                 LIST_INSERT_TAIL(&todo, n2, q);
-                                queued++;
+                                stats.queued++;
+                                nbranches++;
                         }
                 }
+                if (nbranches >= BRANCH_HIST_NBUCKETS) {
+                        branch_hist[BRANCH_HIST_NBUCKETS - 1]++;
+                } else {
+                        branch_hist[nbranches]++;
+                }
 skip:
-                processed++;
-                if (verbose && (processed % 100000) == 0) {
+                stats.processed++;
+                if (verbose && (stats.processed % 100000) == 0) {
                         dump_map(n->map);
                         printf("%u / %u (%u) / %u dup %u (%.3f) tsumi %u/%u "
                                "(%.3f) "
                                "step "
                                "%u (%.3f "
                                "left)\n",
-                               processed, queued, queued - processed,
-                               registered, duplicated,
-                               (float)duplicated / processed, ntsumi,
-                               ntsumicheck, (float)ntsumi / ntsumicheck,
+                               stats.processed, stats.queued,
+                               stats.queued - stats.processed,
+                               stats.registered, stats.duplicated,
+                               (float)stats.duplicated / stats.processed,
+                               stats.ntsumi, stats.ntsumicheck,
+                               (float)stats.ntsumi / stats.ntsumicheck,
                                n->steps,
-                               (float)(prev_queued - processed) / prev_nnodes);
+                               (float)(ostats.queued - stats.processed) /
+                                       stats.nnodes);
                         // dump_hash();
                 }
-                if (registered > limit) {
+                if (stats.registered > limit) {
                         /*
                          * note: we keep nodes for previous steps
                          * for two purpose:
@@ -281,21 +315,23 @@ skip:
                                "left), "
                                "processed %u)\n",
                                thresh, n->steps,
-                               (float)(prev_queued - processed) / prev_nnodes,
-                               processed);
+                               (float)(ostats.queued - stats.processed) /
+                                       ostats.nnodes,
+                               stats.processed);
                         unsigned int removed = forget_old(thresh);
-                        printf("removed %u / %u nodes\n", removed, registered);
-                        registered -= removed;
+                        printf("removed %u / %u nodes\n", removed,
+                               stats.registered);
+                        stats.registered -= removed;
                         last_thresh = thresh;
                 }
-                if (processed >= param->max_iterations) {
+                if (stats.processed >= param->max_iterations) {
                         printf("giving up\n");
                         solution->giveup_reason = GIVEUP_ITERATIONS;
                         return SOLVE_GIVENUP;
                 }
         }
         printf("impossible\n");
-        solution->iterations = processed;
+        solution->iterations = stats.processed;
         return SOLVE_IMPOSSIBLE;
 }
 
