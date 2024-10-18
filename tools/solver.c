@@ -100,7 +100,7 @@ return_solution(struct node *n, struct node_list *solution,
         } while (n->parent != NULL);
 }
 
-#define BRANCH_HIST_NBUCKETS 9
+#define BRANCH_HIST_NBUCKETS 10
 
 unsigned int
 solve1(const map_t map, const struct solver_param *param, bool verbose,
@@ -269,7 +269,8 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                 nbranches++;
                         }
                 }
-                if (nbranches >= BRANCH_HIST_NBUCKETS) {
+                assert(nbranches <= 4 * meta.nplayers);
+                if (nbranches >= BRANCH_HIST_NBUCKETS - 1) {
                         branch_hist[BRANCH_HIST_NBUCKETS - 1]++;
                 } else {
                         branch_hist[nbranches]++;
