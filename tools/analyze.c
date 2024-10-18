@@ -190,6 +190,14 @@ calc_movable(const map_t map, map_t movable)
                                  * _BB__
                                  * _____
                                  */
+
+                                /*
+                                 * REVISIT: the collectability logic here
+                                 * is very naive.
+                                 * possibly_collectable() has a bit more
+                                 * accurate logic, which is based on the
+                                 * movability we are calculating here.
+                                 */
                                 for (dir = 0; dir < 4; dir++) {
                                         loc_t d = dirs[dir].loc_diff;
                                         if (!occupied(map, movable, loc + d)) {
