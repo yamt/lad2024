@@ -173,20 +173,28 @@ generate(struct genctx *ctx)
         random_ichimatsu(ctx);
 #endif
 
+#if 0
         n = rng_rand(rng, -10, max_players);
         if (n <= 0) {
                 n = 1;
         }
+#else
+        n = 1;
+#endif
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, A)) {
                         return true;
                 }
         }
         if (n < max_players) {
+#if 0
                 n = rng_rand(rng, -10, 4 - n);
                 if (n < 0) {
                         n = 1;
                 }
+#else
+                n = 1;
+#endif
                 for (i = 0; i < n; i++) {
                         if (place_obj(ctx, P)) {
                                 return true;
