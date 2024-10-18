@@ -33,9 +33,8 @@ occupied(const map_t map, const map_t movable, loc_t loc)
         }
         /*
          * NOTE: this function is also used by calc_movable itself.
-         * in that case, !is_MOVABLE here means UNMOVABLE or UNVISITED.
          */
-        if (is_simple_movable_object(objidx) && !is_MOVABLE(movable[loc])) {
+        if (is_simple_movable_object(objidx) && is_UNMOVABLE(movable[loc])) {
                 return true;
         }
         return false;
@@ -144,27 +143,31 @@ calc_reachable_from_any_A(const map_t map, const map_t movable,
 void
 calc_movable(const map_t map, map_t movable)
 {
-        map_fill(movable, UNVISITED);
+        map_fill(movable, NEEDVISIT);
 
         bool more;
         do {
                 more = false;
                 loc_t loc;
                 for (loc = 0; loc < map_size; loc++) {
-                        if ((movable[loc]) != UNVISITED) {
+                        if ((movable[loc] & NEEDVISIT) == 0) {
                                 continue;
                         }
                         uint8_t objidx = map[loc];
                         if (objidx == W) {
-                                movable[loc] = UNMOVABLE;
+                                movable[loc] &= ~NEEDVISIT;
                                 more = true;
                                 continue;
                         }
                         if (!is_simple_movable_object(objidx)) {
-                                movable[loc] = VISITED;
+                                movable[loc] &= ~NEEDVISIT;
                                 more = true;
                                 continue;
                         }
+                        /*
+                         * note: false positive is ok for both of
+                         * might_push/might_collect
+                         */
                         bool might_push = false;
                         bool might_collect = false;
                         enum diridx dir;
@@ -204,37 +207,42 @@ calc_movable(const map_t map, map_t movable)
                                 }
                         }
                         if (might_push || might_collect) {
-                                movable[loc] = MOVABLE;
+                                uint8_t old = movable[loc];
+                                uint8_t new = 0;
                                 if (might_push) {
-                                        movable[loc] |= PUSHABLE;
+                                        new |= PUSHABLE;
                                 }
                                 if (might_collect) {
-                                        movable[loc] |= COLLECTABLE;
+                                        new |= COLLECTABLE;
                                 }
+                                movable[loc] = new; /* clear NEEDVISIT */
                                 /*
-                                 * note: mark neighbors unvisited.
+                                 * note: when we are degrading from UNMOVABLE
+                                 * to MOVABLE, mark neighbors unvisited.
                                  * this might effectively degrade them
-                                 * from UNMOVABLE to MOVABLE.
-                                 *
-                                 * XXX we need to update COLLECTABLE/PUSHABLE
-                                 * of neighbor objects as well.
+                                 * from UNMOVABLE to MOVABLE too.
                                  */
+                                if (!is_UNMOVABLE(old)) {
+                                        continue;
+                                }
                                 for (dir = 0; dir < 4; dir++) {
                                         loc_t d = dirs[dir].loc_diff;
                                         loc_t nloc = loc + d;
                                         if (!in_map(nloc)) {
                                                 continue;
                                         }
-                                        if (is_UNMOVABLE(movable[nloc])) {
-                                                /*
-                                                 * need to investigate again
-                                                 */
-                                                movable[nloc] = UNVISITED;
+                                        /*
+                                         * investigate again
+                                         * unless both bits are already set
+                                         */
+                                        if ((~movable[nloc] &
+                                             (PUSHABLE | COLLECTABLE)) != 0) {
+                                                movable[nloc] |= NEEDVISIT;
                                                 more = true;
                                         }
                                 }
                         } else {
-                                movable[loc] = UNMOVABLE;
+                                movable[loc] &= ~NEEDVISIT;
                         }
                 }
         } while (more);
@@ -409,8 +417,8 @@ update_possible_beam(const map_t map, const map_t movable,
                         if (!in_map(nloc)) {
                                 break;
                         }
-                        if (is_UNMOVABLE(movable[nloc])) {
-                                assert(block_beam(map[nloc]));
+                        if (block_beam(map[nloc]) &&
+                            is_UNMOVABLE(movable[nloc])) {
                                 break;
                         }
                         beam[nloc] = 1;
@@ -549,11 +557,7 @@ tsumi(const map_t map)
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
-                        /*
-                         * note: calc_movable mark an X UNMOVABLE only when
-                         * it's impossible to be collected.
-                         */
-                        if (movable[loc] == UNMOVABLE) {
+                        if ((movable[loc] & COLLECTABLE) == 0) {
                                 return true;
                         }
 #if 0
