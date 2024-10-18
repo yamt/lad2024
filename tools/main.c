@@ -13,14 +13,13 @@
 
 unsigned int
 load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev,
-                        unsigned int *nmoves)
+                        unsigned int *nmoves, struct map_info *info)
 {
         map_t map;
-        struct map_info info;
         printf("stage %u\n", stage_number);
-        decode_stage(stage_number - 1, map, &info);
-        if (info.w > map_width || info.h > map_height) {
-                printf("info %u %u\n", info.w, info.h);
+        decode_stage(stage_number - 1, map, info);
+        if (info->w > map_width || info->h > map_height) {
+                printf("info %u %u\n", info->w, info->h);
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
@@ -74,6 +73,7 @@ main(int argc, char **argv)
                 unsigned int solve_flags;
                 unsigned int nmoves;
                 struct evaluation ev;
+                struct map_info info;
         } *results;
         results = calloc(sizeof(*results), nstages);
         if (results == NULL) {
@@ -82,8 +82,8 @@ main(int argc, char **argv)
         unsigned int i;
         for (i = stage_number - 1; i < stage_number_max; i++) {
                 struct result *r = &results[i];
-                r->solve_flags =
-                        load_and_evaluate_stage(i + 1, &r->ev, &r->nmoves);
+                r->solve_flags = load_and_evaluate_stage(i + 1, &r->ev,
+                                                         &r->nmoves, &r->info);
                 if (r->solve_flags == SOLVE_IMPOSSIBLE) {
                         printf("stage %u is impossible!\n", i + 1);
                         exit(1);
@@ -95,8 +95,10 @@ main(int argc, char **argv)
                 unsigned int j;
                 for (j = stage_number - 1; j <= i; j++) {
                         struct result *r = &results[j];
-                        printf("stage %u solve_flags %u score %u nmoves %u\n",
-                               j + 1, r->solve_flags, r->ev.score, r->nmoves);
+                        printf("stage %03u w %2u h %2u solve_flags %u score "
+                               "%4u nmoves %3u\n",
+                               j + 1, r->info.h, r->info.w, r->solve_flags,
+                               r->ev.score, r->nmoves);
                 }
                 printf("=============\n");
         }
