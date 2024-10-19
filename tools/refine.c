@@ -18,7 +18,7 @@
  * effectively reducing the solution space.
  */
 bool
-refine(map_t map, const struct solution *solution)
+refine(map_t map, bool eager, const struct solution *solution)
 {
         map_t movable;
         map_t reachable;
@@ -81,32 +81,36 @@ refine(map_t map, const struct solution *solution)
                         }
                 }
 
-                for (loc = 0; loc < map_size; loc++) {
-                        if (reachable[loc] == UNREACHABLE) {
-                                continue;
-                        }
-                        uint8_t objidx = map[loc];
-                        uint8_t try = objidx;
-#if 0 /* disabled because a light can work as an obstacles for P. */
-                        if (is_light(objidx)) {
-                                if (used[loc]) {
-                                        try = B;
-                                } else {
-                                        try = W;
+                if (eager) {
+                        for (loc = 0; loc < map_size; loc++) {
+                                if (reachable[loc] == UNREACHABLE) {
+                                        continue;
                                 }
-                        } else
-#endif
-                        if (objidx == _ && !used[loc]) {
-                                try = W;
-                        } else {
-                                continue;
-                        }
-                        map[loc] = try;
-                        if (validate(map, solution, false, false)) {
-                                map[loc] = objidx;
-                        } else {
-                                modified = true;
-                                more = true;
+                                uint8_t objidx = map[loc];
+                                uint8_t try = objidx;
+                                if (is_light(objidx)) {
+                                        if (used[loc]) {
+                                                try = B;
+                                        } else {
+                                                try = W;
+                                        }
+                                } else if (objidx == _ && !used[loc]) {
+                                        try = W;
+                                } else {
+                                        continue;
+                                }
+                                map[loc] = try;
+                                if (validate(map, solution, false, false)) {
+                                        /*
+                                         * XXX validate is not enough for
+                                         * eager refinement. we need to
+                                         * perform full solve().
+                                         */
+                                        map[loc] = objidx;
+                                } else {
+                                        modified = true;
+                                        more = true;
+                                }
                         }
                 }
         } while (more);
@@ -119,7 +123,7 @@ try_refine1(map_t map, struct solution *solution,
 {
         map_t orig;
         map_copy(orig, map);
-        if (!refine(map, solution)) {
+        if (!refine(map, false, solution)) {
                 return false;
         }
         map_t refinedmap;
