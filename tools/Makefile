@@ -1,4 +1,5 @@
 CFLAGS = -std=c99 -Wall
+CFLAGS += -MMD -MP
 CFLAGS += -flto=full -O3 -DNDEBUG -Wno-unused-variable
 #CFLAGS += -Og -g
 # CFLAGS += -Dmap_height=16 -Dmap_width=16
@@ -81,3 +82,7 @@ stage_uniq: $(STAGE_UNIQ_OBJS) $(OBJS)
 clean:
 	rm -f $(BINS)
 	rm -f $(ALL_OBJS)
+
+DEPS = $(ALL_OBJS:.o=.d)
+
+-include $(DEPS)
