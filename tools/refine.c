@@ -143,7 +143,7 @@ try_refine1(map_t map, struct solution *solution,
         detach_solution(solution);
         map_t orig;
         map_copy(orig, map);
-        if (!refine(map, false, solution, param)) {
+        if (!refine(map, true, solution, param)) {
                 return false;
         }
         map_t refinedmap;
