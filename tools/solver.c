@@ -450,7 +450,11 @@ clear_solution(struct solution *solution)
         }
 }
 
+#if !defined(MEMLIMIT_GB)
+#define MEMLIMIT_GB 8
+#endif
+
 struct solver_param solver_default_param = {
-        .limit = (size_t)8 * 1024 * 1024 * 1024,
+        .limit = (size_t)MEMLIMIT_GB * 1024 * 1024 * 1024,
         .max_iterations = 100000000,
 };
