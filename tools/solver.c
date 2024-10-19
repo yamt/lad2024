@@ -165,18 +165,20 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                (float)D(ntsumicheck) / ostats.nnodes,
                                (float)D(ntsumi) / ostats.nnodes,
                                (nt > 0) ? (float)D(ntsumi) / nt : (float)0);
-                        printf("branch:");
-                        unsigned int i;
-                        unsigned int total = 0;
-                        for (i = 0; i < BRANCH_HIST_NBUCKETS; i++) {
-                                total += branch_hist[i];
+                        if (verbose) {
+                                printf("branch:");
+                                unsigned int i;
+                                unsigned int total = 0;
+                                for (i = 0; i < BRANCH_HIST_NBUCKETS; i++) {
+                                        total += branch_hist[i];
+                                }
+                                assert(total == D(processed) - D(ntsumi));
+                                for (i = 0; i < BRANCH_HIST_NBUCKETS; i++) {
+                                        printf(" %u:%.2f", i,
+                                               (float)branch_hist[i] / total);
+                                }
+                                printf("\n");
                         }
-                        assert(total == D(processed) - D(ntsumi));
-                        for (i = 0; i < BRANCH_HIST_NBUCKETS; i++) {
-                                printf(" %u:%.2f", i,
-                                       (float)branch_hist[i] / total);
-                        }
-                        printf("\n");
                         memset(branch_hist, 0, sizeof(branch_hist));
                         curstep = n->steps;
                         ostats = stats;
