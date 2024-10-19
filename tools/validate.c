@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 
 #include "dump.h"
@@ -80,6 +81,30 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
         if (verbose) {
                 printf("====== result ok\n");
                 dump_map(map);
+        }
+        return false;
+}
+
+/*
+ * validate a solution by solving the stage again.
+ */
+bool
+validate_slow(const map_t map, const struct solution *solution,
+              const struct solver_param *param, bool verbose,
+              bool allow_removed_players)
+{
+        assert(solution->detached);
+        solve_cleanup();
+        struct solution solution_after_refinement;
+        unsigned int result =
+                solve(map, param, false, &solution_after_refinement);
+        clear_solution(&solution_after_refinement);
+        if (result != SOLVE_SOLVED ||
+            (!allow_removed_players &&
+             solution_after_refinement.nmoves != solution->nmoves) ||
+            (allow_removed_players &&
+             solution_after_refinement.nmoves > solution->nmoves)) {
+                return true;
         }
         return false;
 }

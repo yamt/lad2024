@@ -10,27 +10,6 @@
 #include "solver.h"
 #include "validate.h"
 
-bool
-validate_slow(const map_t map, const struct solution *solution,
-              const struct solver_param *param, bool verbose,
-              bool allow_removed_players)
-{
-        assert(solution->detached);
-        solve_cleanup();
-        struct solution solution_after_refinement;
-        unsigned int result =
-                solve(map, param, false, &solution_after_refinement);
-        clear_solution(&solution_after_refinement);
-        if (result != SOLVE_SOLVED ||
-            (!allow_removed_players &&
-             solution_after_refinement.nmoves != solution->nmoves) ||
-            (allow_removed_players &&
-             solution_after_refinement.nmoves > solution->nmoves)) {
-                return true;
-        }
-        return false;
-}
-
 /*
  * remove unnecessary spaces.
  * it can also allow further simplification.
