@@ -26,9 +26,9 @@ validate_slow(const map_t map, const struct solution *solution,
              solution_after_refinement.nmoves != solution->nmoves) ||
             (allow_removed_players &&
              solution_after_refinement.nmoves > solution->nmoves)) {
-                return false;
+                return true;
         }
-        return true;
+        return false;
 }
 
 /*
@@ -122,7 +122,7 @@ refine(map_t map, bool eager, const struct solution *solution,
                                         continue;
                                 }
                                 map[loc] = try;
-                                if (validate(map, solution, false, false) &&
+                                if (validate(map, solution, false, false) ||
                                     validate_slow(map, solution, param, false,
                                                   false)) {
                                         map[loc] = objidx;
@@ -167,7 +167,7 @@ try_refine1(map_t map, struct solution *solution,
         }
 
 #if 1
-        if (!validate_slow(map, solution, param, false, removed)) {
+        if (validate_slow(map, solution, param, false, removed)) {
                 /* must be a bug */
                 printf("refinement changed the solution!\n");
                 dump_map(orig);
