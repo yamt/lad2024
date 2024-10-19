@@ -10,6 +10,27 @@
 #include "solver.h"
 #include "validate.h"
 
+bool
+validate_slow(const map_t map, const struct solution *solution,
+              const struct solver_param *param, bool verbose,
+              bool allow_removed_players)
+{
+        assert(solution->detached);
+        solve_cleanup();
+        struct solution solution_after_refinement;
+        unsigned int result =
+                solve(map, param, false, &solution_after_refinement);
+        clear_solution(&solution_after_refinement);
+        if (result != SOLVE_SOLVED ||
+            (!allow_removed_players &&
+             solution_after_refinement.nmoves != solution->nmoves) ||
+            (allow_removed_players &&
+             solution_after_refinement.nmoves > solution->nmoves)) {
+                return false;
+        }
+        return true;
+}
+
 /*
  * remove unnecessary spaces.
  * it can also allow further simplification.
@@ -18,7 +39,8 @@
  * effectively reducing the solution space.
  */
 bool
-refine(map_t map, bool eager, const struct solution *solution)
+refine(map_t map, bool eager, const struct solution *solution,
+       const struct solver_param *param)
 {
         map_t movable;
         map_t reachable;
@@ -100,12 +122,9 @@ refine(map_t map, bool eager, const struct solution *solution)
                                         continue;
                                 }
                                 map[loc] = try;
-                                if (validate(map, solution, false, false)) {
-                                        /*
-                                         * XXX validate is not enough for
-                                         * eager refinement. we need to
-                                         * perform full solve().
-                                         */
+                                if (validate(map, solution, false, false) &&
+                                    validate_slow(map, solution, param, false,
+                                                  false)) {
                                         map[loc] = objidx;
                                 } else {
                                         modified = true;
@@ -121,9 +140,10 @@ bool
 try_refine1(map_t map, struct solution *solution,
             const struct solver_param *param)
 {
+        detach_solution(solution);
         map_t orig;
         map_copy(orig, map);
-        if (!refine(map, false, solution)) {
+        if (!refine(map, false, solution, param)) {
                 return false;
         }
         map_t refinedmap;
@@ -147,15 +167,7 @@ try_refine1(map_t map, struct solution *solution,
         }
 
 #if 1
-        detach_solution(solution);
-        solve_cleanup();
-        struct solution solution_after_refinement;
-        unsigned int result =
-                solve(map, param, false, &solution_after_refinement);
-        if (result != SOLVE_SOLVED ||
-            (!removed &&
-             solution_after_refinement.nmoves != solution->nmoves) ||
-            (removed && solution_after_refinement.nmoves > solution->nmoves)) {
+        if (!validate_slow(map, solution, param, false, removed)) {
                 /* must be a bug */
                 printf("refinement changed the solution!\n");
                 dump_map(orig);
@@ -165,7 +177,6 @@ try_refine1(map_t map, struct solution *solution,
                 dump_map_c(map, "refine-bug-refined");
                 exit(1);
         }
-        clear_solution(&solution_after_refinement);
 #endif
         return true;
 }
