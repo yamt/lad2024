@@ -613,6 +613,13 @@ retry:
                                 /* restart with the updated movable map */
                                 goto retry;
                         }
+                        /*
+                         * this X doesn't seem collectable.
+                         * we still need to continue processing though
+                         * because it's possible this result gets changed
+                         * by collecting other X. ("goto retry" above for
+                         * the other X.)
+                         */
                         all_collectable = false;
                 }
         }
