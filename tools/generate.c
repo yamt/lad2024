@@ -111,9 +111,41 @@ generate(struct genctx *ctx)
         rect(ctx->map, 5, 5, 1, 1, W);
 #endif
 
+#if 0
+        box(ctx->map, 1, 1, map_width - 2, map_height - 2, _);
+        box(ctx->map, 2, 2, map_width - 4, map_height - 4, _);
+        box(ctx->map, 3, 3, map_width - 6, map_height - 6, _);
+#endif
+
         struct rng *rng = ctx->rng;
+        uint8_t *map = ctx->map;
         int i;
         int n;
+
+#if 1
+        {
+                int x;
+                int y;
+                int sx = 4;
+                int sy = 4;
+                for (y = 0; (y + 1) * (sy + 1) + 1 <= map_height; y++) {
+                        for (x = 0; (x + 1) * (sx + 1) + 1 <= map_width; x++) {
+                                rect(map, 1 + x * (sx + 1), 1 + y * (sy + 1),
+                                     4, 4, _);
+                                if (x > 0) {
+                                        rect(map, 1 + x * (sx + 1) - 1,
+                                             1 + y * (sy + 1) + 1, 1, sy - 2,
+                                             _);
+                                }
+                                if (y > 0) {
+                                        rect(map, 1 + x * (sx + 1) + 1,
+                                             1 + y * (sy + 1) - 1, sx - 2, 1,
+                                             _);
+                                }
+                        }
+                }
+        }
+#endif
 
 #if 0
         /* X */
@@ -152,7 +184,7 @@ generate(struct genctx *ctx)
         }
 #endif
 
-#if 1
+#if 0
         unsigned int count[END];
         bool connect = false;
         do {
