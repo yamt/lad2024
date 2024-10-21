@@ -131,6 +131,15 @@ rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
 }
 
 void
+box(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
+{
+        rect(map, rx, ry, rw, 1, objidx);
+        rect(map, rx, ry, 1, rh, objidx);
+        rect(map, rx, ry + rh - 1, rw, 1, objidx);
+        rect(map, rx + rw - 1, ry, 1, rh, objidx);
+}
+
+void
 circle(map_t map, int ox, int oy, int r, uint8_t objidx)
 {
         loc_t loc;
