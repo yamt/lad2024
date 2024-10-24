@@ -111,6 +111,16 @@ generate(struct genctx *ctx)
         rect(ctx->map, 5, 5, 1, 1, W);
 #endif
 
+#if 1
+        {
+                int sx = 3;
+                int sy = 3;
+                rect(ctx->map, 1, (map_height - sy) / 2, map_width - 2, sy, _);
+                rect(ctx->map, (map_width - sx) / 2, 1, sx, map_height - 2, _);
+                ctx->map[genloc(map_width / 2, map_height / 2)] = W;
+        }
+#endif
+
 #if 0
         box(ctx->map, 1, 1, map_width - 2, map_height - 2, _);
         box(ctx->map, 2, 2, map_width - 4, map_height - 4, _);
@@ -122,7 +132,7 @@ generate(struct genctx *ctx)
         int i;
         int n;
 
-#if 1
+#if 0
         {
                 int x;
                 int y;
