@@ -23,14 +23,28 @@ struct node_list hash_heads[HASH_SIZE];
 struct node_list todo;
 
 bool
-add(struct node *n)
+add(const map_t root, struct node *n, const map_t node_map)
 {
-        uint32_t hash = sdbm_hash(n->map, sizeof(n->map));
+        uint32_t hash = sdbm_hash(node_map, map_size);
         uint32_t idx = hash % HASH_SIZE;
+#if defined(NODE_KEEP_HASH)
+        n->hash = hash;
+#endif
         struct node_list *head = &hash_heads[idx];
         struct node *n2;
         LIST_FOREACH(n2, head, hashq) {
-                if (!memcmp(n2->map, n->map, sizeof(n->map))) {
+#if defined(NODE_KEEP_HASH)
+                if (hash != n2->hash) {
+                        continue;
+                }
+#endif
+#if defined(SMALL_NODE)
+                map_t n2_map;
+                node_expand_map(n2, root, n2_map);
+#else
+                const uint8_t *n2_map = n2->map;
+#endif
+                if (!memcmp(n2_map, node_map, map_size)) {
                         return true;
                 }
         }
@@ -103,7 +117,7 @@ return_solution(struct node *n, struct node_list *solution,
 #define BRANCH_HIST_NBUCKETS 10
 
 unsigned int
-solve1(const map_t map, const struct solver_param *param, bool verbose,
+solve1(const map_t root_map, const struct solver_param *param, bool verbose,
        const map_t goal, struct solution *solution)
 {
         solution->detached = false;
@@ -136,13 +150,15 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
         memset(branch_hist, 0, sizeof(branch_hist));
 
         struct node *root = alloc_node();
-        map_copy(root->map, map);
+#if !defined(SMALL_NODE)
+        map_copy(root->map, root_map);
+#endif
         root->parent = NULL;
         root->steps = 0;
         root->flags = 0;
         LIST_INSERT_TAIL(&todo, root, q);
         stats.queued++;
-        add(root);
+        add(root_map, root, root_map);
         stats.registered++;
 
         stats.nnodes = 1;
@@ -184,17 +200,23 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                         ostats = stats;
                 }
                 LIST_REMOVE(&todo, n, q);
+#if defined(SMALL_NODE)
+                map_t map;
+                node_expand_map(n, root_map, map);
+#else
+                uint8_t *map = n->map;
+#endif
                 map_t beam_map;
-                calc_beam(n->map, beam_map);
-                if (!is_trivial(n, beam_map)) {
+                calc_beam(map, beam_map);
+                if (!is_trivial(n, map, beam_map)) {
                         stats.ntsumicheck++;
-                        if (tsumi(n->map)) {
+                        if (tsumi(map)) {
                                 stats.ntsumi++;
                                 goto skip;
                         }
                 }
                 struct stage_meta meta;
-                calc_stage_meta(n->map, &meta);
+                calc_stage_meta(map, &meta);
                 assert(meta.nplayers > 0);
                 assert(meta.nplayers <= max_players);
                 if (n->steps > 0) {
@@ -213,18 +235,22 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                         struct player *p = &meta.players[i];
                         enum diridx dir;
                         for (dir = 0; dir < 4; dir++) {
-                                unsigned int flags =
-                                        player_move(&meta, p, dir, n->map,
-                                                    beam_map, false);
+                                unsigned int flags = player_move(
+                                        &meta, p, dir, map, beam_map, false);
                                 if ((flags & MOVE_OK) == 0) {
                                         continue;
                                 }
                                 struct node *n2 = alloc_node();
-                                map_copy(n2->map, n->map);
+#if defined(SMALL_NODE)
+                                map_t map2;
+#else
+                                uint8_t *map2 = n2->map;
+#endif
+                                map_copy(map2, map);
                                 struct stage_meta meta2 = meta;
                                 player_move(&meta2, &meta2.players[i], dir,
-                                            n2->map, beam_map, true);
-                                if (add(n2)) {
+                                            map2, beam_map, true);
+                                if (add(root_map, n2, map2)) {
                                         stats.duplicated++;
                                         free_node(n2);
                                         continue;
@@ -246,7 +272,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                         return_solution(n2, &solution->moves,
                                                         last_thresh);
                                         if (last_thresh) {
-                                                dump_map(n2->map);
+                                                dump_map(map2);
                                                 printf("proven solvable "
                                                        "(steps=%u)\n",
                                                        solution->nmoves);
@@ -256,7 +282,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
                                         // dump_hash();
                                         return SOLVE_SOLVED;
                                 } else if (goal != NULL &&
-                                           !memcmp(goal, n2->map, map_size)) {
+                                           !memcmp(goal, map2, map_size)) {
                                         solution->nmoves = n2->steps;
                                         solution->iterations = stats.processed;
                                         return_solution(n2, &solution->moves,
@@ -280,7 +306,7 @@ solve1(const map_t map, const struct solver_param *param, bool verbose,
 skip:
                 stats.processed++;
                 if (verbose && (stats.processed % 100000) == 0) {
-                        dump_map(n->map);
+                        dump_map(map);
                         printf("%u / %u (%u) / %u dup %u (%.3f) tsumi %u/%u "
                                "(%.3f) "
                                "step "
@@ -298,6 +324,11 @@ skip:
                         // dump_hash();
                 }
                 if (stats.registered > limit) {
+#if defined(SMALL_NODE)
+                        printf("too many registered nodes\n");
+                        solution->giveup_reason = GIVEUP_MEMORY;
+                        return SOLVE_GIVENUP;
+#else
                         /*
                          * note: we keep nodes for previous steps
                          * for two purpose:
@@ -326,6 +357,7 @@ skip:
                                stats.registered);
                         stats.registered -= removed;
                         last_thresh = thresh;
+#endif
                 }
                 if (stats.processed >= param->max_iterations) {
                         printf("giving up\n");
@@ -344,6 +376,7 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
 {
         unsigned int result;
         result = solve1(map, param, verbose, NULL, solution);
+#if !defined(SMALL_NODE)
         while (result == SOLVE_SOLVABLE) {
                 {
                         struct node *n = LIST_FIRST(&solution->moves);
@@ -363,7 +396,7 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
                 assert(n->steps > 1);
                 struct solution solution2;
                 map_t goal;
-                prev_map(n, goal);
+                prev_map(n, n->map, goal);
                 printf("re-solving up to the intermediate goal (step %u):\n",
                        n->steps - 1);
                 dump_map(goal);
@@ -385,6 +418,7 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
                         LIST_REMOVE(&solution->moves, &t, q);
                 }
         }
+#endif
         assert(result != SOLVE_SOLVED ||
                LIST_FIRST(&solution->moves)->steps == 1);
         return result;
