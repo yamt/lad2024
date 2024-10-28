@@ -34,6 +34,8 @@ void free_all_nodes(void);
 loc_t next_loc(const struct node *n);
 loc_t pushed_obj_loc(const struct node *n);
 bool is_trivial(const struct node *n, const map_t map, const map_t beam_map);
+void node_apply(const struct node *n, map_t map);
+void node_undo(const struct node *n, map_t map);
 void prev_map(const struct node *n, const map_t node_map, map_t map);
 void node_expand_map(const struct node *n, const map_t root, map_t map);
 

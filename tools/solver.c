@@ -165,6 +165,10 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
 
         ostats = stats;
         struct node *n;
+        struct node *prevnode = NULL;
+#if defined(SMALL_NODE)
+        map_t map;
+#endif
         while ((n = LIST_FIRST(&todo)) != NULL) {
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
@@ -201,8 +205,12 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                 }
                 LIST_REMOVE(&todo, n, q);
 #if defined(SMALL_NODE)
-                map_t map;
-                node_expand_map(n, root_map, map);
+                if (prevnode != NULL && prevnode->parent == n->parent) {
+                        node_undo(prevnode, map);
+                        node_apply(n, map);
+                } else {
+                        node_expand_map(n, root_map, map);
+                }
 #else
                 uint8_t *map = n->map;
 #endif
@@ -304,6 +312,9 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                         branch_hist[nbranches]++;
                 }
 skip:
+#if defined(SMALL_NODE)
+                prevnode = n;
+#endif
                 stats.processed++;
                 if (verbose && (stats.processed % 100000) == 0) {
                         dump_map(map);

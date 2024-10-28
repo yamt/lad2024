@@ -63,10 +63,8 @@ is_trivial(const struct node *n, const map_t map, const map_t beam)
 }
 
 void
-prev_map(const struct node *n, const map_t node_map, map_t map)
+node_undo(const struct node *n, map_t map)
 {
-        map_copy(map, node_map);
-
         /* undo */
         assert(map[n->loc] == _);
         assert(is_player(map[next_loc(n)]));
@@ -80,7 +78,14 @@ prev_map(const struct node *n, const map_t node_map, map_t map)
         }
 }
 
-static void
+void
+prev_map(const struct node *n, const map_t node_map, map_t map)
+{
+        map_copy(map, node_map);
+        node_undo(n, map);
+}
+
+void
 node_apply(const struct node *n, map_t map)
 {
         if ((n->flags & MOVE_PUSH) != 0) {
