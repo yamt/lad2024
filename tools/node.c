@@ -49,13 +49,13 @@ pushed_obj_loc(const struct node *n)
 }
 
 bool
-is_trivial(const struct node *n, const map_t beam)
+is_trivial(const struct node *n, const map_t map, const map_t beam)
 {
         if ((n->flags & (MOVE_PUSH | MOVE_GET_BOMB)) != 0) {
                 return false;
         }
         loc_t nloc = next_loc(n);
-        bool is_robot = n->map[nloc] == A;
+        bool is_robot = map[nloc] == A;
         if ((beam[nloc] != 0) != is_robot) {
                 return false;
         }
@@ -63,9 +63,9 @@ is_trivial(const struct node *n, const map_t beam)
 }
 
 void
-prev_map(const struct node *n, map_t map)
+prev_map(const struct node *n, const map_t node_map, map_t map)
 {
-        map_copy(map, n->map);
+        map_copy(map, node_map);
 
         /* undo */
         assert(map[n->loc] == _);
@@ -78,4 +78,29 @@ prev_map(const struct node *n, map_t map)
                 assert(can_push(map[pushed_obj_loc(n)]));
                 move_object(map, next_loc(n), pushed_obj_loc(n));
         }
+}
+
+static void
+node_apply(const struct node *n, map_t map)
+{
+        if ((n->flags & MOVE_PUSH) != 0) {
+                move_object(map, pushed_obj_loc(n), next_loc(n));
+        }
+        move_object(map, next_loc(n), n->loc);
+}
+
+static void
+node_recursively_apply(const struct node *n, map_t map)
+{
+        if (n->steps > 1) {
+                node_recursively_apply(n->parent, map);
+        }
+        node_apply(n, map);
+}
+
+void
+node_expand_map(const struct node *n, const map_t root, map_t map)
+{
+        map_copy(map, root);
+        node_recursively_apply(n, map);
 }

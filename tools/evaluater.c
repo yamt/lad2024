@@ -32,7 +32,13 @@ evaluate(const map_t map, const struct node_list *solution,
                 if (prev != NULL && next_loc(prev) == n->loc) {
                         same = true;
                 }
-                const uint8_t objidx = n->map[next_loc(n)];
+#if defined(SMALL_NODE)
+                map_t n_map;
+                node_expand_map(n, map, n_map);
+#else
+                const uint8_t *n_map = n->map;
+#endif
+                const uint8_t objidx = n_map[next_loc(n)];
                 const bool is_robot = objidx == A;
                 const int chr = objchr(objidx);
                 if (same) {
@@ -45,7 +51,7 @@ evaluate(const map_t map, const struct node_list *solution,
                         nswitch++;
                 }
                 if ((n->flags & MOVE_PUSH) != 0) {
-                        printf(" PUSH(%c)", objchr(n->map[pushed_obj_loc(n)]));
+                        printf(" PUSH(%c)", objchr(n_map[pushed_obj_loc(n)]));
                         loc_t obj_loc_before_push = next_loc(n);
                         if (prev != NULL && (prev->flags & MOVE_PUSH) != 0 &&
                             prev->dir == n->dir) {
@@ -65,7 +71,7 @@ evaluate(const map_t map, const struct node_list *solution,
                         printf(" BEAM");
                         nbeam_changed++;
                 }
-                calc_beam(n->map, beam_map);
+                calc_beam(n_map, beam_map);
                 if (is_robot != (beam_map[next_loc(n)] != 0)) {
                         nsuicide++;
                         printf(" SUICIDAL");
