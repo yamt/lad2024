@@ -2,22 +2,25 @@
 #include <stdlib.h>
 
 #include "defs.h"
+#include "item_cache.h"
 #include "maputil.h"
 #include "node.h"
 #include "pool.h"
 
 struct pool nodepool;
+struct item_cache nodecache;
 
 void
 node_allocator_init(void)
 {
-        pool_init(&nodepool, sizeof(struct node));
+        pool_init(&nodepool);
+        item_cache_init(&nodecache, &nodepool, sizeof(struct node));
 }
 
 struct node *
 alloc_node(void)
 {
-        struct node *n = pool_item_alloc(&nodepool);
+        struct node *n = item_alloc(&nodecache);
         if (n == NULL) {
                 exit(1);
         }
@@ -27,13 +30,13 @@ alloc_node(void)
 void
 free_node(struct node *n)
 {
-        pool_item_free(&nodepool, n);
+        item_free(&nodecache, n);
 }
 
 void
 free_all_nodes(void)
 {
-        pool_all_items_free(&nodepool);
+        item_all_free(&nodecache);
 }
 
 loc_t

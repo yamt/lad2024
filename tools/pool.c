@@ -5,88 +5,91 @@
 #include "pool.h"
 
 #define POOL_CHUNK_SIZE (128 * 1024 * 1024)
-
-struct pool_item_hdr {
-        void *nextfree;
-};
+#define POOL_MALLOC_ALIGN 16
 
 struct pool_chunk {
-        struct pool_chunk *next;
+        struct pool_chunk *nextchunk;
+        uint8_t *nextalloc;
+        const uint8_t *end;
         uint8_t data[];
 };
 
-static size_t
-pool_items_per_chunk(const struct pool *pool)
+static void *
+align_up(void *p, size_t sz)
 {
-        size_t chunk_size = POOL_CHUNK_SIZE;
-        size_t payload_size = chunk_size - sizeof(struct pool_chunk);
-        size_t nitems = payload_size / pool->itemsize;
-        return nitems;
+        return (void *)(((uintptr_t)p + sz - 1) & -sz);
 }
 
 static void
 pool_chunk_alloc(struct pool *pool)
 {
-        size_t nitems = pool_items_per_chunk(pool);
-        assert(nitems > 0);
         struct pool_chunk *chunk = malloc(POOL_CHUNK_SIZE);
         if (chunk == NULL) {
                 return;
         }
-        size_t i;
-        for (i = 0; i < nitems; i++) {
-                void *item = &chunk->data[i * pool->itemsize];
-                pool_item_free(pool, item);
-        }
-        chunk->next = pool->chunk;
+        chunk->nextalloc = align_up(chunk->data, POOL_MALLOC_ALIGN);
+        chunk->end = (const uint8_t *)chunk + POOL_CHUNK_SIZE;
+
+        chunk->nextchunk = pool->chunk;
         pool->chunk = chunk;
         return;
 }
 
-void
-pool_init(struct pool *pool, size_t itemsize)
+static void *
+pool_chunk_malloc(struct pool_chunk *chunk, size_t sz)
 {
-        assert(itemsize >= sizeof(struct pool_item_hdr));
-        pool->freelist = NULL;
-        pool->chunk = NULL;
-        pool->itemsize = itemsize;
-        assert(pool_items_per_chunk(pool) > 0);
+        if (chunk != NULL && chunk->nextalloc + sz <= chunk->end) {
+                void *p = chunk->nextalloc;
+                chunk->nextalloc =
+                        align_up(chunk->nextalloc + sz, POOL_MALLOC_ALIGN);
+                return p;
+        }
+        return NULL;
 }
 
 void
-pool_all_items_free(struct pool *pool)
+pool_init(struct pool *pool)
 {
-        struct pool_chunk *next = pool->chunk;
-        struct pool_chunk *chunk;
-        while ((chunk = next) != NULL) {
-                next = chunk->next;
-                free(chunk);
-        }
-        pool->freelist = NULL;
         pool->chunk = NULL;
 }
 
 void *
-pool_item_alloc(struct pool *pool)
+pool_malloc(struct pool *pool, size_t sz)
 {
-        struct pool_item_hdr *h = pool->freelist;
-        if (h == NULL) {
+        void *p;
+        p = pool_chunk_malloc(pool->chunk, sz);
+        if (p == NULL) {
                 pool_chunk_alloc(pool);
-                h = pool->freelist;
-                if (h == NULL) {
-                        return NULL;
-                }
+                p = pool_chunk_malloc(pool->chunk, sz);
         }
-        assert(h != NULL);
-        pool->freelist = h->nextfree;
-        return h;
+        return p;
 }
 
 void
-pool_item_free(struct pool *pool, void *item)
+pool_free(struct pool *pool, void *p)
 {
-        assert(item != NULL);
-        struct pool_item_hdr *h = item;
-        h->nextfree = pool->freelist;
-        pool->freelist = h;
+        /* nothing for now */
+}
+
+void
+pool_all_free(struct pool *pool)
+{
+        struct pool_chunk *next = pool->chunk;
+        struct pool_chunk *chunk;
+        while ((chunk = next) != NULL) {
+                next = chunk->nextchunk;
+                free(chunk);
+        }
+        pool->chunk = NULL;
+}
+
+size_t
+pool_size(const struct pool *pool)
+{
+        size_t sz = 0;
+        struct pool_chunk *chunk;
+        for (chunk = pool->chunk; chunk != NULL; chunk = chunk->nextchunk) {
+                sz += POOL_CHUNK_SIZE;
+        }
+        return sz;
 }

@@ -34,6 +34,7 @@ OBJS += dump.o
 OBJS += draw.o
 OBJS += node.o
 OBJS += pool.o
+OBJS += item_cache.o
 OBJS += rng.o
 OBJS += solver.o
 OBJS += analyze.o
