@@ -30,7 +30,7 @@ struct genctx {
 bool
 room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
-        const int max = 4;
+        const int max = 3;
         const int min = 1;
         const struct bb *bb = &ctx->bb;
         int rw = rng_rand(ctx->rng, min, max);
