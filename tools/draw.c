@@ -63,18 +63,11 @@ random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
 #endif
 
 bool
-random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
+random_place_objs_in_bb_with_freq(struct rng *rng, map_t map,
+                                  const struct bb *bb, const struct freq *freq,
+                                  unsigned int nfreq)
 {
-        struct freq {
-                uint8_t objidx;
-                unsigned int freq;
-        };
 
-        struct freq freq[] = {
-                {_, 16}, {X, 5}, {B, 2}, {U, 2},
-                {R, 2},  {D, 2}, {L, 2}, {W, 1},
-        };
-        unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
         unsigned int total = 0;
         unsigned int i;
         for (i = 0; i < nfreq; i++) {
@@ -105,6 +98,17 @@ random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
                 }
         }
         return false;
+}
+
+bool
+random_place_objs_in_bb(struct rng *rng, map_t map, const struct bb *bb)
+{
+        struct freq freq[] = {
+                {_, 16}, {X, 5}, {B, 2}, {U, 2},
+                {R, 2},  {D, 2}, {L, 2}, {W, 1},
+        };
+        unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
+        return random_place_objs_in_bb_with_freq(rng, map, bb, freq, nfreq);
 }
 
 bool
