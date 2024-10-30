@@ -10,7 +10,6 @@
 struct pool_chunk {
         struct pool_chunk *nextchunk;
         uint8_t *nextalloc;
-        const uint8_t *end;
         uint8_t data[];
 };
 
@@ -28,7 +27,6 @@ pool_chunk_alloc(struct pool *pool)
                 return;
         }
         chunk->nextalloc = align_up(chunk->data, POOL_MALLOC_ALIGN);
-        chunk->end = (const uint8_t *)chunk + POOL_CHUNK_SIZE;
 
         chunk->nextchunk = pool->chunk;
         pool->chunk = chunk;
@@ -38,7 +36,8 @@ pool_chunk_alloc(struct pool *pool)
 static void *
 pool_chunk_malloc(struct pool_chunk *chunk, size_t sz)
 {
-        if (chunk != NULL && chunk->nextalloc + sz <= chunk->end) {
+        const uint8_t *end = (const uint8_t *)chunk + POOL_CHUNK_SIZE;
+        if (chunk != NULL && chunk->nextalloc + sz <= end) {
                 void *p = chunk->nextalloc;
                 chunk->nextalloc =
                         align_up(chunk->nextalloc + sz, POOL_MALLOC_ALIGN);
