@@ -18,7 +18,7 @@ struct node {
         /* move from the parent. note: this is redundant. */
         loc_t loc;
         enum diridx dir;
-        unsigned int flags;
+        move_flags_t flags;
 
 #if !defined(SMALL_NODE)
         map_t map;
