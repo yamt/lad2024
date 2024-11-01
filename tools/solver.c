@@ -243,7 +243,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                         struct player *p = &meta.players[i];
                         enum diridx dir;
                         for (dir = 0; dir < 4; dir++) {
-                                unsigned int flags = player_move(
+                                move_flags_t flags = player_move(
                                         &meta, p, dir, map, beam_map, false);
                                 if ((flags & MOVE_OK) == 0) {
                                         continue;

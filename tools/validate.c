@@ -54,7 +54,7 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
                         }
                         return true;
                 }
-                unsigned int flags =
+                move_flags_t flags =
                         player_move(&meta, p, n->dir, map, beam, true);
                 if (n->flags != flags) {
                         printf("invalid move %d %d %c (%x != %x)\n",
