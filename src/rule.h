@@ -56,12 +56,14 @@ void move_object(map_t map, loc_t nloc, loc_t oloc);
 struct player *player_at(struct stage_meta *meta, loc_t loc);
 void calc_stage_meta(map_t map, struct stage_meta *meta);
 
+typedef uint8_t move_flags_t;
+
 #define MOVE_OK 0x01
 #define MOVE_PUSH 0x02     /* push something */
 #define MOVE_BEAM 0x04     /* might need to recalculate beam */
 #define MOVE_GET_BOMB 0x08 /* got a bomb */
 
-unsigned int player_move(struct stage_meta *meta, struct player *p,
+move_flags_t player_move(struct stage_meta *meta, struct player *p,
                          enum diridx dir, map_t map, const map_t beam_map,
                          bool commit);
 

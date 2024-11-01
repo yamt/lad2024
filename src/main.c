@@ -264,7 +264,7 @@ static bool undoing = false;
 struct move {
         loc_t loc;
         enum diridx dir;
-        unsigned int flags; /* MOVE_ flags */
+        move_flags_t flags; /* MOVE_ flags */
 };
 
 #define max_undos 16
@@ -798,7 +798,7 @@ save_state()
         diskw(&state, sizeof(state));
 }
 
-unsigned int
+move_flags_t
 move(enum diridx dir)
 {
         ASSERT(moving_dir != NONE);
@@ -833,7 +833,7 @@ undo_move(const struct move *undo)
 {
         struct player *p = cur_player();
         ASSERT(p->loc == undo->loc);
-        unsigned int flags = undo->flags;
+        move_flags_t flags = undo->flags;
         loc_t diff = dirs[undo->dir].loc_diff;
         loc_t ploc = p->loc;
         ASSERT(map[ploc - diff] == _);
@@ -981,7 +981,7 @@ update()
                                 const struct move *undo = &undos[undo_idx];
                                 if ((undo->flags & MOVE_OK) != 0) {
                                         // trace("undo");
-                                        unsigned int flags = undo->flags;
+                                        move_flags_t flags = undo->flags;
 
                                         /*
                                          * switch back to the last-moved
@@ -1011,7 +1011,7 @@ update()
                                 }
                         }
                 } else if (dir != NONE) {
-                        unsigned int flags = move(dir);
+                        move_flags_t flags = move(dir);
                         if ((flags & MOVE_OK) != 0) {
                                 ASSERT(moving_step == 0);
 

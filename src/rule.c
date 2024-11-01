@@ -128,7 +128,7 @@ calc_stage_meta(map_t map, struct stage_meta *meta)
         meta->nbombs = nbombs;
 }
 
-unsigned int
+move_flags_t
 player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
             map_t map, const map_t beam_map, bool commit)
 {
@@ -142,7 +142,7 @@ player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
         if (!in_map(loc)) {
                 return 0;
         }
-        unsigned int flags = 0;
+        move_flags_t flags = 0;
         uint8_t objidx = map[loc];
         if (is_robot && is_bomb(objidx)) {
                 flags |= MOVE_OK | MOVE_BEAM | MOVE_GET_BOMB;
