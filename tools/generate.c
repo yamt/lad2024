@@ -127,8 +127,8 @@ generate(struct genctx *ctx)
         box(ctx->map, 3, 3, map_width - 6, map_height - 6, _);
 #endif
 
-        struct rng *rng = ctx->rng;
-        uint8_t *map = ctx->map;
+        struct rng *rng __attribute__((__unused__)) = ctx->rng;
+        uint8_t *map __attribute__((__unused__)) = ctx->map;
         int i;
         int n;
 
