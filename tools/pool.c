@@ -5,7 +5,7 @@
 #include "pool.h"
 
 #define POOL_CHUNK_SIZE (128 * 1024 * 1024)
-#define POOL_MALLOC_ALIGN 16
+#define POOL_MALLOC_ALIGN sizeof(void *)
 
 struct pool_chunk {
         struct pool_chunk *nextchunk;
