@@ -530,12 +530,8 @@ calc_possible_beam(const map_t map, const map_t movable,
 }
 
 void
-calc_reachable_from_any_A_with_possible_beam(const map_t map,
-                                             const map_t movable,
-                                             const map_t possible_beam[4],
-                                             map_t any_A_reachable)
+calc_possible_beam_any(const map_t possible_beam[4], map_t possible_beam_any)
 {
-        map_t possible_beam_any;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t v = 0;
@@ -545,8 +541,6 @@ calc_reachable_from_any_A_with_possible_beam(const map_t map,
                 }
                 possible_beam_any[loc] = v;
         }
-        calc_reachable_from_any_A(map, movable, possible_beam_any,
-                                  any_A_reachable);
 }
 
 /*
@@ -563,22 +557,50 @@ tsumi(const map_t map)
 #if 0
         map_t surrounded;
         calc_surrounded(map, movable, surrounded);
+#endif
         unsigned int counts[END];
         count_objects(map, counts);
-#endif
         map_t possible_beam[4];
 retry:
         calc_possible_beam(map, movable, possible_beam);
+        map_t possible_beam_any;
+        calc_possible_beam_any(possible_beam, possible_beam_any);
         map_t any_A_reachable;
-        calc_reachable_from_any_A_with_possible_beam(
-                map, movable, possible_beam, any_A_reachable);
+        calc_reachable_from_any_A(map, movable, possible_beam_any,
+                                  any_A_reachable);
 
+        unsigned int last_X = 0;
         bool all_collectable = true;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
                         if ((movable[loc] & COLLECTABLE) != 0) {
+                                if ((movable[loc] & PUSHABLE) == 0 &&
+                                    !possible_beam_any[loc]) {
+                                        /*
+                                         * because the location of this X
+                                         * is not possibly beamed, the A
+                                         * collected the X will not be able
+                                         * to move by itself anymore.
+                                         *
+                                         * because this X is not PUSHABLE,
+                                         * the A will not be pushable either.
+                                         *
+                                         * thus, the A will be unmovable after
+                                         * collecting this X. that is, this X
+                                         * needs to be collected by the last
+                                         * move of the A.
+                                         *
+                                         * if the number of such Xs are larger
+                                         * than the number of As in the map,
+                                         * the map is not solvable.
+                                         */
+                                        last_X++;
+                                        if (last_X > counts[A]) {
+                                                return true;
+                                        }
+                                }
                                 continue;
                         }
 #if 0
