@@ -536,7 +536,6 @@ calc_reachable_from_any_A_with_possible_beam(const map_t map,
                                              map_t any_A_reachable)
 {
         map_t possible_beam_any;
-        map_fill(possible_beam_any, 0);
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t v = 0;
