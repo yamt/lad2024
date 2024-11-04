@@ -202,6 +202,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                         memset(branch_hist, 0, sizeof(branch_hist));
                         curstep = n->steps;
                         ostats = stats;
+                        // dump_hash();
                 }
                 LIST_REMOVE(&todo, n, q);
 #if defined(SMALL_NODE)
