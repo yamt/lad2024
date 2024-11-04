@@ -1,5 +1,6 @@
 CFLAGS = -std=c99 -Wall
 CFLAGS += -MMD -MP
+CFLAGS += -fshort-enums
 CFLAGS += -flto=full -O3 -DNDEBUG -Wno-unused-variable
 #CFLAGS += -Og -g
 # CFLAGS += -Dmap_height=16 -Dmap_width=16
