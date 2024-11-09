@@ -7,10 +7,10 @@
 
 #include "defs.h"
 #include "dump.h"
-#include "loader.h"
-#include "maputil.h"
 #include "huff.h"
 #include "huff_decode.h"
+#include "loader.h"
+#include "maputil.h"
 
 int
 main(int argc, char **argv)
@@ -37,9 +37,10 @@ main(int argc, char **argv)
                 uint8_t encoded[map_size];
                 size_t encoded_len;
                 huff_encode(&huff, map, map_size, encoded, &encoded_len);
-                printf("stage %03u %zu bytes (%.1f %%)\n", i + 1, encoded_len, (float)encoded_len / map_size * 100);
+                printf("stage %03u %zu bytes (%.1f %%)\n", i + 1, encoded_len,
+                       (float)encoded_len / map_size * 100);
 
-				struct huff_decode_context ctx;
+                struct huff_decode_context ctx;
                 huff_decode_init(&ctx, encoded);
                 map_t map2;
                 loc_t loc;
