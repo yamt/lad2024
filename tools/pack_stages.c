@@ -103,6 +103,7 @@ main(int argc, char **argv)
         }
         printf("};\n");
 
+        printf("// table size %zu bytes\n", htablesize);
         printf("const uint8_t stages_huff_table[] = {\n");
         for (i = 0; i < htablesize; i++) {
                 printf("%#02x,", (unsigned int)htable[i]);
