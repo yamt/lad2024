@@ -50,6 +50,8 @@ main(int argc, char **argv)
         size_t htablesize;
         huff_table(&huff, htable, &htablesize);
 
+        printf("#include \"hstages.h\"\n");
+
         printf("const uint8_t stages_huff_data[] = {\n");
         for (i = 0; i < nstages; i++) {
                 offset[i] = curoff;
@@ -78,11 +80,11 @@ main(int argc, char **argv)
         }
         printf("};\n");
 
-        printf("const struct stage packed_stages[] = {\n");
+        printf("const struct hstage packed_stages[] = {\n");
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
 
-                printf("\t[%u] = {\n", i + 1);
+                printf("\t[%u] = {\n", i);
                 printf("\t\t.data_offset = %zu,\n", offset[i]);
                 if (stage->message != NULL) {
                         printf("\t\t.message = (const uint8_t[]){\n");
@@ -101,10 +103,13 @@ main(int argc, char **argv)
         }
         printf("};\n");
 
-        printf("const uint8_t stage_huff_table[] = {\n");
+        printf("const uint8_t stages_huff_table[] = {\n");
         for (i = 0; i < htablesize; i++) {
-                printf("%02x,", (unsigned int)htable[i]);
+                printf("%#02x,", (unsigned int)htable[i]);
         }
         printf("};\n");
+
+        printf("const unsigned int nstages = %u;\n", nstages);
+
         exit(0);
 }
