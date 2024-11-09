@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "defs.h"
-#include "loader.h"
+#include "hloader.h"
 #include "rng.h"
 #include "rule.h"
 #include "wasm4.h"
@@ -666,7 +666,7 @@ void
 load_stage()
 {
         struct map_info info;
-        decode_stage(state.cur_stage, map, &info);
+        decode_huff_stage(state.cur_stage, map, &info);
 
         unsigned int lines = 0;
         if (info.message != NULL) {
