@@ -76,8 +76,10 @@ finish_node(struct hnode *n, unsigned int nbits, uint16_t bits)
                 return;
         }
         if (n->is_leaf) {
+#if 0
                 printf("nbits %u value %02x\n", nbits,
                        (unsigned int)n->u.leaf.value);
+#endif
                 n->u.leaf.encoded_nbits = nbits;
                 n->u.leaf.encoded_bits = bits;
                 return;
@@ -170,8 +172,10 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                         }
                 }
                 v[0] = flags;
+#if 0
                 printf("%02x: %02x %02x %02x\n", cons - 1, (unsigned int)v[0],
                        (unsigned int)v[1], (unsigned int)v[2]);
+#endif
                 memcpy(outp, v, 3);
                 outp += 3;
         }
