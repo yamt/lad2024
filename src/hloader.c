@@ -2,9 +2,9 @@
 
 #include "defs.h"
 #include "hloader.h"
+#include "hstages.h"
 #include "huff_decode.h"
 #include "rule.h"
-#include "hstages.h"
 
 void
 decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
@@ -12,7 +12,7 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         const struct hstage *stage = &packed_stages[stage_number];
         struct huff_decode_context ctx;
 
-		huff_decode_init(&ctx, &stages_huff_data[stage->data_offset]);
+        huff_decode_init(&ctx, &stages_huff_data[stage->data_offset]);
         memset(map, 0, map_height * map_width);
         int x;
         int y;
@@ -26,7 +26,8 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
                         if (xmax < x) {
                                 xmax = x;
                         }
-                } while ((ch = huff_decode_byte(&ctx, stages_huff_table)) != END);
+                } while ((ch = huff_decode_byte(&ctx, stages_huff_table)) !=
+                         END);
                 x = 0;
                 y++;
         }

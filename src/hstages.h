@@ -1,8 +1,8 @@
 #include <stdint.h>
 
 struct hstage {
-	const unsigned int data_offset;
-	const uint8_t *message;
+        const unsigned int data_offset;
+        const uint8_t *message;
 };
 
 extern const uint8_t stages_huff_data[];
