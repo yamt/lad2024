@@ -13,7 +13,6 @@ struct hnode {
                 } leaf;
                 struct inner {
                         struct hnode *children[2];
-                        uint8_t idx;
                 } inner;
         } u;
 };
