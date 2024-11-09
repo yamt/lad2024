@@ -1,8 +1,8 @@
 CFLAGS = -std=c99 -Wall
 CFLAGS += -MMD -MP
 CFLAGS += -fshort-enums
-CFLAGS += -flto=full -O3 -DNDEBUG -Wno-unused-variable
-#CFLAGS += -Og -g
+#CFLAGS += -flto=full -O3 -DNDEBUG -Wno-unused-variable
+CFLAGS += -Og -g
 # CFLAGS += -Dmap_height=16 -Dmap_width=16
 # CFLAGS += -Dmap_height=10 -Dmap_width=10
 # CFLAGS += -DMAX_ITERATIONS=1000000000
@@ -26,6 +26,8 @@ HASH_TEST_OBJS = hash_test.o
 
 STAGE_UNIQ_OBJS = stage_uniq.o
 
+PACK_STAGES_OBJS = pack_stages.o
+
 OBJS = hash.o
 OBJS += rule.o
 OBJS += loader.o
@@ -35,6 +37,8 @@ OBJS += maputil.o
 OBJS += bb.o
 OBJS += dump.o
 OBJS += draw.o
+OBJS += huff.o
+OBJS += huff_decode.o
 OBJS += node.o
 OBJS += pool.o
 OBJS += item_cache.o
@@ -53,8 +57,9 @@ ALL_OBJS += ${REFINER_OBJS}
 ALL_OBJS += ${RNG_TEST_OBJS}
 ALL_OBJS += ${HASH_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
+ALL_OBJS += ${PACK_STAGES_OBJS}
 
-BINS = solver generator refiner rng_test hash_test stage_uniq
+BINS = solver generator refiner rng_test hash_test stage_uniq pack_stages
 
 .PHONY: all
 all: $(BINS)
@@ -88,6 +93,11 @@ stage_uniq: $(STAGE_UNIQ_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(STAGE_UNIQ_OBJS) $(OBJS)
+
+pack_stages: $(PACK_STAGES_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(PACK_STAGES_OBJS) $(OBJS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
