@@ -102,6 +102,10 @@ pack_stages: $(PACK_STAGES_OBJS) $(OBJS)
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+.PHONY: regen
+regen: pack_stages
+	./pack_stages > ../src/hstages.c
+
 .PHONY: clean
 clean:
 	rm -f $(BINS)
