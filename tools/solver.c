@@ -500,7 +500,7 @@ clear_solution(struct solution *solution)
 #define MEMLIMIT_GB 8
 #endif
 #if !defined(MAX_ITERATIONS)
-#define MAX_ITERATIONS 100000000
+#define MAX_ITERATIONS 1000000000
 #endif
 
 struct solver_param solver_default_param = {
