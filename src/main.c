@@ -990,10 +990,13 @@ update()
                                         const struct player *p =
                                                 player_at(&meta, undo->loc);
                                         ASSERT(p != NULL);
-                                        cur_player_idx =
-                                                (unsigned int)(p -
-                                                               meta.players);
-                                        ASSERT(cur_player() == p);
+                                        if (cur_player() != p) {
+                                                mark_redraw_cur_player();
+                                                cur_player_idx =
+                                                        (unsigned int)(p -
+                                                                       meta.players);
+                                                ASSERT(cur_player() == p);
+                                        }
 
                                         /* undo, recalculate beam, redo */
                                         if ((flags & MOVE_BEAM) != 0) {
