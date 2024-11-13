@@ -100,6 +100,45 @@ forget_old(unsigned int thresh)
         return removed;
 }
 
+unsigned int
+forget_unreachable(const struct node_list *todo)
+{
+        unsigned int removed = 0;
+        unsigned int i;
+        for (i = 0; i < HASH_SIZE; i++) {
+                struct node_list *h = &hash_heads[i];
+                struct node *n;
+                LIST_FOREACH(n, h, hashq) {
+                        n->flags |= 0x80;
+                }
+        }
+        struct node *n;
+        LIST_FOREACH(n, todo, q) {
+                struct node *m;
+                for (m = n; m != NULL; m = m->parent) {
+                        if ((m->flags & 0x80) == 0) {
+                                break;
+                        }
+                        m->flags &= ~0x80;
+                }
+        }
+        for (i = 0; i < HASH_SIZE; i++) {
+                struct node_list *h = &hash_heads[i];
+                struct node *n;
+                struct node *next;
+                for (n = LIST_FIRST(h); n != NULL; n = next) {
+                        next = LIST_NEXT(n, hashq);
+                        if ((n->flags & 0x80) == 0) {
+                                continue;
+                        }
+                        LIST_REMOVE(h, n, hashq);
+                        free_node(n);
+                        removed++;
+                }
+        }
+        return removed;
+}
+
 void
 return_solution(struct node *n, struct node_list *solution,
                 unsigned int thresh)
@@ -145,6 +184,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
 
         unsigned int curstep = 0;
         unsigned int last_thresh = 0;
+        unsigned int last_gc = 0;
 
         unsigned int branch_hist[BRANCH_HIST_NBUCKETS];
         memset(branch_hist, 0, sizeof(branch_hist));
@@ -337,9 +377,19 @@ skip:
                 }
                 if (stats.registered > limit) {
 #if defined(SMALL_NODE)
-                        printf("too many registered nodes\n");
-                        solution->giveup_reason = GIVEUP_MEMORY;
-                        return SOLVE_GIVENUP;
+                        unsigned int step = n->steps;
+                        if (last_gc == step) {
+                                printf("too many registered nodes\n");
+                                solution->giveup_reason = GIVEUP_MEMORY;
+                                return SOLVE_GIVENUP;
+                        }
+                        printf("removing unreachable nodes\n");
+                        unsigned int removed = forget_unreachable(&todo);
+                        printf("removed %u / %u nodes (%.3f)\n", removed,
+                               stats.registered,
+                               (float)removed / stats.registered);
+                        stats.registered -= removed;
+                        last_gc = step;
 #else
                         /*
                          * note: we keep nodes for previous steps
