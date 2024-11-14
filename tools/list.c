@@ -16,7 +16,7 @@ static void
 list_check2(const struct list_head *h, const void *elem0,
             const struct list_entry *e0, bool elem0_on_list)
 {
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) && !defined(LIST_DISABLE_HEAVY_CHECK)
         bool on_list = false;
         list_check(h);
         uintptr_t offset = (uintptr_t)e0 - (uintptr_t)elem0;
