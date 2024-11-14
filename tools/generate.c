@@ -325,6 +325,11 @@ main(int argc, char **argv)
                         continue;
                 }
                 if (tsumi(map)) {
+                        if (seed_specified) {
+                                dump_map(map);
+                                printf("tsumi (seed %" PRIx64 ")\n", seed);
+                                exit(1);
+                        }
                         ntsumi++;
                         seed++;
                         continue;
