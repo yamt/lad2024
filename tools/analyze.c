@@ -141,10 +141,23 @@ calc_reachable_from_any_A(const map_t map, const map_t movable,
 }
 
 bool
-set_movable_bits(map_t movable, loc_t loc, uint8_t new)
+set_movable_bits(map_t movable, loc_t loc, uint8_t newbits)
 {
         uint8_t old = movable[loc];
-        movable[loc] = (old & ~NEEDVISIT) | new;
+        movable[loc] = (old & ~NEEDVISIT) | newbits;
+        /*
+         * Note: PUSHABLE and COLLECTABLE_AS_LAST are mutally exclusive.
+         */
+        if ((newbits & COLLECTABLE_AS_LAST) != 0) {
+                assert((movable[loc] & PUSHABLE) == 0);
+        }
+        if ((newbits & PUSHABLE) != 0 &&
+            (movable[loc] & COLLECTABLE_AS_LAST) != 0) {
+                /* turn COLLECTABLE_AS_LAST to COLLECTABLE */
+                movable[loc] &= ~COLLECTABLE_AS_LAST;
+                movable[loc] |= COLLECTABLE;
+                newbits |= COLLECTABLE;
+        }
         /*
          * note: when we are degrading from UNMOVABLE
          * to MOVABLE, mark neighbors unvisited.
@@ -152,6 +165,12 @@ set_movable_bits(map_t movable, loc_t loc, uint8_t new)
          * from UNMOVABLE to MOVABLE too.
          */
         if (!is_UNMOVABLE(old)) {
+                return false;
+        }
+        /*
+         * COLLECTABLE_AS_LAST alone doesn't affect is_MOVABLE.
+         */
+        if ((newbits & ~COLLECTABLE_AS_LAST) == 0) {
                 return false;
         }
         bool more = false;
@@ -245,14 +264,15 @@ update_movable(const map_t map, bool do_collect, map_t movable)
                                 }
                         }
                         if (might_push || might_collect) {
-                                uint8_t new = 0;
+                                uint8_t newbits = 0;
                                 if (might_push) {
-                                        new |= PUSHABLE;
+                                        newbits |= PUSHABLE;
                                 }
                                 if (might_collect) {
-                                        new |= COLLECTABLE;
+                                        newbits |= COLLECTABLE;
                                 }
-                                more |= set_movable_bits(movable, loc, new);
+                                more |= set_movable_bits(movable, loc,
+                                                         newbits);
                         } else {
                                 movable[loc] &= ~NEEDVISIT;
                         }
@@ -436,11 +456,16 @@ update_possible_beam(const map_t map, const map_t movable,
                         if (!in_map(nloc)) {
                                 break;
                         }
+                        /*
+                         * mark it true even if blocked.
+                         * it's for the convenience of the
+                         * COLLECTABLE_AS_LAST check.
+                         */
+                        beam[nloc] = 1;
                         if (block_beam(map[nloc]) &&
                             is_UNMOVABLE(movable[nloc])) {
                                 break;
                         }
-                        beam[nloc] = 1;
                         nloc += d;
                 }
         }
@@ -483,6 +508,10 @@ possibly_collectable(const map_t map, const map_t movable, loc_t X_loc,
                 enum diridx dir;
                 for (dir = 0; dir < 4; dir++) {
                         if (!possible_beam[dir][loc]) {
+                                continue;
+                        }
+                        if (block_beam(map[loc]) &&
+                            is_UNMOVABLE(movable[loc])) {
                                 continue;
                         }
                         loc_t nloc;
@@ -576,30 +605,45 @@ retry:
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
                         if ((movable[loc] & COLLECTABLE) != 0) {
-                                if ((movable[loc] & PUSHABLE) == 0 &&
-                                    !possible_beam_any[loc]) {
+                                assert((movable[loc] & COLLECTABLE_AS_LAST) ==
+                                       0);
+                                continue;
+                        }
+                        if ((movable[loc] & COLLECTABLE_AS_LAST) != 0) {
+                                /*
+                                 * check if "as last" condition is
+                                 * still met.
+                                 */
+                                if ((movable[loc] & PUSHABLE) != 0 ||
+                                    possible_beam_any[loc]) {
                                         /*
-                                         * because the location of this X
-                                         * is not possibly beamed, the A
-                                         * collected the X will not be able
-                                         * to move by itself anymore.
-                                         *
-                                         * because this X is not PUSHABLE,
-                                         * the A will not be pushable either.
-                                         *
-                                         * thus, the A will be unmovable after
-                                         * collecting this X. that is, this X
-                                         * needs to be collected by the last
-                                         * move of the A.
-                                         *
-                                         * if the number of such Xs are larger
-                                         * than the number of As in the map,
-                                         * the map is not solvable.
+                                         * otherwise, turn it to COLLECTABLE.
                                          */
-                                        last_X++;
-                                        if (last_X > counts[A]) {
-                                                return true;
-                                        }
+                                        movable[loc] &= ~COLLECTABLE_AS_LAST;
+                                        goto set_collectable;
+                                }
+                                /*
+                                 * because the location of this X
+                                 * is not possibly beamed, the A
+                                 * collected the X will not be able
+                                 * to move by itself anymore.
+                                 *
+                                 * because this X is not PUSHABLE,
+                                 * the A will not be pushable either.
+                                 *
+                                 * thus, the A will be unmovable after
+                                 * collecting this X. that is, this X
+                                 * needs to be collected by the last
+                                 * move of the A.
+                                 *
+                                 * if the number of such Xs are larger
+                                 * than the number of As in the map,
+                                 * the map is not solvable.
+                                 */
+update_last_X:
+                                last_X++;
+                                if (last_X > counts[A]) {
+                                        return true;
                                 }
                                 continue;
                         }
@@ -625,12 +669,26 @@ retry:
                         if (possibly_collectable(map, movable, loc,
                                                  any_A_reachable,
                                                  possible_beam)) {
-                                if (set_movable_bits(movable, loc,
-                                                     COLLECTABLE)) {
+                                uint8_t bit = COLLECTABLE_AS_LAST;
+                                if ((movable[loc] & PUSHABLE) != 0 ||
+                                    possible_beam_any[loc]) {
+set_collectable:
+                                        bit = COLLECTABLE;
+                                }
+                                if (set_movable_bits(movable, loc, bit)) {
                                         /*
                                          * propagate the change to neighbours
+                                         *
+                                         * COLLECTABLE_AS_LAST should not
+                                         * need the propagation because the
+                                         * A collecting the X will occupy
+                                         * the location permanently.
                                          */
+                                        assert(bit != COLLECTABLE_AS_LAST);
                                         update_movable(map, false, movable);
+                                }
+                                if (bit == COLLECTABLE_AS_LAST) {
+                                        goto update_last_X;
                                 }
                                 /* restart with the updated movable map */
                                 goto retry;

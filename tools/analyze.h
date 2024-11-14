@@ -14,10 +14,14 @@
  * "movable" values
  *
  * UNMOVABLE doesn't allow false positives.
+ *
+ * only meaningful for is_simple_movable_object.
+ * is_UNMOVABLE() for other objects, including W, is always true.
  */
 #define NEEDVISIT 0x10 /* internal use */
 #define PUSHABLE 0x01
 #define COLLECTABLE 0x02
+#define COLLECTABLE_AS_LAST 0x04
 
 #define is_UNMOVABLE(x) (((x) & (PUSHABLE | COLLECTABLE)) == 0)
 
