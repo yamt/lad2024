@@ -215,8 +215,11 @@ generate(struct genctx *ctx)
         random_ichimatsu(ctx);
 #endif
 
+#define max_A 4
+#define max_P 2
+
 #if 1
-        n = rng_rand(rng, -10, max_players);
+        n = rng_rand(rng, -10, max_A);
         if (n <= 0) {
                 n = 1;
         }
@@ -228,9 +231,9 @@ generate(struct genctx *ctx)
                         return true;
                 }
         }
-        if (n < max_players) {
+        if (n < max_P) {
 #if 1
-                n = rng_rand(rng, -10, 4 - n);
+                n = rng_rand(rng, -10, max_P - n);
                 if (n < 0) {
                         n = 1;
                 }
