@@ -24,6 +24,8 @@ RNG_TEST_OBJS = rng_test.o
 
 HASH_TEST_OBJS = hash_test.o
 
+ANALYZE_TEST_OBJS = analyze_test.o
+
 STAGE_UNIQ_OBJS = stage_uniq.o
 
 PACK_STAGES_OBJS = pack_stages.o
@@ -56,10 +58,11 @@ ALL_OBJS += ${GENERATOR_OBJS}
 ALL_OBJS += ${REFINER_OBJS}
 ALL_OBJS += ${RNG_TEST_OBJS}
 ALL_OBJS += ${HASH_TEST_OBJS}
+ALL_OBJS += ${ANALYZE_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 ALL_OBJS += ${PACK_STAGES_OBJS}
 
-BINS = solver generator refiner rng_test hash_test stage_uniq pack_stages
+BINS = solver generator refiner rng_test hash_test analyze_test stage_uniq pack_stages
 
 .PHONY: all
 all: $(BINS)
@@ -88,6 +91,11 @@ hash_test: $(HASH_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(HASH_TEST_OBJS) $(OBJS)
+
+analyze_test: $(ANALYZE_TEST_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(ANALYZE_TEST_OBJS) $(OBJS)
 
 stage_uniq: $(STAGE_UNIQ_OBJS) $(OBJS)
 	$(CC) \
