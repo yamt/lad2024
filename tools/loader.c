@@ -6,10 +6,8 @@
 #include "stages.h"
 
 void
-decode_stage(uint32_t stage_number, map_t map, struct map_info *info)
+decode_stage_from(const struct stage *stage, map_t map, struct map_info *info)
 {
-        const struct stage *stage = &stages[stage_number];
-
         memset(map, 0, map_height * map_width);
         int x;
         int y;
@@ -31,4 +29,11 @@ decode_stage(uint32_t stage_number, map_t map, struct map_info *info)
         info->w = (unsigned int)xmax;
         info->h = (unsigned int)y;
         info->message = stage->message;
+}
+
+void
+decode_stage(uint32_t stage_number, map_t map, struct map_info *info)
+{
+        const struct stage *stage = &stages[stage_number];
+        decode_stage_from(stage, map, info);
 }
