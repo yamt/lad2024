@@ -1,8 +1,10 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #include "analyze.h"
 #include "defs.h"
+#include "dump.h"
 #include "maputil.h"
 #include "rule.h"
 
@@ -581,6 +583,10 @@ calc_possible_beam_any(const map_t possible_beam[4], map_t possible_beam_any)
 bool
 tsumi(const map_t map)
 {
+        bool verbose = false;
+        if (verbose) {
+                printf("tsumi\n");
+        }
         map_t movable;
         calc_movable(map, false, movable);
 #if 0
@@ -598,12 +604,27 @@ retry:
         calc_reachable_from_any_A(map, movable, possible_beam_any,
                                   any_A_reachable);
 
+        if (verbose) {
+                printf("map\n");
+                dump_map(map);
+                printf("movable\n");
+                dump_map_raw(movable);
+                printf("possible_beam_any\n");
+                dump_map_raw(possible_beam_any);
+                printf("any_A_reachable\n");
+                dump_map_raw(any_A_reachable);
+        }
+
         unsigned int last_X = 0;
         bool all_collectable = true;
         loc_t loc;
         for (loc = 0; loc < map_size; loc++) {
                 uint8_t objidx = map[loc];
                 if (objidx == X) {
+                        if (verbose) {
+                                printf("checking X at [%u:%u] %02x\n",
+                                       loc_x(loc), loc_y(loc), movable[loc]);
+                        }
                         if ((movable[loc] & COLLECTABLE) != 0) {
                                 assert((movable[loc] & COLLECTABLE_AS_LAST) ==
                                        0);
@@ -641,10 +662,10 @@ retry:
                                  * the map is not solvable.
                                  */
 update_last_X:
-                                last_X++;
-                                if (last_X > counts[A]) {
-                                        return true;
+                                if (verbose) {
+                                        printf("last_X\n");
                                 }
+                                last_X++;
                                 continue;
                         }
 #if 0
@@ -691,6 +712,11 @@ set_collectable:
                                         goto update_last_X;
                                 }
                                 /* restart with the updated movable map */
+                                if (verbose) {
+                                        printf("retrying after setting "
+                                               "[%u:%u] = %02x\n",
+                                               loc_x(loc), loc_y(loc), bit);
+                                }
                                 goto retry;
                         }
                         /*
@@ -702,6 +728,9 @@ set_collectable:
                          */
                         all_collectable = false;
                 }
+        }
+        if (last_X > counts[A]) {
+                return true;
         }
         return !all_collectable;
 }
