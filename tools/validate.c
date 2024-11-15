@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "analyze.h"
 #include "dump.h"
 #include "maputil.h"
 #include "node.h"
@@ -60,6 +61,11 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
                         printf("invalid move %d %d %c (%x != %x)\n",
                                loc_x(n->loc), loc_y(n->loc), dirchr(n->dir),
                                flags, n->flags);
+                        return true;
+                }
+                if (tsumi(map)) {
+                        printf("unexpected tsumi during validation!\n");
+                        dump_map(map);
                         return true;
                 }
                 if (verbose) {
