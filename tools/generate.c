@@ -361,6 +361,8 @@ main(int argc, char **argv)
                                        ev.score);
                                 score = ev.score;
                         }
+                        printf("SEED %" PRIx64 " solved score %u moves %u\n",
+                               seed, score, solution.nmoves);
                         if (score >= score_thresh ||
                             solution.nmoves >= nmoves_thresh ||
                             seed_specified) {
@@ -392,6 +394,8 @@ main(int argc, char **argv)
                         }
                         nsucceed++;
                 } else if (result == SOLVE_IMPOSSIBLE) {
+                        printf("SEED %" PRIx64 " impossible iterations %u\n",
+                               seed, solution.iterations);
                         if (max_iterations_impossible < solution.iterations) {
                                 max_iterations_impossible =
                                         solution.iterations;
@@ -399,8 +403,13 @@ main(int argc, char **argv)
                         nimpossible++;
                 } else {
                         if (solution.giveup_reason == GIVEUP_MEMORY) {
+                                printf("SEED %" PRIx64 " giveup memory\n",
+                                       seed);
                                 ngiveup_memory++;
                         } else {
+                                printf("SEED %" PRIx64
+                                       " giveup iterations %u\n",
+                                       seed, solution.iterations);
                                 ngiveup_iterations++;
                         }
                 }

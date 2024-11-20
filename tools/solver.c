@@ -424,6 +424,7 @@ skip:
                 if (stats.processed >= param->max_iterations) {
                         printf("giving up\n");
                         solution->giveup_reason = GIVEUP_ITERATIONS;
+                        solution->iterations = stats.processed;
                         return SOLVE_GIVENUP;
                 }
         }
