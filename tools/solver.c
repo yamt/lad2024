@@ -381,6 +381,7 @@ skip:
                         if (last_gc == step) {
                                 printf("too many registered nodes\n");
                                 solution->giveup_reason = GIVEUP_MEMORY;
+                                solution->nmoves = n->steps;
                                 return SOLVE_GIVENUP;
                         }
                         printf("removing unreachable nodes\n");
@@ -404,6 +405,7 @@ skip:
                                         printf("too many registered nodes\n");
                                         solution->giveup_reason =
                                                 GIVEUP_MEMORY;
+                                        solution->nmoves = n->steps;
                                         return SOLVE_GIVENUP;
                                 }
                         }
@@ -425,6 +427,7 @@ skip:
                         printf("giving up\n");
                         solution->giveup_reason = GIVEUP_ITERATIONS;
                         solution->iterations = stats.processed;
+                        solution->nmoves = n->steps;
                         return SOLVE_GIVENUP;
                 }
         }
