@@ -403,13 +403,15 @@ main(int argc, char **argv)
                         nimpossible++;
                 } else {
                         if (solution.giveup_reason == GIVEUP_MEMORY) {
-                                printf("SEED %" PRIx64 " giveup memory\n",
-                                       seed);
+                                printf("SEED %" PRIx64
+                                       " giveup memory moves >=%u\n",
+                                       seed, solution.nmoves);
                                 ngiveup_memory++;
                         } else {
                                 printf("SEED %" PRIx64
-                                       " giveup iterations %u\n",
-                                       seed, solution.iterations);
+                                       " giveup iterations %u moves >=%u\n",
+                                       seed, solution.iterations,
+                                       solution.nmoves);
                                 ngiveup_iterations++;
                         }
                 }
