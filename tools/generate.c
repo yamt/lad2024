@@ -203,7 +203,7 @@ generate(struct genctx *ctx)
                 }
                 count_objects(ctx->map, count);
                 connect = true;
-        } while (100 * count[_] / map_size < 10);
+        } while (100 * count[_] / map_size < 5);
 #endif
 
 #if 0
