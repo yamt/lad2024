@@ -267,7 +267,7 @@ struct move {
         move_flags_t flags; /* MOVE_ flags */
 };
 
-#define max_undos 16
+#define max_undos 512
 static struct move undos[max_undos];
 static unsigned int undo_idx;
 
