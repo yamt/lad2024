@@ -69,9 +69,9 @@ __END_EXTERN_C
 
 #define SLIST_FIRST(HEAD) (HEAD)->first
 #define SLIST_LAST(HEAD, TYPE, NAME)                                          \
-        (LIST_EMPTY(HEAD)                                                     \
+        (SLIST_EMPTY(HEAD)                                                    \
                  ? NULL                                                       \
-                 : _LIST_NEXT_PTR_TO_ELEM((HEAD)->tailnextp, TYPE, NAME))
+                 : _SLIST_NEXT_PTR_TO_ELEM((HEAD)->tailnextp, TYPE, NAME))
 #define SLIST_NEXT(VAR, NAME) (VAR)->NAME.next
 
 #define SLIST_EMPTY(HEAD) (SLIST_FIRST(HEAD) == NULL)
