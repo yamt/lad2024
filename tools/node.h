@@ -8,7 +8,7 @@
 #include "rule.h"
 
 struct node {
-        LIST_ENTRY(struct node) q;
+        SLIST_ENTRY(struct node) q;
 #if !defined(SMALL_NODE)
         LIST_ENTRY(struct node) hashq;
 #else

@@ -128,7 +128,7 @@ forget_unreachable(const struct node_list *todo)
                 SLIST_FOREACH(n, h, hashq) { n->flags |= 0x80; }
         }
         struct node *n;
-        LIST_FOREACH(n, todo, q) {
+        SLIST_FOREACH(n, todo, q) {
                 struct node *m;
                 for (m = n; m != NULL; m = m->parent) {
                         if ((m->flags & 0x80) == 0) {
@@ -161,12 +161,12 @@ void
 return_solution(struct node *n, struct node_list *solution,
                 unsigned int thresh)
 {
-        assert(LIST_EMPTY(solution));
+        assert(SLIST_EMPTY(solution));
         do {
                 if (n->steps <= thresh) {
                         break;
                 }
-                LIST_INSERT_HEAD(solution, n, q);
+                SLIST_INSERT_HEAD(solution, n, q);
                 n = n->parent;
         } while (n->parent != NULL);
 }
@@ -178,12 +178,16 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
        const map_t goal, struct solution *solution)
 {
         solution->detached = false;
-        LIST_HEAD_INIT(&solution->moves);
+        SLIST_HEAD_INIT(&solution->moves);
 
-        LIST_HEAD_INIT(&todo);
+        SLIST_HEAD_INIT(&todo);
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
+#if defined(SMALL_NODE)
+                SLIST_HEAD_INIT(&hash_heads[i]);
+#else
                 LIST_HEAD_INIT(&hash_heads[i]);
+#endif
         }
 
         size_t limit = param->limit / sizeof(struct node);
@@ -214,7 +218,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
         root->parent = NULL;
         root->steps = 0;
         root->flags = 0;
-        LIST_INSERT_TAIL(&todo, root, q);
+        SLIST_INSERT_TAIL(&todo, root, q);
         stats.queued++;
         add(root_map, root, root_map);
         stats.registered++;
@@ -227,7 +231,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
 #if defined(SMALL_NODE)
         map_t map;
 #endif
-        while ((n = LIST_FIRST(&todo)) != NULL) {
+        while ((n = SLIST_FIRST(&todo)) != NULL) {
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
                 if (n->steps != curstep) {
@@ -262,7 +266,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                         ostats = stats;
                         // dump_hash();
                 }
-                LIST_REMOVE(&todo, n, q);
+                SLIST_REMOVE(&todo, (struct node *)NULL, n, q);
 #if defined(SMALL_NODE)
                 if (prevnode != NULL && prevnode->parent == n->parent) {
                         node_undo(prevnode, map);
@@ -359,7 +363,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                                         }
                                         return SOLVE_SOLVED;
                                 }
-                                LIST_INSERT_TAIL(&todo, n2, q);
+                                SLIST_INSERT_TAIL(&todo, n2, q);
                                 stats.queued++;
                                 nbranches++;
                         }
@@ -463,20 +467,20 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
 #if !defined(SMALL_NODE)
         while (result == SOLVE_SOLVABLE) {
                 {
-                        struct node *n = LIST_FIRST(&solution->moves);
+                        struct node *n = SLIST_FIRST(&solution->moves);
                         printf("step %u (the first known state):\n", n->steps);
                         dump_map(n->map);
                 }
                 {
                         struct node *n =
-                                LIST_LAST(&solution->moves, struct node, q);
+                                SLIST_LAST(&solution->moves, struct node, q);
                         printf("step %u (the final state):\n", n->steps);
                         dump_map(n->map);
                 }
 
                 detach_solution(solution);
                 solve_cleanup();
-                struct node *n = LIST_FIRST(&solution->moves);
+                struct node *n = SLIST_FIRST(&solution->moves);
                 assert(n->steps > 1);
                 struct solution solution2;
                 map_t goal;
@@ -490,21 +494,16 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
                                result);
                         exit(1); /* must be a bug */
                 }
-                assert(LIST_FIRST(&solution->moves)->steps ==
-                       LIST_LAST(&solution2.moves, struct node, q)->steps + 1);
+                assert(SLIST_FIRST(&solution->moves)->steps ==
+                       SLIST_LAST(&solution2.moves, struct node, q)->steps + 1);
                 detach_solution(&solution2);
                 solve_cleanup();
                 assert(solution->detached == solution2.detached);
-                LIST_SPLICE_HEAD(&solution->moves, &solution2.moves, q);
-                {
-                        struct node t;
-                        LIST_INSERT_TAIL(&solution->moves, &t, q);
-                        LIST_REMOVE(&solution->moves, &t, q);
-                }
+                SLIST_SPLICE_HEAD(&solution->moves, &solution2.moves, q);
         }
 #endif
         assert(result != SOLVE_SOLVED ||
-               LIST_FIRST(&solution->moves)->steps == 1);
+               SLIST_FIRST(&solution->moves)->steps == 1);
         return result;
 }
 
@@ -546,16 +545,16 @@ detach_solution(struct solution *solution)
          * from the solver state (thus usable after solve_cleanup)
          */
         struct node_list h;
-        LIST_HEAD_INIT(&h);
+        SLIST_HEAD_INIT(&h);
         struct node *n;
-        LIST_FOREACH(n, &solution->moves, q) {
+        SLIST_FOREACH(n, &solution->moves, q) {
                 struct node *nn = malloc(sizeof(*nn));
                 *nn = *n;
                 nn->parent = NULL;
-                LIST_INSERT_TAIL(&h, nn, q);
+                SLIST_INSERT_TAIL(&h, nn, q);
         }
-        LIST_HEAD_INIT(&solution->moves);
-        LIST_SPLICE_TAIL(&solution->moves, &h, q);
+        SLIST_HEAD_INIT(&solution->moves);
+        SLIST_SPLICE_TAIL(&solution->moves, &h, q);
         solution->detached = true;
 }
 
@@ -569,9 +568,9 @@ clear_solution(struct solution *solution)
          * free malloc'ed nodes
          */
         struct node *n;
-        while ((n = LIST_FIRST(&solution->moves)) != NULL) {
+        while ((n = SLIST_FIRST(&solution->moves)) != NULL) {
                 assert(n->parent == NULL);
-                LIST_REMOVE(&solution->moves, n, q);
+                SLIST_REMOVE(&solution->moves, (struct node *)NULL, n, q);
                 free(n);
         }
 }
