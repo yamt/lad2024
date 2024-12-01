@@ -32,7 +32,12 @@ add(const map_t root, struct node *n, const map_t node_map)
 #endif
         struct node_list *head = &hash_heads[idx];
         struct node *n2;
+#if defined(SMALL_NODE)
         LIST_FOREACH(n2, head, hashq) {
+#else
+        SLIST_FOREACH(n2, head, hashq)
+        {
+#endif
 #if defined(NODE_KEEP_HASH)
                 if (hash != n2->hash) {
                         continue;
@@ -48,7 +53,11 @@ add(const map_t root, struct node *n, const map_t node_map)
                         return true;
                 }
         }
+#if defined(SMALL_NODE)
+        SLIST_INSERT_HEAD(head, n, hashq);
+#else
         LIST_INSERT_HEAD(head, n, hashq);
+#endif
         return false;
 }
 
@@ -63,7 +72,12 @@ dump_hash(void)
         for (i = 0; i < HASH_SIZE; i++) {
                 unsigned int n = 0;
                 struct node *dn;
+#if defined(SMALL_NODE)
                 LIST_FOREACH(dn, &hash_heads[i], hashq) {
+#else
+                SLIST_FOREACH(dn, &hash_heads[i], hashq)
+                {
+#endif
                         n++;
                 }
                 if (n >= buckets - 1) {
@@ -80,6 +94,7 @@ dump_hash(void)
         }
 }
 
+#if !defined(SMALL_NODE)
 unsigned int
 forget_old(unsigned int thresh)
 {
@@ -99,7 +114,9 @@ forget_old(unsigned int thresh)
         }
         return removed;
 }
+#endif
 
+#if defined(SMALL_NODE)
 unsigned int
 forget_unreachable(const struct node_list *todo)
 {
@@ -108,9 +125,7 @@ forget_unreachable(const struct node_list *todo)
         for (i = 0; i < HASH_SIZE; i++) {
                 struct node_list *h = &hash_heads[i];
                 struct node *n;
-                LIST_FOREACH(n, h, hashq) {
-                        n->flags |= 0x80;
-                }
+                SLIST_FOREACH(n, h, hashq) { n->flags |= 0x80; }
         }
         struct node *n;
         LIST_FOREACH(n, todo, q) {
@@ -126,18 +141,21 @@ forget_unreachable(const struct node_list *todo)
                 struct node_list *h = &hash_heads[i];
                 struct node *n;
                 struct node *next;
-                for (n = LIST_FIRST(h); n != NULL; n = next) {
-                        next = LIST_NEXT(n, hashq);
+                struct node *prev;
+                for (prev = NULL, n = SLIST_FIRST(h); n != NULL;
+                     prev = n, n = next) {
+                        next = SLIST_NEXT(n, hashq);
                         if ((n->flags & 0x80) == 0) {
                                 continue;
                         }
-                        LIST_REMOVE(h, n, hashq);
+                        SLIST_REMOVE(h, prev, n, hashq);
                         free_node(n);
                         removed++;
                 }
         }
         return removed;
 }
+#endif
 
 void
 return_solution(struct node *n, struct node_list *solution,
@@ -501,8 +519,16 @@ solve_cleanup(void)
                 struct node_list *h = &hash_heads[i];
                 struct node *n;
                 struct node *next;
+#if defined(SMALL_NODE)
+                for (n = SLIST_FIRST(h); n != NULL; n = next) {
+#else
                 for (n = LIST_FIRST(h); n != NULL; n = next) {
+#endif
+#if defined(SMALL_NODE)
+                        next = SLIST_NEXT(n, hashq);
+#else
                         next = LIST_NEXT(n, hashq);
+#endif
                         free_node(n);
                 }
         }

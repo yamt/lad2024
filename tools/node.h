@@ -4,11 +4,16 @@
 #include <stdbool.h>
 
 #include "list.h"
+#include "slist.h"
 #include "rule.h"
 
 struct node {
         LIST_ENTRY(struct node) q;
+#if !defined(SMALL_NODE)
         LIST_ENTRY(struct node) hashq;
+#else
+        SLIST_ENTRY(struct node) hashq;
+#endif
         struct node *parent;
         unsigned int steps;
 #if defined(NODE_KEEP_HASH)
