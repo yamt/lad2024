@@ -141,11 +141,11 @@ forget_unreachable(const struct node_list *todo)
                 struct node_list *h = &hash_heads[i];
                 struct node *n;
                 struct node *next;
-                struct node *prev;
-                for (prev = NULL, n = SLIST_FIRST(h); n != NULL;
-                     prev = n, n = next) {
+                struct node *prev = NULL;
+                for (n = SLIST_FIRST(h); n != NULL; n = next) {
                         next = SLIST_NEXT(n, hashq);
                         if ((n->flags & 0x80) == 0) {
+                                prev = n;
                                 continue;
                         }
                         SLIST_REMOVE(h, prev, n, hashq);
