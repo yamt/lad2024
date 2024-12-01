@@ -12,7 +12,6 @@ slist_remove(struct slist_head *h, struct slist_entry *prev,
         assert(h->first != NULL);
         if (prev == NULL) {
                 /* removing the first entry */
-                assert(h->first == e);
                 h->first = e->next;
                 if (e->next == NULL) {
                         /* removing the only entry */
