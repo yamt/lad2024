@@ -112,4 +112,24 @@ __END_EXTERN_C
         slist_head_init((struct slist_head *)(HEAD));                         \
         CHECK_TYPE(&(HEAD)->first, (HEAD)->tailnextp)
 
+#define SLIST_SPLICE_TAIL(DST, SRC, NAME)                                     \
+        do {                                                                  \
+                if (!SLIST_EMPTY(SRC)) {                                      \
+                        *(DST)->tailnextp = (SRC)->first;                     \
+                        (DST)->tailnextp = (SRC)->tailnextp;                  \
+                }                                                             \
+        } while (0)
+
+#define SLIST_SPLICE_HEAD(DST, SRC, NAME)                                     \
+        do {                                                                  \
+                if (!SLIST_EMPTY(SRC)) {                                      \
+                        if (SLIST_EMPTY(DST)) {                               \
+                                (DST)->tailnextp = (SRC)->tailnextp;          \
+                        } else {                                              \
+                                *(SRC)->tailnextp = (DST)->first;             \
+                        }                                                     \
+                        (DST)->first = (SRC)->first;                          \
+                }                                                             \
+        } while (0)
+
 #endif /* !defined(_TOYWASM_SLIST_H) */
