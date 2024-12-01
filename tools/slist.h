@@ -76,13 +76,15 @@ __END_EXTERN_C
 
 #define SLIST_EMPTY(HEAD) (SLIST_FIRST(HEAD) == NULL)
 
+/*
+ * Note: when removing the first item on the list,
+ * PREV should be a NULL with the correct type.
+ */
 #define SLIST_REMOVE(HEAD, PREV, ELEM, NAME)                                  \
         CHECK_TYPE(&(HEAD)->first, (HEAD)->tailnextp);                        \
         CHECK_TYPE((HEAD)->first, (ELEM)->NAME.next);                         \
-        if (PREV != NULL) {                                                   \
-                CHECK_TYPE((HEAD)->first, (PREV)->NAME.next);                 \
-        }                                                                     \
         ctassert(sizeof(*(HEAD)) == sizeof(struct slist_head));               \
+        ctassert(sizeof((PREV)->NAME) == sizeof(struct slist_entry));         \
         ctassert(sizeof((ELEM)->NAME) == sizeof(struct slist_entry));         \
         slist_remove((struct slist_head *)(HEAD),                             \
                      (struct slist_entry *)((PREV == NULL) ? NULL             \
