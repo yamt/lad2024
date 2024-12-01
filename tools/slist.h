@@ -85,7 +85,8 @@ __END_EXTERN_C
         ctassert(sizeof(*(HEAD)) == sizeof(struct slist_head));               \
         ctassert(sizeof((ELEM)->NAME) == sizeof(struct slist_entry));         \
         slist_remove((struct slist_head *)(HEAD),                             \
-                     (struct slist_entry *)&(PREV)->NAME,                     \
+                     (struct slist_entry *)((PREV == NULL) ? NULL             \
+                                                           : &(PREV)->NAME),  \
                      (struct slist_entry *)&(ELEM)->NAME)
 
 #define SLIST_INSERT_TAIL(HEAD, ELEM, NAME)                                   \
