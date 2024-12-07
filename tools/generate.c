@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "analyze.h"
 #include "bb.h"
@@ -294,6 +295,8 @@ main(int argc, char **argv)
         }
         const unsigned int score_thresh = 200;
         const unsigned int nmoves_thresh = 50;
+        const unsigned int score_thresh2 = 500;
+        const unsigned int nmoves_thresh2 = 100;
         uint64_t ntotal = 0;
         uint64_t ngeneratefail = 0;
         uint64_t nsimpleimpossible = 0;
@@ -303,10 +306,13 @@ main(int argc, char **argv)
         uint64_t ngiveup_iterations = 0;
         uint64_t nsucceed = 0;
         uint64_t ngood = 0;
+        uint64_t ngood2 = 0;
         uint64_t nrefined = 0;
         unsigned int max_iterations_solved = 0;
         unsigned int max_iterations_impossible = 0;
+        const unsigned int nbuckets = 10;
         node_allocator_init();
+        time_t start = time(NULL);
         do {
                 map_t map;
                 struct rng rng;
@@ -392,6 +398,10 @@ main(int argc, char **argv)
                                          score, solution.nmoves, seed, suffix);
                                 dump_map_c(orig, filename);
                                 ngood++;
+                                if (score >= score_thresh2 ||
+                                    solution.nmoves >= nmoves_thresh2) {
+                                        ngood2++;
+                                }
                         }
                         nsucceed++;
                 } else if (result == SOLVE_IMPOSSIBLE) {
@@ -416,13 +426,17 @@ main(int argc, char **argv)
                                 ngiveup_iterations++;
                         }
                 }
+                time_t now = time(NULL);
+                time_t dur = now - start;
                 printf("total %" PRIu64 " genfail %" PRIu64 " (%.3f)\n"
                        "simple-impossible %" PRIu64 " (%.3f)"
                        " tsumi %" PRIu64 " (%.3f)"
                        " impossible %" PRIu64 " (%.3f)\n"
                        "giveup (mem) %" PRIu64 " (%.3f)"
                        " giveup (iter) %" PRIu64 " (%.3f)\n"
-                       "success %" PRIu64 " (%.3f) good %" PRIu64 " (%.3f)"
+                       "success %" PRIu64 " (%.3f)"
+                       " good %" PRIu64 " (%.3f, once %.1f sec)"
+                       " good2 %" PRIu64 " (%.3f, once %.1f sec)"
                        " refined %" PRIu64 " (%.3f)\n"
                        "max iter %u (succ) / %u (imp)\n",
                        ntotal, ngeneratefail, (float)ngeneratefail / ntotal,
@@ -432,7 +446,8 @@ main(int argc, char **argv)
                        (float)ngiveup_memory / ntotal, ngiveup_iterations,
                        (float)ngiveup_iterations / ntotal, nsucceed,
                        (float)nsucceed / ntotal, ngood, (float)ngood / ntotal,
-                       nrefined, (float)nrefined / ntotal,
+                       (float)dur / ngood, ngood2, (float)ngood2 / ntotal,
+                       (float)dur / ngood2, nrefined, (float)nrefined / ntotal,
                        max_iterations_solved, max_iterations_impossible);
                 printf("cleaning\n");
                 clear_solution(&solution);
