@@ -26,6 +26,19 @@ const struct stage solvable_stages[] = {
             END,
         },
 	},
+
+    {
+        .data = (const uint8_t[]){
+            _, _, W, END,
+            _, W, P, W, END,
+            W, _, R, W, END,
+            W, _, _, _, W, END,
+            W, _, A, X, W, END,
+            W, _, _, _, W, END,
+            _, W, W, W, END,
+            END,
+        },
+	},
 };
 
 const struct stage unsolvable_stages[] = {
@@ -54,6 +67,39 @@ const struct stage unsolvable_stages[] = {
             W, _, _, _, U, _, _, _, W, END,
             _, W, _, _, P, _, _, W, END,
             _, _, W, W, W, W, W, END,
+            END,
+        },
+	},
+};
+
+/*
+ * these are unsolvable, but the current implementation
+ * of tsumi() can't detect it.
+ */
+
+const struct stage false_negatives[] = {
+    {
+        .data = (const uint8_t[]){
+            _, _, W, END,
+            _, W, _, W, END,
+            W, _, R, W, END,
+            W, _, _, _, W, END,
+            W, P, A, X, W, END,
+            W, _, _, _, W, END,
+            _, W, W, W, END,
+            END,
+        },
+	},
+
+    {
+        .data = (const uint8_t[]){
+            _, _, W, END,
+            _, W, _, W, END,
+            W, _, R, _, W, END,
+            W, _, _, _, W, END,
+            W, P, A, X, W, END,
+            W, _, _, _, W, END,
+            _, W, W, W, END,
             END,
         },
 	},
@@ -96,6 +142,17 @@ main(int argc, char **argv)
                 decode_stage_from(&unsolvable_stages[i], map, &info);
                 if (!tsumi(map)) {
                         printf("unexpected false from tsumi()\n");
+                        dump_map(map);
+                        exit(1);
+                }
+        }
+
+        for (i = 0; i < ARRAYCOUNT(false_negatives); i++) {
+                map_t map;
+                struct map_info info;
+                decode_stage_from(&false_negatives[i], map, &info);
+                if (tsumi(map)) {
+                        printf("unexpected true from tsumi()\n");
                         dump_map(map);
                         exit(1);
                 }
