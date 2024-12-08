@@ -19,8 +19,13 @@
 #define HASH_SIZE 10240033
 
 /* global solver state used by solve()/solve_cleanup() */
-struct node_list hash_heads[HASH_SIZE];
-struct node_list todo;
+#if defined(SMALL_NODE)
+#define node_hashlist node_slist
+#else
+#define node_hashlist node_list
+#endif
+struct node_hashlist hash_heads[HASH_SIZE];
+struct node_slist todo;
 
 bool
 add(const map_t root, struct node *n, const map_t node_map)
@@ -30,13 +35,12 @@ add(const map_t root, struct node *n, const map_t node_map)
 #if defined(NODE_KEEP_HASH)
         n->hash = hash;
 #endif
-        struct node_list *head = &hash_heads[idx];
+        struct node_hashlist *head = &hash_heads[idx];
         struct node *n2;
 #if defined(SMALL_NODE)
-        LIST_FOREACH(n2, head, hashq) {
+        SLIST_FOREACH(n2, head, hashq) {
 #else
-        SLIST_FOREACH(n2, head, hashq)
-        {
+        LIST_FOREACH(n2, head, hashq) {
 #endif
 #if defined(NODE_KEEP_HASH)
                 if (hash != n2->hash) {
@@ -73,10 +77,9 @@ dump_hash(void)
                 unsigned int n = 0;
                 struct node *dn;
 #if defined(SMALL_NODE)
-                LIST_FOREACH(dn, &hash_heads[i], hashq) {
+                SLIST_FOREACH(dn, &hash_heads[i], hashq) {
 #else
-                SLIST_FOREACH(dn, &hash_heads[i], hashq)
-                {
+                LIST_FOREACH(dn, &hash_heads[i], hashq) {
 #endif
                         n++;
                 }
@@ -101,7 +104,7 @@ forget_old(unsigned int thresh)
         unsigned int removed = 0;
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
-                struct node_list *h = &hash_heads[i];
+                struct node_hashlist *h = &hash_heads[i];
                 struct node *n;
                 while ((n = LIST_LAST(h, struct node, hashq)) != NULL) {
                         if (n->steps >= thresh) {
@@ -118,14 +121,16 @@ forget_old(unsigned int thresh)
 
 #if defined(SMALL_NODE)
 unsigned int
-forget_unreachable(const struct node_list *todo)
+forget_unreachable(const struct node_slist *todo)
 {
         unsigned int removed = 0;
         unsigned int i;
         for (i = 0; i < HASH_SIZE; i++) {
-                struct node_list *h = &hash_heads[i];
+                struct node_hashlist *h = &hash_heads[i];
                 struct node *n;
-                SLIST_FOREACH(n, h, hashq) { n->flags |= 0x80; }
+                SLIST_FOREACH(n, h, hashq) {
+                        n->flags |= 0x80;
+                }
         }
         struct node *n;
         SLIST_FOREACH(n, todo, q) {
@@ -138,7 +143,7 @@ forget_unreachable(const struct node_list *todo)
                 }
         }
         for (i = 0; i < HASH_SIZE; i++) {
-                struct node_list *h = &hash_heads[i];
+                struct node_hashlist *h = &hash_heads[i];
                 struct node *n;
                 struct node *next;
                 struct node *prev = NULL;
@@ -158,7 +163,7 @@ forget_unreachable(const struct node_list *todo)
 #endif
 
 void
-return_solution(struct node *n, struct node_list *solution,
+return_solution(struct node *n, struct node_slist *solution,
                 unsigned int thresh)
 {
         assert(SLIST_EMPTY(solution));
@@ -495,7 +500,8 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
                         exit(1); /* must be a bug */
                 }
                 assert(SLIST_FIRST(&solution->moves)->steps ==
-                       SLIST_LAST(&solution2.moves, struct node, q)->steps + 1);
+                       SLIST_LAST(&solution2.moves, struct node, q)->steps +
+                               1);
                 detach_solution(&solution2);
                 solve_cleanup();
                 assert(solution->detached == solution2.detached);
@@ -544,7 +550,7 @@ detach_solution(struct solution *solution)
          * make a copy of nodes using malloc so that it's independent
          * from the solver state (thus usable after solve_cleanup)
          */
-        struct node_list h;
+        struct node_slist h;
         SLIST_HEAD_INIT(&h);
         struct node *n;
         SLIST_FOREACH(n, &solution->moves, q) {

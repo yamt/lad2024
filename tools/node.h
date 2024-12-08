@@ -31,6 +31,7 @@ struct node {
 };
 
 LIST_HEAD_NAMED(struct node, node_list);
+SLIST_HEAD_NAMED(struct node, node_slist);
 
 void node_allocator_init(void);
 struct node *alloc_node(void);

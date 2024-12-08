@@ -15,12 +15,12 @@
 struct slist_elem;
 
 struct slist_entry {
-        struct slist_elem *next;
+        struct slist_elem *se_next;
 };
 
 struct slist_head {
-        struct slist_elem *first;
-        struct slist_elem **tailnextp;
+        struct slist_elem *sh_first;
+        struct slist_elem **sh_tailnextp;
 };
 
 __BEGIN_EXTERN_C
@@ -46,33 +46,33 @@ __END_EXTERN_C
 
 #define SLIST_ENTRY(TYPE)                                                     \
         struct {                                                              \
-                TYPE *next;                                                   \
+                TYPE *se_next;                                                \
         }
 
 #define SLIST_HEAD(TYPE)                                                      \
         struct {                                                              \
-                TYPE *first;                                                  \
-                TYPE **tailnextp;                                             \
+                TYPE *sh_first;                                               \
+                TYPE **sh_tailnextp;                                          \
         }
 
 #define SLIST_HEAD_NAMED(TYPE, NAME)                                          \
         struct NAME {                                                         \
-                TYPE *first;                                                  \
-                TYPE **tailnextp;                                             \
+                TYPE *sh_first;                                               \
+                TYPE **sh_tailnextp;                                          \
         }
 
 #define SLIST_FOREACH(VAR, HEAD, NAME)                                        \
         for (VAR = SLIST_FIRST(HEAD); VAR != NULL; VAR = SLIST_NEXT(VAR, NAME))
 
 #define _SLIST_NEXT_PTR_TO_ELEM(ELEM, TYPE, NAME)                             \
-        (TYPE *)((uintptr_t)(ELEM) - toywasm_offsetof(TYPE, NAME.next))
+        (TYPE *)((uintptr_t)(ELEM) - toywasm_offsetof(TYPE, NAME.se_next))
 
-#define SLIST_FIRST(HEAD) (HEAD)->first
+#define SLIST_FIRST(HEAD) (HEAD)->sh_first
 #define SLIST_LAST(HEAD, TYPE, NAME)                                          \
         (SLIST_EMPTY(HEAD)                                                    \
                  ? NULL                                                       \
-                 : _SLIST_NEXT_PTR_TO_ELEM((HEAD)->tailnextp, TYPE, NAME))
-#define SLIST_NEXT(VAR, NAME) (VAR)->NAME.next
+                 : _SLIST_NEXT_PTR_TO_ELEM((HEAD)->sh_tailnextp, TYPE, NAME))
+#define SLIST_NEXT(VAR, NAME) (VAR)->NAME.se_next
 
 #define SLIST_EMPTY(HEAD) (SLIST_FIRST(HEAD) == NULL)
 
@@ -81,8 +81,8 @@ __END_EXTERN_C
  * PREV should be a NULL with the correct type.
  */
 #define SLIST_REMOVE(HEAD, PREV, ELEM, NAME)                                  \
-        CHECK_TYPE(&(HEAD)->first, (HEAD)->tailnextp);                        \
-        CHECK_TYPE((HEAD)->first, (ELEM)->NAME.next);                         \
+        CHECK_TYPE(&(HEAD)->sh_first, (HEAD)->sh_tailnextp);                  \
+        CHECK_TYPE((HEAD)->sh_first, (ELEM)->NAME.se_next);                   \
         ctassert(sizeof(*(HEAD)) == sizeof(struct slist_head));               \
         ctassert(sizeof((PREV)->NAME) == sizeof(struct slist_entry));         \
         ctassert(sizeof((ELEM)->NAME) == sizeof(struct slist_entry));         \
@@ -92,16 +92,16 @@ __END_EXTERN_C
                      (struct slist_entry *)&(ELEM)->NAME)
 
 #define SLIST_INSERT_TAIL(HEAD, ELEM, NAME)                                   \
-        CHECK_TYPE(&(HEAD)->first, (HEAD)->tailnextp);                        \
-        CHECK_TYPE((HEAD)->first, (ELEM)->NAME.next);                         \
+        CHECK_TYPE(&(HEAD)->sh_first, (HEAD)->sh_tailnextp);                  \
+        CHECK_TYPE((HEAD)->sh_first, (ELEM)->NAME.se_next);                   \
         ctassert(sizeof(*(HEAD)) == sizeof(struct slist_head));               \
         ctassert(sizeof((ELEM)->NAME) == sizeof(struct slist_entry));         \
         slist_insert_tail((struct slist_head *)(HEAD), (ELEM),                \
                           (struct slist_entry *)&(ELEM)->NAME)
 
 #define SLIST_INSERT_HEAD(HEAD, ELEM, NAME)                                   \
-        CHECK_TYPE(&(HEAD)->first, (HEAD)->tailnextp);                        \
-        CHECK_TYPE((HEAD)->first, (ELEM)->NAME.next);                         \
+        CHECK_TYPE(&(HEAD)->sh_first, (HEAD)->sh_tailnextp);                  \
+        CHECK_TYPE((HEAD)->sh_first, (ELEM)->NAME.se_next);                   \
         ctassert(sizeof(*(HEAD)) == sizeof(struct slist_head));               \
         ctassert(sizeof((ELEM)->NAME) == sizeof(struct slist_entry));         \
         slist_insert_head((struct slist_head *)(HEAD), (ELEM),                \
@@ -110,13 +110,13 @@ __END_EXTERN_C
 #define SLIST_HEAD_INIT(HEAD)                                                 \
         ctassert(sizeof(*(HEAD)) == sizeof(struct slist_head));               \
         slist_head_init((struct slist_head *)(HEAD));                         \
-        CHECK_TYPE(&(HEAD)->first, (HEAD)->tailnextp)
+        CHECK_TYPE(&(HEAD)->sh_first, (HEAD)->sh_tailnextp)
 
 #define SLIST_SPLICE_TAIL(DST, SRC, NAME)                                     \
         do {                                                                  \
                 if (!SLIST_EMPTY(SRC)) {                                      \
-                        *(DST)->tailnextp = (SRC)->first;                     \
-                        (DST)->tailnextp = (SRC)->tailnextp;                  \
+                        *(DST)->sh_tailnextp = (SRC)->sh_first;               \
+                        (DST)->sh_tailnextp = (SRC)->sh_tailnextp;            \
                 }                                                             \
         } while (0)
 
@@ -124,11 +124,11 @@ __END_EXTERN_C
         do {                                                                  \
                 if (!SLIST_EMPTY(SRC)) {                                      \
                         if (SLIST_EMPTY(DST)) {                               \
-                                (DST)->tailnextp = (SRC)->tailnextp;          \
+                                (DST)->sh_tailnextp = (SRC)->sh_tailnextp;    \
                         } else {                                              \
-                                *(SRC)->tailnextp = (DST)->first;             \
+                                *(SRC)->sh_tailnextp = (DST)->sh_first;       \
                         }                                                     \
-                        (DST)->first = (SRC)->first;                          \
+                        (DST)->sh_first = (SRC)->sh_first;                    \
                 }                                                             \
         } while (0)
 

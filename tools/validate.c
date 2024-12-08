@@ -31,7 +31,7 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
         }
         unsigned int moves = 0;
         struct node *n;
-        LIST_FOREACH(n, &solution->moves, q) {
+        SLIST_FOREACH(n, &solution->moves, q) {
                 moves++;
                 if (verbose) {
                         printf("====== move %u (%d %d %c)\n", moves,

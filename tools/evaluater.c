@@ -14,7 +14,7 @@
 #include "simplify.h"
 
 void
-evaluate(const map_t map, const struct node_list *solution,
+evaluate(const map_t map, const struct node_slist *solution,
          struct evaluation *ev)
 {
         unsigned int nswitch = 0;
@@ -26,7 +26,7 @@ evaluate(const map_t map, const struct node_list *solution,
         loc_t last_pushed_obj_loc = -1;
         struct node *n;
         struct node *prev = NULL;
-        LIST_FOREACH(n, solution, q) {
+        SLIST_FOREACH(n, solution, q) {
                 map_t beam_map;
                 bool same = false;
                 if (prev != NULL && next_loc(prev) == n->loc) {

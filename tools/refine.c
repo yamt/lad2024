@@ -32,7 +32,7 @@ refine(map_t map, bool eager, const struct solution *solution,
         map_fill(used, 0);
 
         struct node *n;
-        LIST_FOREACH(n, &solution->moves, q) {
+        SLIST_FOREACH(n, &solution->moves, q) {
                 used[n->loc] = 1;
                 used[next_loc(n)] = 1;
                 if ((n->flags & MOVE_PUSH) != 0) {

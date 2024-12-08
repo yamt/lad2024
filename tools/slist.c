@@ -9,20 +9,20 @@ void
 slist_remove(struct slist_head *h, struct slist_entry *prev,
              struct slist_entry *e)
 {
-        assert(h->first != NULL);
+        assert(h->sh_first != NULL);
         if (prev == NULL) {
                 /* removing the first entry */
-                h->first = e->next;
-                if (e->next == NULL) {
+                h->sh_first = e->se_next;
+                if (e->se_next == NULL) {
                         /* removing the only entry */
-                        h->tailnextp = &h->first;
+                        h->sh_tailnextp = &h->sh_first;
                 }
         } else {
-                prev->next = e->next;
-                if (h->tailnextp == &e->next) {
+                prev->se_next = e->se_next;
+                if (h->sh_tailnextp == &e->se_next) {
                         /* removing the last entry */
-                        assert(e->next == NULL);
-                        h->tailnextp = &prev->next;
+                        assert(e->se_next == NULL);
+                        h->sh_tailnextp = &prev->se_next;
                 }
         }
 }
@@ -30,26 +30,26 @@ slist_remove(struct slist_head *h, struct slist_entry *prev,
 void
 slist_insert_tail(struct slist_head *h, void *elem, struct slist_entry *e)
 {
-        *h->tailnextp = elem;
-        h->tailnextp = &e->next;
-        e->next = NULL;
-        assert(h->first != NULL);
+        *h->sh_tailnextp = elem;
+        h->sh_tailnextp = &e->se_next;
+        e->se_next = NULL;
+        assert(h->sh_first != NULL);
 }
 
 void
 slist_insert_head(struct slist_head *h, void *elem, struct slist_entry *e)
 {
-        if (h->first == NULL) {
-                h->tailnextp = &e->next;
+        if (h->sh_first == NULL) {
+                h->sh_tailnextp = &e->se_next;
         }
-        e->next = h->first;
-        h->first = elem;
-        assert(h->first != NULL);
+        e->se_next = h->sh_first;
+        h->sh_first = elem;
+        assert(h->sh_first != NULL);
 }
 
 void
 slist_head_init(struct slist_head *h)
 {
-        h->first = NULL;
-        h->tailnextp = &h->first;
+        h->sh_first = NULL;
+        h->sh_tailnextp = &h->sh_first;
 }

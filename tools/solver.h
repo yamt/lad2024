@@ -12,7 +12,7 @@
 
 struct solution {
         bool detached;
-        struct node_list moves;
+        struct node_slist moves;
         unsigned int nmoves;
         unsigned int iterations;
         enum giveup_reason {
