@@ -310,7 +310,6 @@ main(int argc, char **argv)
         uint64_t nrefined = 0;
         unsigned int max_iterations_solved = 0;
         unsigned int max_iterations_impossible = 0;
-        const unsigned int nbuckets = 10;
         node_allocator_init();
         time_t start = time(NULL);
         do {
