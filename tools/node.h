@@ -4,8 +4,8 @@
 #include <stdbool.h>
 
 #include "list.h"
-#include "slist.h"
 #include "rule.h"
+#include "slist.h"
 
 struct node {
         SLIST_ENTRY(struct node) q;
