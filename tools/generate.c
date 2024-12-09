@@ -31,8 +31,8 @@ struct genctx {
 bool
 room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
-        const int max = 8;
-        const int min = 1;
+        const int max = 4;
+        const int min = 2;
         const struct bb *bb = &ctx->bb;
         int rw = rng_rand(ctx->rng, min, max);
         // int rh = max + min - rw;
