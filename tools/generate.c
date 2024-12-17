@@ -230,12 +230,19 @@ generate(struct genctx *ctx)
 #endif
         for (i = 0; i < n; i++) {
                 if (place_obj(ctx, A)) {
+                        if (i > 0) {
+                                break;
+                        }
                         return true;
                 }
         }
-        if (n < max_P) {
+        int max_p = n + max_P;
+        if (max_p > max_players) {
+                max_p = max_players;
+        }
+        if (n < max_p) {
 #if 1
-                n = rng_rand(rng, -10, max_P - n);
+                n = rng_rand(rng, -10, max_p - n);
                 if (n < 0) {
                         n = 1;
                 }
@@ -244,6 +251,9 @@ generate(struct genctx *ctx)
 #endif
                 for (i = 0; i < n; i++) {
                         if (place_obj(ctx, P)) {
+                                if (i > 0) {
+                                        break;
+                                }
                                 return true;
                         }
                 }
