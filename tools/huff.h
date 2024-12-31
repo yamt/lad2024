@@ -16,6 +16,11 @@ struct hnode {
 };
 
 struct hufftree {
+        /*
+         * [0]..[255]           - leaf nodes
+         * [256]..[256 * 2 - 3] - inner nodes
+         * [256 * 2 - 2]        - root node
+         */
         struct hnode nodes[256 * 2 - 1];
 };
 

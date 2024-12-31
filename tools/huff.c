@@ -63,10 +63,17 @@ build_tree(struct hufftree *tree)
                 /*
                  * REVISIT: it would be more efficient to use a priority queue.
                  */
+
+                /*
+                 * pick the two nodes with the smallest count.
+                 */
                 qsort(nodes, 256 - i, sizeof(*nodes), cmp_node);
                 struct hnode *inner = &tree->nodes[256 + i];
                 struct hnode *na = nodes[256 - 2 - i];
                 struct hnode *nb = nodes[256 - 1 - i];
+                /*
+                 * build a new inner node to represent the picked two nodes.
+                 */
                 inner->count = na->count + nb->count;
                 inner->u.inner.children[0] = na;
                 inner->u.inner.children[1] = nb;
