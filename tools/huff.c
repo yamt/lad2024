@@ -122,6 +122,13 @@ huff_build(struct hufftree *tree)
         finish_tree(tree);
 }
 
+/*
+ * huffman-encoded data encoding:
+ *
+ * each bits in the encoded stream is an index into the table.
+ * the last byte is padded with zero up to the next byte boundary.
+ */
+
 void
 huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
             uint8_t *out, size_t *lenp)
