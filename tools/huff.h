@@ -1,3 +1,17 @@
+/*
+ * a straightforward static huffman encoder.
+ *
+ * assumptions:
+ *
+ * - an application only needs to embed a decoder.
+ *   it's important to have a small decoder.
+ *
+ * - just huffman encoding is good enough for the application.
+ *   (eg. no extra compression algorithms like RLE or LZ-thingy)
+ *
+ * - encoding is done offline. thus its speed is not important.
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
