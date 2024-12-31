@@ -7,15 +7,22 @@
 
 #include "huff.h"
 
+static bool
+is_leaf(const struct hufftree *tree, const struct hnode *n)
+{
+        return n - tree->nodes < 256;
+}
+
+static uint8_t
+leaf_value(const struct hufftree *tree, const struct hnode *n)
+{
+        assert(is_leaf(tree, n));
+        return n - tree->nodes;
+}
+
 void
 init_leaf_nodes(struct hufftree *tree)
 {
-        unsigned int i;
-        for (i = 0; i < 256; i++) {
-                struct hnode *n = &tree->nodes[i];
-                n->is_leaf = true;
-                n->u.leaf.value = i;
-        }
 }
 
 void
@@ -60,7 +67,6 @@ build_tree(struct hufftree *tree)
                 struct hnode *inner = &tree->nodes[256 + i];
                 struct hnode *na = nodes[256 - 2 - i];
                 struct hnode *nb = nodes[256 - 1 - i];
-                inner->is_leaf = false;
                 inner->count = na->count + nb->count;
                 inner->u.inner.children[0] = na;
                 inner->u.inner.children[1] = nb;
@@ -70,28 +76,29 @@ build_tree(struct hufftree *tree)
 }
 
 void
-finish_node(struct hnode *n, unsigned int nbits, uint16_t bits)
+finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
+            uint16_t bits)
 {
         if (n->count == 0) {
                 return;
         }
-        if (n->is_leaf) {
+        if (is_leaf(tree, n)) {
 #if 0
                 printf("nbits %u value %02x\n", nbits,
-                       (unsigned int)n->u.leaf.value);
+                       (unsigned int)leaf_value(tree, n));
 #endif
                 n->u.leaf.encoded_nbits = nbits;
                 n->u.leaf.encoded_bits = bits;
                 return;
         }
-        finish_node(n->u.inner.children[0], nbits + 1, (bits << 1));
-        finish_node(n->u.inner.children[1], nbits + 1, (bits << 1) | 1);
+        finish_node(tree, n->u.inner.children[0], nbits + 1, (bits << 1));
+        finish_node(tree, n->u.inner.children[1], nbits + 1, (bits << 1) | 1);
 }
 
 void
 finish_tree(struct hufftree *tree)
 {
-        finish_node(&tree->nodes[256 * 2 - 2], 0, 0);
+        finish_node(tree, &tree->nodes[256 * 2 - 2], 0, 0);
 }
 
 void
@@ -121,7 +128,7 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
                 uint8_t c = *cp++;
                 const struct hnode *n = &tree->nodes[c];
                 assert(n->count > 0);
-                assert(n->is_leaf);
+                assert(is_leaf(tree, n));
                 uint16_t bits = n->u.leaf.encoded_bits;
                 uint8_t nbits = n->u.leaf.encoded_nbits;
                 assert(nbits > 0);
@@ -160,9 +167,9 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                 unsigned int i;
                 for (i = 0; i < 2; i++) {
                         struct hnode *cn = n->u.inner.children[i];
-                        if (cn->is_leaf) {
+                        if (is_leaf(tree, cn)) {
                                 flags |= 1 << i;
-                                v[i + 1] = cn->u.leaf.value;
+                                v[i + 1] = leaf_value(tree, cn);
                         } else if (cn->count == 0) {
                                 v[i + 1] = 0;
                         } else {

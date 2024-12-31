@@ -3,11 +3,9 @@
 #include <stdint.h>
 
 struct hnode {
-        bool is_leaf;
         size_t count;
         union {
                 struct leaf {
-                        uint8_t value;
                         uint8_t encoded_nbits;
                         uint16_t encoded_bits;
                 } leaf;
