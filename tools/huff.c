@@ -156,6 +156,23 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         *lenp = outp - out;
 }
 
+/*
+ * table encoding:
+ *
+ * an array of 3-byte entries.
+ * 3 bytes for each inner nodes. (including the root. thus up to 255 nodes)
+ * the entry for the root node is of the index 0. (the first one)
+ *
+ * an entry is:
+ *   byte 0:
+ *     bit 0    if 1, byte 1 of this entry is a leaf value.
+ *              otherwise, it's a child node index.
+ *     bit 1    ditto for byte 2.
+ *     bit 2-7  unused. must be zero.
+ *   byte 1: child node index or leaf value (for encoded bit 0)
+ *   byte 2: child node index or leaf value (for encoded bit 1)
+ */
+
 void
 huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
 {
