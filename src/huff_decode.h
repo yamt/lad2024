@@ -1,3 +1,9 @@
+/*
+ * a small huffman decoder.
+ *
+ * see the comments in the encoder for the encoding details.
+ */
+
 #include <stdint.h>
 
 struct huff_decode_context {

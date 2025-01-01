@@ -166,8 +166,9 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
 /*
  * table encoding:
  *
- * an array of 3-byte entries.
- * 3 bytes for each inner nodes. (including the root. thus up to 255 nodes)
+ * a table is an array of 3-byte entries.
+ * an entry describes an inner or root node.
+ * (thus a table has up to 255 nodes)
  * the entry for the root node is of the index 0. (the first one)
  *
  * an entry is:
