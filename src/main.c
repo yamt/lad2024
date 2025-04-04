@@ -688,7 +688,7 @@ draw_message()
         digits(state.cur_stage + 1, (20 - 7 - 3) * 8, 19 * 8);
         unsigned int percent =
                 (unsigned int)(100.0 * state.cleared_stages / nstages);
-        if (percent == 100) {
+        if (percent == 100 && !cleared) {
                 *DRAW_COLORS = 0x03;
         } else {
                 *DRAW_COLORS = 0x04;
@@ -1179,6 +1179,11 @@ update()
                          */
                         memset(beam[beamidx], 0,
                                genloc(map_width, map_height));
+                        /*
+                         * note: "100%" is also drawn with the same color as
+                         * beams. redraw it with the normal color.
+                         */
+                        need_redraw = MESSAGE;
                         cleared++;
                 }
         }
