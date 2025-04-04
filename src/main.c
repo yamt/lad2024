@@ -254,6 +254,8 @@ static struct proj {
 static unsigned int beamidx = 0;
 static unsigned int cur_player_idx;
 
+static unsigned int cleared = 0;
+
 #define moving_nsteps 4
 static unsigned int moving_step = 0;
 static bool undoing = false;
@@ -345,6 +347,9 @@ is_moving(loc_t loc)
         return is_cur_player(loc - d->loc_diff);
 }
 
+/*
+ * mark a single object at the specified location to redraw
+ */
 void
 mark_redraw_object(loc_t loc)
 {
@@ -364,6 +369,9 @@ mark_redraw_object(loc_t loc)
         }
 }
 
+/*
+ * mark the current player to redraw
+ */
 void
 mark_redraw_cur_player()
 {
@@ -371,16 +379,46 @@ mark_redraw_cur_player()
         mark_redraw_object(p->loc);
 }
 
+/*
+ * mark the all players to redraw
+ */
+static void
+mark_redraw_all_players(void)
+{
+        unsigned int i;
+        for (i = 0; i < meta.nplayers; i++) {
+                struct player *p = &meta.players[i];
+                mark_redraw_object(p->loc);
+        }
+}
+
+/*
+ * mark all objects to redraw.
+ * do NOT include ones overlapping with the status line and messages.
+ */
 void
 mark_redraw_all_objects()
 {
-        /* XXX this assumes how mark_redraw_object is implemented */
-        mark_redraw_object(0);
         /*
-         * XXX -2 to avoid overwriting the status line. ("STAGE 0000" etc)
-         * (assuming only W appears in the bottom line)
+         * marking all objects simply by marking the first and last
+         * locations at the stage.
+         * XXX this assumes how mark_redraw_object is implemented
+         *
+         * `adj` below is to avoid overwriting the status line. ("STAGE 0000"
+         * etc) (assuming only W, which is usually not necessary to redraw,
+         * appears in the bottom line. actually, the assumption is a bit
+         * wrong because there is a beam at the bottom-most row in stage 001.)
          */
-        mark_redraw_object(genloc(map_width - 1, meta.stage_height - 2));
+        unsigned int adj = 1;
+        if (state.cur_stage == 0) {
+                /*
+                 * stage 001 is exceptional as mentioned above.
+                 * REVISIT: make this generic.
+                 */
+                adj = 0;
+        }
+        mark_redraw_object(genloc(0, 0));
+        mark_redraw_object(genloc(map_width - 1, meta.stage_height - adj - 1));
 }
 
 void
@@ -393,6 +431,10 @@ clear_redraw_flags(void)
         redraw_rect.ymax = 0;
 }
 
+/*
+ * mark to redraw everything.
+ * including the status line and messages.
+ */
 void
 mark_redraw_all()
 {
@@ -522,8 +564,28 @@ draw_object(int x, int y, uint8_t objidx)
         unsigned int i = 0;
         int dx = 0;
         int dy = 0;
-        if (is_player(objidx) && is_cur_player(loc)) {
-                i = (frame / 8) % 3;
+        if (is_player(objidx)) {
+                if (cleared) {
+                        static const unsigned int ix[] = {0, 1, 2, 2,
+                                                          2, 1, 0, 0};
+                        static const int jump[] = {
+                                4, 7, 9, 10, 10, 9, 7, 4,
+                        };
+                        i = (cleared / 4) % (sizeof(ix) / sizeof(ix[0]));
+                        i = ix[i];
+                        *DRAW_COLORS = 0x30;
+                        unsigned int r =
+                                ((unsigned int)x * 101 + (unsigned int)y) %
+                                16; /* kinda hash */
+                        unsigned int jump_ix =
+                                (cleared + r) %
+                                (16 + sizeof(jump) / sizeof(jump[0]));
+                        if (16 < jump_ix) {
+                                dy = -jump[jump_ix - 16];
+                        }
+                } else if (is_cur_player(loc)) {
+                        i = (frame / 8) % 3;
+                }
         }
         if (is_bomb(objidx) && bomb_animate_step && bomb_animate_loc == loc) {
                 i = bomb_animate_step * bomb_animate_nframes /
@@ -929,15 +991,38 @@ gamepad_to_dir(uint8_t pad)
         return dir;
 }
 
+static void
+reset_palette(void)
+{
+        PALETTE[0] = 0x000030; /* background */
+        PALETTE[1] = 0xc00000; /* movable objects */
+        PALETTE[2] = 0xffff00; /* beams */
+        PALETTE[3] = 0xa0a0a0; /* wall, players, text */
+}
+
+static void
+reset_alt_palette(void)
+{
+        /*
+         * an alternative palette used during the stage-clear animation.
+         *
+         * 0,1,3 are the darken version of the normal palette.
+         * 2 is used to show jumping players.
+         * note: no beams are shown during the animation.
+         */
+
+        PALETTE[0] = 0x000018;
+        PALETTE[1] = 0x600000;
+        PALETTE[2] = 0xa0a0a0; /* jumping players */
+        PALETTE[3] = 0x505050;
+}
+
 void
 start()
 {
         ASSERT(nstages <= max_stages);
 
-        PALETTE[0] = 0x000030;
-        PALETTE[1] = 0xc00000;
-        PALETTE[2] = 0xffff00;
-        PALETTE[3] = 0xa0a0a0;
+        reset_palette();
         *SYSTEM_FLAGS = SYSTEM_PRESERVE_FRAMEBUFFER;
 
         load_state();
@@ -955,7 +1040,9 @@ update()
         uint8_t gamepad;
         uint8_t gamepad_with_repeat;
         read_gamepad(&gamepad_cur, &gamepad, &gamepad_with_repeat);
-        if (moving_step == 0) {
+        if (cleared) {
+                mark_redraw_all_players();
+        } else if (moving_step == 0) {
                 enum diridx dir = gamepad_to_dir(gamepad);
                 if (dir == NONE && (gamepad & BUTTON_1) != 0) {
                         mark_redraw_cur_player();
@@ -1033,7 +1120,12 @@ update()
         }
 
         frame++;
-        update_palette();
+        if (!cleared) {
+                reset_palette();
+                update_palette();
+        } else {
+                reset_alt_palette();
+        }
         animate_bomb();
         if ((need_redraw & CALC_BEAM) != 0) {
                 update_beam();
@@ -1046,7 +1138,15 @@ update()
                 draw_message();
         }
 
-        if (moving_step) {
+        if (cleared) {
+                clear_redraw_flags();
+                mark_redraw_all_objects();
+                cleared++;
+                if (cleared == (2 * 8 + 5) * 4) {
+                        cleared = 0;
+                        stage_clear();
+                }
+        } else if (moving_step) {
                 if (undoing) {
                         // tracef("undo step %d", moving_step);
                         moving_step--;
@@ -1070,7 +1170,16 @@ update()
                 clear_redraw_flags();
 
                 if (meta.nbombs == 0) {
-                        stage_clear();
+                        mark_redraw_all_objects();
+                        /*
+                         * note: as wasm-4 has only 4 colors, we turn off
+                         * all lights here so that we can use the color
+                         * for beams for the other purpose. (ie. animate
+                         * players. see reset_alt_palette)
+                         */
+                        memset(beam[beamidx], 0,
+                               genloc(map_width, map_height));
+                        cleared++;
                 }
         }
 }
