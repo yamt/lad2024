@@ -393,6 +393,12 @@ mark_redraw_for_stage_clear(void)
                         mark_redraw_object(p->loc - map_width);
                         if (p->loc >= map_width * 2) {
                                 mark_redraw_object(p->loc - map_width * 2);
+                        } else {
+                                /*
+                                 * in this case, we need to redraw the
+                                 * outside area. (draw_outside)
+                                 */
+                                need_redraw = MESSAGE;
                         }
                 }
         }
@@ -1147,11 +1153,11 @@ update()
                 need_redraw &= ~CALC_BEAM;
         }
         draw_beam();
-        draw_objects();
         if ((need_redraw & MESSAGE) != 0) {
                 draw_outside(); /* abuse MESSAGE */
                 draw_message();
         }
+        draw_objects();
 
         if (cleared) {
                 clear_redraw_flags();
