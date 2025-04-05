@@ -587,7 +587,7 @@ draw_object(int x, int y, uint8_t objidx)
                                 (cleared + r) %
                                 (16 + sizeof(jump) / sizeof(jump[0]));
                         if (16 < jump_ix) {
-                                dy = -jump[jump_ix - 16];
+                                dy = -(scale(jump[jump_ix - 16]) >> 3);
                         }
                 } else if (is_cur_player(loc)) {
                         i = (frame / 8) % 3;
