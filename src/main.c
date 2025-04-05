@@ -1177,8 +1177,7 @@ update()
                          * for beams for the other purpose. (ie. animate
                          * players. see reset_alt_palette)
                          */
-                        memset(beam[beamidx], 0,
-                               genloc(map_width, map_height));
+                        memset(beam[beamidx], 0, map_width * map_height);
                         /*
                          * note: "100%" is also drawn with the same color as
                          * beams. redraw it with the normal color.
