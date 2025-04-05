@@ -383,12 +383,18 @@ mark_redraw_cur_player()
  * mark the all players to redraw
  */
 static void
-mark_redraw_all_players(void)
+mark_redraw_for_stage_clear(void)
 {
         unsigned int i;
         for (i = 0; i < meta.nplayers; i++) {
                 struct player *p = &meta.players[i];
                 mark_redraw_object(p->loc);
+                if (p->loc >= map_width) {
+                        mark_redraw_object(p->loc - map_width);
+                        if (p->loc >= map_width * 2) {
+                                mark_redraw_object(p->loc - map_width * 2);
+                        }
+                }
         }
 }
 
@@ -1041,7 +1047,7 @@ update()
         uint8_t gamepad_with_repeat;
         read_gamepad(&gamepad_cur, &gamepad, &gamepad_with_repeat);
         if (cleared) {
-                mark_redraw_all_players();
+                mark_redraw_for_stage_clear();
         } else if (moving_step == 0) {
                 enum diridx dir = gamepad_to_dir(gamepad);
                 if (dir == NONE && (gamepad & BUTTON_1) != 0) {
@@ -1140,7 +1146,6 @@ update()
 
         if (cleared) {
                 clear_redraw_flags();
-                mark_redraw_all_objects();
                 cleared++;
                 if (cleared == (2 * 8 + 5) * 4) {
                         cleared = 0;
