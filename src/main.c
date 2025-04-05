@@ -707,8 +707,16 @@ draw_message()
         // tracef("message_y %d", draw_info.message_y);
         int start_y = (int)draw_info.message_y;
 
+        /*
+         * note: we don't want to draw player characters within the messages
+         * scaled or with the alternative color. reset proj and cleared
+         * temporarily.
+         */
         struct proj saved_proj = proj;
         set_proj(0, 0, 8);
+        unsigned int saved_cleared = cleared;
+        cleared = 0;
+
         *DRAW_COLORS = 0x04;
         text(draw_info.message, 0, start_y * 8);
         int x = 0;
@@ -727,6 +735,7 @@ draw_message()
                 }
                 x++;
         }
+        cleared = saved_cleared;
         proj = saved_proj;
 }
 
