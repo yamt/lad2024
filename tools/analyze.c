@@ -289,105 +289,6 @@ calc_movable(const map_t map, bool do_collect, map_t movable)
         update_movable(map, do_collect, movable);
 }
 
-/*
- * _W___
- * W____
- * WX___ X is SUR(LEFT).  it can't be collected with LIGHT(RIGHT).
- * W____
- * _WW__
- *
- * W____
- * WX___ X is SUR(LEFT)|SUR(DOWN).  you need LIGHT(LEFT) or LIGHT(DOWN).
- * _WW__ this is an easy case as the X is UNMOVABLE.
- *
- * note: if X is SUR(dir), it can't be collected with LIGHT(opposite(dir)).
- * ie. you need a light with other dir in the map.
- */
-
-#define SUR(dir) DIRBIT(dir)
-#define DIRBIT(dir) (1U << (dir))
-#define LIGHT(dir) (L + (dir))
-#define opposite(dir) (((dir) + 2) % 4)
-
-bool
-surrounded_dir(const map_t map, const map_t movable, loc_t loc, loc_t d1,
-               loc_t d2, bool easy)
-{
-        while (true) {
-                loc_t nloc2 = loc + d2;
-                if (occupied(map, movable, nloc2)) {
-                        return true;
-                }
-                loc_t nloc1 = nloc2 + d1;
-                if (in_map(nloc1)) {
-                        uint8_t objidx = map[nloc1];
-                        if (is_light(objidx) &&
-                            dirs[opposite(light_dir(objidx))].loc_diff == d1) {
-                                /*
-                                 * eg. (d1 == LEFT, d2 == UP)
-                                 *
-                                 * _WW
-                                 * WR_
-                                 * _WX
-                                 */
-                                break;
-                        }
-                }
-                if (!occupied(map, movable, nloc1)) {
-                        break;
-                }
-                if (easy) {
-                        return true;
-                }
-                loc = nloc2;
-        }
-        return false;
-}
-
-void
-calc_surrounded(const map_t map, const map_t movable, map_t surrounded)
-{
-        map_fill(surrounded, 0);
-        loc_t loc;
-        for (loc = 0; loc < map_size; loc++) {
-                uint8_t objidx = map[loc];
-                /*
-                 * for now, we only care X.
-                 * can this be useful for other objects?
-                 */
-                if (objidx != X) {
-                        continue;
-                }
-                enum diridx dir;
-#if 0 /* broken; see the XXX comment in calc_movable */
-                bool easy = (movable[loc] & PUSHABLE) == 0;
-#else
-                bool easy = false;
-#endif
-                for (dir = 0; dir < 4; dir++) {
-                        loc_t d = dirs[dir].loc_diff;
-                        loc_t nloc = loc + d;
-                        /*
-                         * XXX this occupied should check the case of light
-                         * as surrounded_dir does. maybe this should be
-                         * moved to surrounded_dir.
-                         */
-                        if (!occupied(map, movable, nloc)) {
-                                continue;
-                        }
-                        loc_t d2 = dirs[(dir + 1) % 4].loc_diff;
-                        if (!surrounded_dir(map, movable, loc, d, d2, easy)) {
-                                continue;
-                        }
-                        loc_t d3 = dirs[(dir + 3) % 4].loc_diff;
-                        if (!surrounded_dir(map, movable, loc, d, d3, easy)) {
-                                continue;
-                        }
-                        surrounded[loc] |= SUR(dir);
-                }
-        }
-}
-
 void
 visit_push(const map_t map, const map_t movable, loc_t loc, map_t reachable)
 {
@@ -589,10 +490,6 @@ tsumi(const map_t map)
         }
         map_t movable;
         calc_movable(map, false, movable);
-#if 0
-        map_t surrounded;
-        calc_surrounded(map, movable, surrounded);
-#endif
         unsigned int counts[END];
         count_objects(map, counts);
         map_t possible_beam[4];
@@ -668,25 +565,6 @@ update_last_X:
                                 last_X++;
                                 continue;
                         }
-#if 0
-                        uint8_t sur = surrounded[loc];
-                        if (sur != 0) {
-                                enum diridx dir;
-                                for (dir = 0; dir < 4; dir++) {
-                                        if ((sur & SUR(dir)) != 0) {
-                                                continue;
-                                        }
-                                        if (counts[LIGHT(opposite(dir))] ==
-                                            0) {
-                                                continue;
-                                        }
-                                        break;
-                                }
-                                if (dir >= 4) {
-                                        return true;
-                                }
-                        }
-#endif
                         if (possibly_collectable(map, movable, loc,
                                                  any_A_reachable,
                                                  possible_beam)) {
