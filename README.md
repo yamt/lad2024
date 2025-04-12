@@ -22,6 +22,17 @@ Maybe it's simplest to run it on your browser.
 
 [A development snapshot]: https://yamt.github.io/lad2024/snapshot
 
+### Operations
+
+| Gamepad button     | Operation
+| ------------------ | -----------------------------------
+| UP/DOWN/RIGHT/LEFT | Move the current player
+| X                  | Toggle players
+| Z + UP             | Give up and reset the current stage
+| Z + DOWN           | Undo a move
+| Z + RIGHT          | Move to the next stage
+| Z + LEFT           | Move to the previous stage
+
 ## History
 
 In 1994, I've written [the original version] of this game.
