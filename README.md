@@ -24,7 +24,7 @@ Maybe it's simplest to run it on your browser.
 
 ### Operations
 
-| Gamepad button             | Operation
+| WASM-4 Gamepad button      | Operation
 | -------------------------- | ---------------------------
 | `UP` `DOWN` `RIGHT` `LEFT` | Move the current player
 | `X`                        | Toggle players
