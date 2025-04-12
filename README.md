@@ -24,14 +24,14 @@ Maybe it's simplest to run it on your browser.
 
 ### Operations
 
-| Gamepad button     | Operation
-| ------------------ | -----------------------------------
-| UP/DOWN/RIGHT/LEFT | Move the current player
-| X                  | Toggle players
-| Z + UP             | Give up and reset the current stage
-| Z + DOWN           | Undo a move
-| Z + RIGHT          | Move to the next stage
-| Z + LEFT           | Move to the previous stage
+| Gamepad button             | Operation
+| -------------------------- | ---------------------------
+| `UP` `DOWN` `RIGHT` `LEFT` | Move the current player
+| `X`                        | Toggle players
+| `Z` + `UP`                 | Give up and reset the stage
+| `Z` + `DOWN`               | Undo a move
+| `Z` + `RIGHT`              | Move to the next stage
+| `Z` + `LEFT`               | Move to the previous stage
 
 ## History
 
