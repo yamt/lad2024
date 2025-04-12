@@ -1172,10 +1172,22 @@ update()
         }
         draw_beam();
         if ((need_redraw & MESSAGE) != 0) {
+                /*
+                 * this should be before draw_objects because
+                 * player characters, which are drawn by draw_objects,
+                 * can jump into the "outside" area during the stage
+                 * clear animation.
+                 */
                 draw_outside(); /* abuse MESSAGE */
-                draw_message();
         }
         draw_objects();
+        if ((need_redraw & MESSAGE) != 0) {
+                /*
+                 * this should be after draw_object because the status
+                 * text overlays on objects for some stages.
+                 */
+                draw_message();
+        }
 
         if (cleared) {
                 clear_redraw_flags();
