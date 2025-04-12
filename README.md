@@ -33,6 +33,10 @@ Maybe it's simplest to run it on your browser.
 | `Z` + `RIGHT`              | Move to the next stage
 | `Z` + `LEFT`               | Move to the previous stage
 
+### Save data
+
+The game progress is automatically saved and restored.
+
 ## History
 
 In 1994, I've written [the original version] of this game.
