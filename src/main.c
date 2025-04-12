@@ -26,6 +26,8 @@
         } while (0)
 #endif
 
+#define VOLUME 32
+
 enum sprite_idx {
         SPIDX_NONE = -1,
         SPIDX_PERSON = 0,
@@ -597,7 +599,7 @@ draw_object(int x, int y, uint8_t objidx)
                                 dy = -(scale(jump[jump_ix2]) >> 3);
                                 if (jump_ix2 == 0) {
                                         tone(110 | (340 << 16), 10 | (15 << 8),
-                                             16, TONE_PULSE1);
+                                             VOLUME, TONE_PULSE1);
                                 }
                         }
                 } else if (is_cur_player(loc)) {
@@ -1141,14 +1143,15 @@ update()
 
                                 moving_step++;
                                 if (map[cur_player()->loc] == A) {
-                                        tone(110 | (160 << 16), 4, 16,
+                                        tone(110 | (160 << 16), 4, VOLUME,
                                              TONE_PULSE1);
                                 } else {
                                         /* nothing */
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, (2 << 16) | 8 | (30 << 8),
-                                             (16 << 8) | 6, TONE_NOISE);
+                                             (VOLUME << 8) | (VOLUME * 6 / 16),
+                                             TONE_NOISE);
                                 }
                         }
                 }
