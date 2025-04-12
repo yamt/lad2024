@@ -276,6 +276,7 @@ static struct move undos[max_undos];
 static unsigned int undo_idx;
 
 #define CALC_BEAM 1U
+#define OUTSIDE 2U
 #define MESSAGE 4U
 #define ALL 7U
 static unsigned int need_redraw;
@@ -400,7 +401,7 @@ mark_redraw_for_stage_clear(void)
                                  * in this case, we need to redraw the
                                  * outside area. (draw_outside)
                                  */
-                                need_redraw = MESSAGE;
+                                need_redraw = OUTSIDE;
                         }
                 }
         }
@@ -1171,14 +1172,14 @@ update()
                 need_redraw &= ~CALC_BEAM;
         }
         draw_beam();
-        if ((need_redraw & MESSAGE) != 0) {
+        if ((need_redraw & OUTSIDE) != 0) {
                 /*
                  * this should be before draw_objects because
                  * player characters, which are drawn by draw_objects,
                  * can jump into the "outside" area during the stage
                  * clear animation.
                  */
-                draw_outside(); /* abuse MESSAGE */
+                draw_outside();
         }
         draw_objects();
         if ((need_redraw & MESSAGE) != 0) {
