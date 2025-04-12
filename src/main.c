@@ -593,7 +593,12 @@ draw_object(int x, int y, uint8_t objidx)
                                 (cleared + r) %
                                 (16 + sizeof(jump) / sizeof(jump[0]));
                         if (16 <= jump_ix) {
-                                dy = -(scale(jump[jump_ix - 16]) >> 3);
+                                uint32_t jump_ix2 = jump_ix - 16;
+                                dy = -(scale(jump[jump_ix2]) >> 3);
+                                if (jump_ix2 == 0) {
+                                        tone(110 | (340 << 16), 10 | (15 << 8),
+                                             16, TONE_PULSE1);
+                                }
                         }
                 } else if (is_cur_player(loc)) {
                         i = (frame / 8) % 3;
@@ -1135,6 +1140,16 @@ update()
                                 mark_redraw_after_move(undo);
 
                                 moving_step++;
+                                if (map[cur_player()->loc] == A) {
+                                        tone(110 | (160 << 16), 4, 16,
+                                             TONE_PULSE1);
+                                } else {
+                                        /* nothing */
+                                }
+                                if ((flags & MOVE_GET_BOMB)) {
+                                        tone(400, (2 << 16) | 8 | (30 << 8),
+                                             (16 << 8) | 6, TONE_NOISE);
+                                }
                         }
                 }
                 mark_redraw_cur_player();
