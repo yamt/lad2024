@@ -25,13 +25,13 @@ Maybe it's simplest to run it on your browser.
 ### Operations
 
 | WASM-4 Gamepad button      | Operation
-| -------------------------- | ---------------------------
+| -------------------------- | ------------------------------------------------
 | `UP` `DOWN` `RIGHT` `LEFT` | Move the current player
 | `X`                        | Toggle players
 | `Z` + `UP`                 | Give up and reset the stage
 | `Z` + `DOWN`               | Undo a move
-| `Z` + `RIGHT`              | Move to the next stage
-| `Z` + `LEFT`               | Move to the previous stage
+| `Z` + `RIGHT`              | Move to the next stage (hold to move faster)
+| `Z` + `LEFT`               | Move to the previous stage (hold to move faster)
 
 ### Save data
 
