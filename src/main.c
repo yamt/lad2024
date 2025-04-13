@@ -1092,6 +1092,8 @@ update()
                         } else if (dir == UP) {
                                 // trace("reset");
                                 load_stage();
+                                tone(440 | (10 << 16), 40 | (8 << 8), 80,
+                                     TONE_TRIANGLE);
                                 return;
                         } else if (dir == DOWN) {
                                 const struct move *undo = &undos[undo_idx];
