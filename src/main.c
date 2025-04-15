@@ -256,7 +256,12 @@ static struct proj {
 static unsigned int beamidx = 0;
 static unsigned int cur_player_idx;
 
-static unsigned int cleared = 0;
+static enum animation_mode {
+        NORMAL,
+        CLEARED,
+        GAVEUP,
+} animation_mode;
+static unsigned int animation_frame = 0;
 
 #define moving_nsteps 4
 static unsigned int moving_step = 0;
@@ -580,20 +585,21 @@ draw_object(int x, int y, uint8_t objidx)
         int dx = 0;
         int dy = 0;
         if (is_player(objidx)) {
-                if (cleared) {
+                if (animation_mode == CLEARED) {
                         static const unsigned int ix[] = {0, 1, 2, 2,
                                                           2, 1, 0, 0};
                         static const int jump[] = {
                                 4, 7, 9, 10, 10, 9, 7, 4,
                         };
-                        i = (cleared / 4) % (sizeof(ix) / sizeof(ix[0]));
+                        i = (animation_frame / 4) %
+                            (sizeof(ix) / sizeof(ix[0]));
                         i = ix[i];
                         *DRAW_COLORS = 0x30;
                         unsigned int r =
                                 ((unsigned int)x * 101 + (unsigned int)y) %
                                 16; /* kinda hash */
                         unsigned int jump_ix =
-                                (cleared + r) %
+                                (animation_frame + r) %
                                 (16 + sizeof(jump) / sizeof(jump[0]));
                         if (16 <= jump_ix) {
                                 uint32_t jump_ix2 = jump_ix - 16;
@@ -603,7 +609,7 @@ draw_object(int x, int y, uint8_t objidx)
                                              VOLUME, TONE_PULSE1);
                                 }
                         }
-                } else if (is_cur_player(loc)) {
+                } else if (animation_mode == GAVEUP || is_cur_player(loc)) {
                         i = (frame / 8) % 3;
                 }
         }
@@ -621,8 +627,24 @@ draw_object(int x, int y, uint8_t objidx)
                 dx = loc_x(loc_diff);
                 dy = loc_y(loc_diff);
         }
-        blit(sprite((unsigned int)obj->sprite + i), scale_x(x) + dx,
-             scale_y(y) + dy, scale(1), scale(1), obj->flags);
+        if (animation_mode == GAVEUP && is_player(objidx)) {
+                unsigned int scl = 1 << proj.scale_idx;
+                int d = animation_frame / 6;
+                int l;
+                for (l = 0; l < 8; l++) {
+                        int lidx = 8 - (8 - l) * 8 / (8 - d);
+                        if (lidx < 0) {
+                                continue;
+                        }
+                        blit(sprite((unsigned int)obj->sprite + i) +
+                                     (unsigned int)lidx * scl * scl,
+                             scale_x(x) + dx, scale_y(y) + dy + l * (int)scl,
+                             scale(1), scl, obj->flags);
+                }
+        } else {
+                blit(sprite((unsigned int)obj->sprite + i), scale_x(x) + dx,
+                     scale_y(y) + dy, scale(1), scale(1), obj->flags);
+        }
 }
 
 void
@@ -708,7 +730,7 @@ draw_message()
         digits(state.cur_stage + 1, (20 - 7 - 3) * 8, 19 * 8);
         unsigned int percent =
                 (unsigned int)(100.0 * state.cleared_stages / nstages);
-        if (percent == 100 && !cleared) {
+        if (percent == 100 && animation_mode != CLEARED) {
                 *DRAW_COLORS = 0x03;
         } else {
                 *DRAW_COLORS = 0x04;
@@ -723,13 +745,13 @@ draw_message()
 
         /*
          * note: we don't want to draw player characters within the messages
-         * scaled or with the alternative color. reset proj and cleared
+         * scaled or with the alternative color. reset proj and animation_mode
          * temporarily.
          */
         struct proj saved_proj = proj;
         set_proj(0, 0, 8);
-        unsigned int saved_cleared = cleared;
-        cleared = 0;
+        enum animation_mode saved_mode = animation_mode;
+        animation_mode = NORMAL;
 
         *DRAW_COLORS = 0x04;
         text(draw_info.message, 0, start_y * 8);
@@ -749,7 +771,7 @@ draw_message()
                 }
                 x++;
         }
-        cleared = saved_cleared;
+        animation_mode = saved_mode;
         proj = saved_proj;
 }
 
@@ -1069,8 +1091,10 @@ update()
         uint8_t gamepad;
         uint8_t gamepad_with_repeat;
         read_gamepad(&gamepad_cur, &gamepad, &gamepad_with_repeat);
-        if (cleared) {
+        if (animation_mode == CLEARED) {
                 mark_redraw_for_stage_clear();
+        } else if (animation_mode == GAVEUP) {
+                mark_redraw_for_stage_clear(); /* XXX abuse */
         } else if (moving_step == 0) {
                 enum diridx dir = gamepad_to_dir(gamepad);
                 if (dir == NONE && (gamepad & BUTTON_1) != 0) {
@@ -1091,9 +1115,10 @@ update()
                                 load_stage();
                         } else if (dir == UP) {
                                 // trace("reset");
-                                load_stage();
                                 tone(440 | (10 << 16), 40 | (8 << 8), 80,
                                      TONE_TRIANGLE);
+                                animation_mode = GAVEUP;
+                                animation_frame = 0;
                                 return;
                         } else if (dir == DOWN) {
                                 const struct move *undo = &undos[undo_idx];
@@ -1162,11 +1187,11 @@ update()
         }
 
         frame++;
-        if (!cleared) {
+        if (animation_mode == CLEARED) {
+                reset_alt_palette();
+        } else {
                 reset_palette();
                 update_palette();
-        } else {
-                reset_alt_palette();
         }
         animate_bomb();
         if ((need_redraw & CALC_BEAM) != 0) {
@@ -1192,12 +1217,19 @@ update()
                 draw_message();
         }
 
-        if (cleared) {
+        if (animation_mode == CLEARED) {
                 clear_redraw_flags();
-                cleared++;
-                if (cleared == (2 * 8 + 5) * 4) {
-                        cleared = 0;
+                animation_frame++;
+                if (animation_frame == (2 * 8 + 5) * 4) {
+                        animation_mode = NORMAL;
                         stage_clear();
+                }
+        } else if (animation_mode == GAVEUP) {
+                clear_redraw_flags();
+                animation_frame++;
+                if (animation_frame == 6 * 8) {
+                        animation_mode = NORMAL;
+                        load_stage();
                 }
         } else if (moving_step) {
                 if (undoing) {
@@ -1236,7 +1268,8 @@ update()
                          * beams. redraw it with the normal color.
                          */
                         need_redraw = MESSAGE;
-                        cleared++;
+                        animation_mode = CLEARED;
+                        animation_frame = 1;
                 }
         }
 }
