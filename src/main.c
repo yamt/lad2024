@@ -1068,6 +1068,21 @@ reset_alt_palette(void)
         PALETTE[3] = 0x505050;
 }
 
+static void
+reset_alt_palette2(void)
+{
+        /*
+         * an alternative palette used during the give-up animation.
+         *
+         * 1,2,3 are same as the normal palette.
+         */
+
+        PALETTE[0] = 0x300000; /* background (red) */
+        PALETTE[1] = 0xc00000;
+        PALETTE[2] = 0xffff00;
+        PALETTE[3] = 0xa0a0a0;
+}
+
 void
 start()
 {
@@ -1190,7 +1205,11 @@ update()
         if (animation_mode == CLEARED) {
                 reset_alt_palette();
         } else {
-                reset_palette();
+                if (animation_mode == GAVEUP) {
+                        reset_alt_palette2();
+                } else {
+                        reset_palette();
+                }
                 update_palette();
         }
         animate_bomb();
