@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -303,6 +304,12 @@ main(int argc, char **argv)
                 printf("macro %u %u\n", map_width, map_height);
                 exit(1);
         }
+#if defined(__APPLE__)
+        /*
+         * https://developer.apple.com/documentation/apple-silicon/tuning-your-code-s-performance-for-apple-silicon
+         */
+        pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0);
+#endif
         const unsigned int score_thresh = 200;
         const unsigned int nmoves_thresh = 50;
         const unsigned int score_thresh2 = 500;
