@@ -106,7 +106,7 @@ generate(struct genctx *ctx)
         rect(ctx->map, 0, 0, map_width, map_height, W);
 
 #if 1
-        rect(ctx->map, 1, 1, 4, 6, _);
+        rect(ctx->map, 1, 1, 7, 6, _);
 #endif
 #if 0
         rect(ctx->map, 1, 1, 5, 5, _);
@@ -269,7 +269,7 @@ generate(struct genctx *ctx)
 
         struct freq freq[] = {
                 {_, 16}, {X, 5}, {B, 2}, {U, 2},
-                {R, 2},  {D, 2}, {L, 2}, {W, 1},
+                {R, 2},  {D, 2}, {L, 2}, {W, 6},
         };
         unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
         if (random_place_objs_in_bb_with_freq(ctx->rng, ctx->map, &ctx->bb,
