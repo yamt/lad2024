@@ -263,7 +263,8 @@ static enum animation_mode {
 } animation_mode;
 static unsigned int animation_frame = 0;
 
-#define moving_nsteps 4
+#define moving_nsteps 8
+static unsigned int moving_speed;
 static unsigned int moving_step = 0;
 static bool undoing = false;
 #define moving_dir undos[undo_idx].dir
@@ -1168,7 +1169,9 @@ update()
                                         mark_redraw_cur_player();
 
                                         undoing = true;
-                                        moving_step = moving_nsteps - 1;
+                                        moving_speed = 2;
+                                        moving_step =
+                                                moving_nsteps - moving_speed;
                                 }
                         }
                 } else if (dir != NONE) {
@@ -1184,18 +1187,23 @@ update()
                                 undo->flags = flags;
                                 mark_redraw_after_move(undo);
 
-                                moving_step++;
+                                moving_speed = 2;
                                 if (map[cur_player()->loc] == A) {
                                         tone(110 | (160 << 16), 4, VOLUME,
                                              TONE_PULSE1);
-                                } else {
-                                        /* nothing */
+                                } else if ((flags & MOVE_PUSH) != 0) {
+                                        /*
+                                         * when P is pushing something,
+                                         * make it slow.
+                                         */
+                                        moving_speed = 1;
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, (2 << 16) | 8 | (30 << 8),
                                              (VOLUME << 8) | (VOLUME * 6 / 16),
                                              TONE_NOISE);
                                 }
+                                moving_step += moving_speed;
                         }
                 }
                 mark_redraw_cur_player();
@@ -1253,7 +1261,7 @@ update()
         } else if (moving_step) {
                 if (undoing) {
                         // tracef("undo step %d", moving_step);
-                        moving_step--;
+                        moving_step -= moving_speed;
                         if (moving_step == 0) {
                                 struct move *undo = &undos[undo_idx];
                                 undo_move(undo);
@@ -1264,7 +1272,7 @@ update()
                                         (undo_idx + max_undos - 1) % max_undos;
                         }
                 } else {
-                        moving_step++;
+                        moving_step += moving_speed;
                         if (moving_step == moving_nsteps) {
                                 moving_step = 0;
                                 mark_redraw_all_objects();
