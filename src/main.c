@@ -1197,6 +1197,9 @@ update()
                                          * make it slow.
                                          */
                                         moving_speed = 1;
+                                        tone(270, 4 << 24,
+                                             (VOLUME << 8) | VOLUME,
+                                             TONE_NOISE);
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, (2 << 16) | 8 | (30 << 8),
