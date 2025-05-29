@@ -888,9 +888,6 @@ validate_state(void)
                         n++;
                 }
         }
-#if 1 /* temporary code to fix broken save data */
-        state.cleared_stages = n;
-#endif
         ASSERT(state.cleared_stages == n);
 }
 
