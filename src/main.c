@@ -899,6 +899,7 @@ load_state()
 {
         memset(&state, 0, sizeof(state));
         diskr(&state, sizeof(state));
+        ASSERT(state.version > 0 && state.version <= save_data_version);
         validate_state();
         if (state.version != save_data_version) {
                 memset(&state, 0, sizeof(state));
