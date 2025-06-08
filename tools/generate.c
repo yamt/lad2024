@@ -268,8 +268,8 @@ generate(struct genctx *ctx)
         }
 
         struct freq freq[] = {
-                {_, 16}, {X, 5}, {B, 2}, {U, 2},
-                {R, 2},  {D, 2}, {L, 2}, {W, 6},
+                {_, 16}, {X, 3}, {B, 3}, {U, 1},
+                {R, 1},  {D, 2}, {L, 2}, {W, 8},
         };
         unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
         if (random_place_objs_in_bb_with_freq(ctx->rng, ctx->map, &ctx->bb,
