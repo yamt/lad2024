@@ -1187,8 +1187,11 @@ update()
 
                                 moving_speed = 2;
                                 if (map[cur_player()->loc] == A) {
-                                        tone(110 | (160 << 16), 4, VOLUME,
-                                             TONE_PULSE1);
+                                        static unsigned int toggle;
+                                        toggle = 1 - toggle;
+                                        tone((110 + 100 * toggle) |
+                                                     (160 << 16),
+                                             4, VOLUME, TONE_PULSE1);
                                 } else if ((flags & MOVE_PUSH) != 0) {
                                         /*
                                          * when P is pushing something,
