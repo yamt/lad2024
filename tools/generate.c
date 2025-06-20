@@ -105,8 +105,8 @@ generate(struct genctx *ctx)
 {
         rect(ctx->map, 0, 0, map_width, map_height, W);
 
-#if 0
-        rect(ctx->map, 1, 1, 7, 6, _);
+#if 1
+        rect(ctx->map, 1, 1, 9, 5, _);
 #endif
 #if 0
         rect(ctx->map, 1, 1, 5, 5, _);
@@ -204,7 +204,7 @@ generate(struct genctx *ctx)
         }
 #endif
 
-#if 1
+#if 0
         unsigned int count[END];
         bool connect = false;
         do {
