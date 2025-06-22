@@ -32,8 +32,8 @@ struct genctx {
 bool
 room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
-        const int max = 3;
-        const int min = 1;
+        const int max = 5;
+        const int min = 3;
         const struct bb *bb = &ctx->bb;
         int rw = rng_rand(ctx->rng, min, max);
         // int rh = max + min - rw;
@@ -105,7 +105,7 @@ generate(struct genctx *ctx)
 {
         rect(ctx->map, 0, 0, map_width, map_height, W);
 
-#if 1
+#if 0
         rect(ctx->map, 1, 1, 9, 5, _);
 #endif
 #if 0
@@ -204,7 +204,7 @@ generate(struct genctx *ctx)
         }
 #endif
 
-#if 0
+#if 1
         unsigned int count[END];
         bool connect = false;
         do {
@@ -213,7 +213,7 @@ generate(struct genctx *ctx)
                 }
                 count_objects(ctx->map, count);
                 connect = true;
-        } while (100 * count[_] / map_size < 10);
+        } while (100 * count[_] / map_size < 20);
 #endif
 
 #if 0
