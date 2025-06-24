@@ -261,6 +261,7 @@ static enum animation_mode {
         CLEARED,
         GAVEUP,
 } animation_mode;
+static unsigned int animation_length = 0;
 static unsigned int animation_frame = 0;
 
 #define moving_nsteps 8
@@ -719,6 +720,12 @@ draw_outside(void)
         }
 }
 
+static unsigned int
+cleared_percentage(uint32_t cleared_stages)
+{
+        return (unsigned int)(100.0 * cleared_stages / nstages);
+}
+
 void
 draw_message()
 {
@@ -729,8 +736,7 @@ draw_message()
                 *DRAW_COLORS = 0x02;
         }
         digits(state.cur_stage + 1, (20 - 7 - 3) * 8, 19 * 8);
-        unsigned int percent =
-                (unsigned int)(100.0 * state.cleared_stages / nstages);
+        unsigned int percent = cleared_percentage(state.cleared_stages);
         if (percent == 100 && animation_mode != CLEARED) {
                 *DRAW_COLORS = 0x03;
         } else {
@@ -937,6 +943,17 @@ update_palette()
         unsigned int phase = frame / 8;
         unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
         PALETTE[2] = 0x111100 * (v + 2);
+}
+
+static bool
+bumping_cleared_percentage(void)
+{
+        uint32_t mask = 1 << (state.cur_stage % 32);
+        if ((state.clear_bitmap[state.cur_stage / 32] & mask) != 0) {
+                return false;
+        }
+        return cleared_percentage(state.cleared_stages + 1) !=
+               cleared_percentage(state.cleared_stages);
 }
 
 void
@@ -1264,7 +1281,7 @@ update()
         if (animation_mode == CLEARED) {
                 clear_redraw_flags();
                 animation_frame++;
-                if (animation_frame == (2 * 8 + 5) * 4) {
+                if (animation_frame == (2 * 8 + 5) * animation_length) {
                         animation_mode = NORMAL;
                         stage_clear();
                 }
@@ -1313,6 +1330,11 @@ update()
                          */
                         need_redraw = MESSAGE;
                         animation_mode = CLEARED;
+                        if (bumping_cleared_percentage()) {
+                                animation_length = 16;
+                        } else {
+                                animation_length = 4;
+                        }
                         animation_frame = 1;
                 }
         }
