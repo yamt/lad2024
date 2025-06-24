@@ -896,6 +896,19 @@ load_state()
 {
         memset(&state, 0, sizeof(state));
         diskr(&state, sizeof(state));
+        if (state.version == 0) {
+                /*
+                 * initial state. (all zero)
+                 *
+                 * or maybe a save data from a version older than
+                 * the first public release. (20240831)
+                 */
+                unsigned int i;
+                for (i = 0; i < sizeof(state); i++) {
+                        ASSERT(((const uint8_t *)&state)[i] == 0);
+                }
+                return;
+        }
         ASSERT(state.version > 0 && state.version <= save_data_version);
         validate_state();
         if (state.version != save_data_version) {
