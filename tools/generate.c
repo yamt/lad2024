@@ -458,6 +458,7 @@ main(int argc, char **argv)
                         }
                         nimpossible++;
                 } else {
+                        /* SOLVE_GIVENUP */
                         if (solution.giveup_reason == GIVEUP_MEMORY) {
                                 printf("SEED %" PRIx64
                                        " giveup memory moves >=%u\n",
