@@ -14,7 +14,7 @@ main(int argc, char **argv)
 {
         struct stage {
                 map_t map;
-        } *stages;
+        } * stages;
         stages = calloc(nstages, sizeof(*stages));
         if (stages == NULL) {
                 exit(1);

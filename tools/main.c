@@ -13,7 +13,8 @@
 
 unsigned int
 load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev,
-                        unsigned int *nmoves, struct map_info *info)
+                        unsigned int *nmoves, struct solver_stat *stat,
+                        struct map_info *info)
 {
         map_t map;
         printf("stage %u\n", stage_number);
@@ -34,6 +35,7 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev,
         if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
                 *nmoves = solution.nmoves;
         }
+        *stat = solution.stat;
         clear_solution(&solution);
         solve_cleanup();
         return result;
@@ -72,9 +74,10 @@ main(int argc, char **argv)
         struct result {
                 unsigned int solve_flags;
                 unsigned int nmoves;
+                struct solver_stat stat;
                 struct evaluation ev;
                 struct map_info info;
-        } *results;
+        } * results;
         results = calloc(sizeof(*results), nstages);
         if (results == NULL) {
                 exit(1);
@@ -82,8 +85,8 @@ main(int argc, char **argv)
         unsigned int i;
         for (i = stage_number - 1; i < stage_number_max; i++) {
                 struct result *r = &results[i];
-                r->solve_flags = load_and_evaluate_stage(i + 1, &r->ev,
-                                                         &r->nmoves, &r->info);
+                r->solve_flags = load_and_evaluate_stage(
+                        i + 1, &r->ev, &r->nmoves, &r->stat, &r->info);
                 if (r->solve_flags == SOLVE_IMPOSSIBLE) {
                         printf("stage %u is impossible!\n", i + 1);
                         exit(1);
@@ -95,10 +98,14 @@ main(int argc, char **argv)
                 unsigned int j;
                 for (j = stage_number - 1; j <= i; j++) {
                         struct result *r = &results[j];
+                        float node_memory_mb = (float)sizeof(struct node) *
+                                               r->stat.nodes / 1024 / 1024;
                         printf("stage %03u w %2u h %2u solve_flags %u score "
-                               "%4u nmoves %3u\n",
+                               "%4u nmoves %3u nodes %u (%.1f MB) iterations "
+                               "%u\n",
                                j + 1, r->info.h, r->info.w, r->solve_flags,
-                               r->ev.score, r->nmoves);
+                               r->ev.score, r->nmoves, r->stat.nodes,
+                               node_memory_mb, r->stat.iterations);
                 }
                 printf("=============\n");
         }

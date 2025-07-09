@@ -10,15 +10,20 @@
 /* proven to be solvable, but only returning a partial solution */
 #define SOLVE_SOLVABLE 0x04
 
+struct solver_stat {
+        unsigned int iterations;
+        unsigned int nodes;
+};
+
 struct solution {
         bool detached;
         struct node_slist moves;
         unsigned int nmoves;
-        unsigned int iterations;
         enum giveup_reason {
                 GIVEUP_MEMORY,
                 GIVEUP_ITERATIONS,
         } giveup_reason;
+        struct solver_stat stat;
 };
 
 struct solver_param {

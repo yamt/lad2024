@@ -380,8 +380,9 @@ main(int argc, char **argv)
                         exit(1);
                 }
                 if (result == SOLVE_SOLVED || result == SOLVE_SOLVABLE) {
-                        if (max_iterations_solved < solution.iterations) {
-                                max_iterations_solved = solution.iterations;
+                        if (max_iterations_solved < solution.stat.iterations) {
+                                max_iterations_solved =
+                                        solution.stat.iterations;
                         }
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
@@ -429,10 +430,11 @@ main(int argc, char **argv)
                         nsucceed++;
                 } else if (result == SOLVE_IMPOSSIBLE) {
                         printf("SEED %" PRIx64 " impossible iterations %u\n",
-                               seed, solution.iterations);
-                        if (max_iterations_impossible < solution.iterations) {
+                               seed, solution.stat.iterations);
+                        if (max_iterations_impossible <
+                            solution.stat.iterations) {
                                 max_iterations_impossible =
-                                        solution.iterations;
+                                        solution.stat.iterations;
                         }
                         nimpossible++;
                 } else {
@@ -444,7 +446,7 @@ main(int argc, char **argv)
                         } else {
                                 printf("SEED %" PRIx64
                                        " giveup iterations %u moves >=%u\n",
-                                       seed, solution.iterations,
+                                       seed, solution.stat.iterations,
                                        solution.nmoves);
                                 ngiveup_iterations++;
                         }

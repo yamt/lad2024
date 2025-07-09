@@ -227,6 +227,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
         stats.queued++;
         add(root_map, root, root_map);
         stats.registered++;
+        solution->stat.nodes++;
 
         stats.nnodes = 1;
 
@@ -332,6 +333,7 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                                         continue;
                                 }
                                 stats.registered++;
+                                solution->stat.nodes++;
                                 n2->parent = n;
                                 n2->steps = n->steps + 1;
                                 n2->loc = p->loc;
@@ -344,7 +346,8 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                                                 exit(1); /* must be a bug */
                                         }
                                         solution->nmoves = n2->steps;
-                                        solution->iterations = stats.processed;
+                                        solution->stat.iterations +=
+                                                stats.processed;
                                         return_solution(n2, &solution->moves,
                                                         last_thresh);
                                         if (last_thresh) {
@@ -360,7 +363,8 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                                 } else if (goal != NULL &&
                                            !memcmp(goal, map2, map_size)) {
                                         solution->nmoves = n2->steps;
-                                        solution->iterations = stats.processed;
+                                        solution->stat.iterations +=
+                                                stats.processed;
                                         return_solution(n2, &solution->moves,
                                                         last_thresh);
                                         if (last_thresh) {
@@ -453,13 +457,13 @@ skip:
                 if (stats.processed >= param->max_iterations) {
                         printf("giving up\n");
                         solution->giveup_reason = GIVEUP_ITERATIONS;
-                        solution->iterations = stats.processed;
+                        solution->stat.iterations += stats.processed;
                         solution->nmoves = n->steps;
                         return SOLVE_GIVENUP;
                 }
         }
         printf("impossible\n");
-        solution->iterations = stats.processed;
+        solution->stat.iterations += stats.processed;
         return SOLVE_IMPOSSIBLE;
 }
 
@@ -467,6 +471,7 @@ unsigned int
 solve(const map_t map, const struct solver_param *param, bool verbose,
       struct solution *solution)
 {
+        memset(&solution->stat, 0, sizeof(solution->stat));
         unsigned int result;
         result = solve1(map, param, verbose, NULL, solution);
 #if !defined(SMALL_NODE)
