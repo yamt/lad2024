@@ -288,6 +288,26 @@ random_seed(void)
         return v;
 }
 
+static void
+create_tombstone(uint64_t seed, struct solution *solution)
+{
+        char filename[100];
+        const char *reason = "itr";
+        if (solution->giveup_reason == GIVEUP_MEMORY) {
+                reason = "mem";
+        }
+
+        snprintf(filename, sizeof(filename),
+                 "tombstone-%s-moves-%03u-nodes-%u-iterations-%u-seed-%"
+                 "016" PRIx64,
+                 reason, solution->nmoves, solution->stat.nodes,
+                 solution->stat.iterations, seed);
+        FILE *fp = fopen(filename, "w");
+        if (fp != NULL) {
+                fclose(fp);
+        }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -443,12 +463,14 @@ main(int argc, char **argv)
                                        " giveup memory moves >=%u\n",
                                        seed, solution.nmoves);
                                 ngiveup_memory++;
+                                create_tombstone(seed, &solution);
                         } else {
                                 printf("SEED %" PRIx64
                                        " giveup iterations %u moves >=%u\n",
                                        seed, solution.stat.iterations,
                                        solution.nmoves);
                                 ngiveup_iterations++;
+                                create_tombstone(seed, &solution);
                         }
                 }
                 time_t now = time(NULL);
