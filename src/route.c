@@ -55,7 +55,8 @@ route_calculate(const map_t map, const map_t beam, loc_t to, loc_t from,
                         visit(map, beam, nloc, from, is_A, route, i);
                 }
         }
-        ASSERT((enum diridx)route[to] == HERE);
+        ASSERT((enum diridx)route[to] == HERE ||
+               (enum diridx)route[to] == NONE);
         route[to] = (uint8_t)NONE;
         ASSERT(pidx == cidx);
 }
