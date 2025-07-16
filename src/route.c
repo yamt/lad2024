@@ -19,6 +19,9 @@ visit(const map_t map, const map_t beam, loc_t nloc, loc_t from, bool is_A,
       map_t route, enum diridx dir)
 {
         ASSERT(dir != NONE);
+        if (nloc < 0 || map_width * map_height <= nloc) {
+                return;
+        }
         if ((enum diridx)route[nloc] != NONE) {
                 return;
         }
