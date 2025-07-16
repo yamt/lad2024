@@ -236,6 +236,10 @@ static struct proj {
 #define scale_y(y) (scale(y) + proj.y_offset)
 #define sprite(x) (&sprites[proj.scale_idx][(x) << (proj.scale_idx * 2 + 3)])
 
+#define unscale(x) ((x) >> (proj.scale_idx + 3))
+#define unscale_x(x) unscale((x)-proj.x_offset)
+#define unscale_y(y) unscale((y)-proj.y_offset)
+
 static unsigned int beamidx = 0;
 static unsigned int cur_player_idx;
 
@@ -558,6 +562,17 @@ prepare_scaled_sprites(void)
                 scaled_sprites_16[i * 4 + 2] = scaled >> 8;
                 scaled_sprites_16[i * 4 + 3] = (uint8_t)scaled;
         }
+}
+
+static loc_t
+mouse_loc(int x, int y)
+{
+        x = unscale_x(x);
+        y = unscale_y(y);
+        if (x < 0 || map_width < x || y < 0 || map_height < y) {
+                return (loc_t)-1;
+        }
+        return genloc(x, y);
 }
 
 void
@@ -1038,6 +1053,20 @@ read_gamepad(uint8_t *curp, uint8_t *pushedp, uint8_t *repeatedp)
         *repeatedp = gamepad_with_repeat;
 }
 
+void
+read_mouse_buttons(uint8_t *curp, uint8_t *pushedp)
+{
+        static uint8_t prev = 0;
+
+        uint8_t cur = *MOUSE_BUTTONS;
+        uint8_t pushed = cur;
+        pushed &= ~prev;
+        prev = cur;
+
+        *curp = cur;
+        *pushedp = pushed;
+}
+
 enum diridx
 gamepad_to_dir(uint8_t pad)
 {
@@ -1123,7 +1152,27 @@ update()
         } else if (animation_mode == GAVEUP) {
                 mark_redraw_for_stage_clear(); /* XXX abuse */
         } else if (moving_step == 0) {
-                enum diridx dir = gamepad_to_dir(gamepad);
+                uint8_t mouse_buttons_cur;
+                uint8_t mouse_buttons;
+                read_mouse_buttons(&mouse_buttons_cur, &mouse_buttons);
+
+                enum diridx dir = NONE;
+                if ((mouse_buttons & MOUSE_LEFT) != 0) {
+                        const loc_t loc = mouse_loc(*MOUSE_X, *MOUSE_Y);
+                        const struct player *p = cur_player();
+
+                        gamepad_cur = 0;
+                        enum diridx i;
+                        for (i = 0; i < 4; i++) {
+                                if (p->loc + dir_loc_diff(i) == loc) {
+                                        dir = i;
+                                        break;
+                                }
+                        }
+                } else {
+                        dir = gamepad_to_dir(gamepad);
+                }
+
                 if (dir == NONE && (gamepad & BUTTON_1) != 0) {
                         mark_redraw_cur_player();
                         switch_player();
