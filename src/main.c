@@ -573,7 +573,7 @@ mouse_loc(int x, int y)
 {
         x = unscale_x(x);
         y = unscale_y(y);
-        if (x < 0 || map_width < x || y < 0 || map_height < y) {
+        if (x < 0 || map_width <= x || y < 0 || map_height <= y) {
                 return (loc_t)-1;
         }
         return genloc(x, y);
