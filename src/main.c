@@ -5,9 +5,10 @@
 #include "defs.h"
 #include "hloader.h"
 #include "rng.h"
+#include "route.h"
 #include "rule.h"
-#include "wasm4.h"
 #include "util.h"
+#include "wasm4.h"
 
 #define VOLUME 32
 
@@ -306,6 +307,9 @@ static struct rng rng;
 #define bomb_animate_nframes 5
 static unsigned int bomb_animate_step;
 static loc_t bomb_animate_loc;
+
+static bool automove;
+static map_t automove_route;
 
 /* end of global mutable states */
 
@@ -1157,7 +1161,9 @@ update()
                 read_mouse_buttons(&mouse_buttons_cur, &mouse_buttons);
 
                 enum diridx dir = NONE;
-                if ((mouse_buttons & MOUSE_LEFT) != 0) {
+                if (automove) {
+                        gamepad_cur = 0;
+                } else if ((mouse_buttons & MOUSE_LEFT) != 0) {
                         const loc_t loc = mouse_loc(*MOUSE_X, *MOUSE_Y);
                         const struct player *p = cur_player();
 
@@ -1169,8 +1175,22 @@ update()
                                         break;
                                 }
                         }
+                        if (dir == NONE) {
+                                route_calculate(map, beam[beamidx], loc,
+                                                p->loc, map[p->loc] == A,
+                                                automove_route);
+                                automove = true;
+                        }
                 } else {
                         dir = gamepad_to_dir(gamepad);
+                }
+
+                if (automove) {
+                        const struct player *p = cur_player();
+                        dir = (enum diridx)automove_route[p->loc];
+                        if (dir == NONE) {
+                                automove = false;
+                        }
                 }
 
                 if (dir == NONE && (gamepad & BUTTON_1) != 0) {

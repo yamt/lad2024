@@ -20,6 +20,7 @@ enum diridx {
         DOWN = 1,
         RIGHT = 2,
         UP = 3,
+        HERE = 4,
 };
 
 typedef int loc_t;
