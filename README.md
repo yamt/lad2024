@@ -35,9 +35,9 @@ Maybe it's simplest to run it on your browser.
 
 You can use the mouse for some of operations.
 
-| Mouse operation            | Operation
-| -------------------------- | ------------------------------------------------
-| Left click                 | Move the current player to the location
+| Mouse operation | Operation
+| --------------- | -----------------------------------------------------------
+| Left click      | Move the current player to the clicked location if possible
 
 ### Save data
 
