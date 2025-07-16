@@ -1161,28 +1161,27 @@ update()
                 read_mouse_buttons(&mouse_buttons_cur, &mouse_buttons);
 
                 enum diridx dir = NONE;
+                loc_t loc;
                 if (automove) {
                         gamepad_cur = 0;
-                } else if ((mouse_buttons & MOUSE_LEFT) != 0) {
-                        const loc_t loc = mouse_loc(*MOUSE_X, *MOUSE_Y);
-                        if (loc != (loc_t)-1) {
-                                const struct player *p = cur_player();
+                } else if ((mouse_buttons & MOUSE_LEFT) != 0 &&
+                           (loc = mouse_loc(*MOUSE_X, *MOUSE_Y)) !=
+                                   (loc_t)-1) {
+                        const struct player *p = cur_player();
 
-                                gamepad_cur = 0;
-                                enum diridx i;
-                                for (i = 0; i < 4; i++) {
-                                        if (p->loc + dir_loc_diff(i) == loc) {
-                                                dir = i;
-                                                break;
-                                        }
+                        gamepad_cur = 0;
+                        enum diridx i;
+                        for (i = 0; i < 4; i++) {
+                                if (p->loc + dir_loc_diff(i) == loc) {
+                                        dir = i;
+                                        break;
                                 }
-                                if (dir == NONE) {
-                                        route_calculate(map, beam[beamidx],
-                                                        loc, p->loc,
-                                                        map[p->loc] == A,
-                                                        automove_route);
-                                        automove = true;
-                                }
+                        }
+                        if (dir == NONE) {
+                                route_calculate(map, beam[beamidx], loc,
+                                                p->loc, map[p->loc] == A,
+                                                automove_route);
+                                automove = true;
                         }
                 } else {
                         dir = gamepad_to_dir(gamepad);
