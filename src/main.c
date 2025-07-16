@@ -571,10 +571,13 @@ prepare_scaled_sprites(void)
 static loc_t
 mouse_loc(int x, int y)
 {
+        if (x < 0 || 160 <= x || y < 0 || 160 <= y) {
+                return (loc_t)-1; /* out of the screen */
+        }
         x = unscale_x(x);
         y = unscale_y(y);
         if (x < 0 || map_width <= x || y < 0 || map_height <= y) {
-                return (loc_t)-1;
+                return (loc_t)-1; /* out of the map */
         }
         return genloc(x, y);
 }
