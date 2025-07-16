@@ -33,6 +33,12 @@ Maybe it's simplest to run it on your browser.
 | `Z` + `RIGHT`              | Move to the next stage (hold to move faster)
 | `Z` + `LEFT`               | Move to the previous stage (hold to move faster)
 
+You can use the mouse for some of operations.
+
+| Mouse operation            | Operation
+| -------------------------- | ------------------------------------------------
+| Left click                 | Move the current player to the location
+
 ### Save data
 
 The game progress is automatically saved and restored.
