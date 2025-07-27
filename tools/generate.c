@@ -32,8 +32,8 @@ struct genctx {
 bool
 room(struct genctx *ctx, bool avoid_overlap, bool connect)
 {
-        const int max = 4;
-        const int min = 2;
+        const int max = 5;
+        const int min = 3;
         const struct bb *bb = &ctx->bb;
         int rw = rng_rand(ctx->rng, min, max);
         // int rh = max + min - rw;
@@ -268,8 +268,8 @@ generate(struct genctx *ctx)
         }
 
         struct freq freq[] = {
-                {_, 16}, {X, 3}, {B, 3}, {U, 1},
-                {R, 1},  {D, 2}, {L, 2}, {W, 8},
+                {_, 32}, {X, 3}, {B, 3}, {U, 1},
+                {R, 1},  {D, 2}, {L, 2}, {W, 16},
         };
         unsigned int nfreq = sizeof(freq) / sizeof(freq[0]);
         if (random_place_objs_in_bb_with_freq(ctx->rng, ctx->map, &ctx->bb,
