@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "analyze.h"
 #include "defs.h"
 #include "dump.h"
 #include "hash.h"
+#include "info.h"
 #include "list.h"
 #include "maputil.h"
 #include "node.h"
@@ -238,6 +240,9 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
         map_t map;
 #endif
         while ((n = SLIST_FIRST(&todo)) != NULL) {
+                setprocinfo("pid %u solving step %u processed %u nodes %u\n",
+                            (int)getpid(), n->steps, stats.processed,
+                            stats.registered);
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
                 if (n->steps != curstep) {

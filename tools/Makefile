@@ -49,6 +49,7 @@ OBJS += huff.o
 OBJS += huff_decode.o
 OBJS += node.o
 OBJS += pool.o
+OBJS += info.o
 OBJS += item_cache.o
 OBJS += rng.o
 OBJS += solver.o
