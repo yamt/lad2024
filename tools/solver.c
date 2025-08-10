@@ -240,9 +240,12 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
         map_t map;
 #endif
         while ((n = SLIST_FIRST(&todo)) != NULL) {
-                setprocinfo("pid %u solving step %u processed %u nodes %u\n",
+                setprocinfo("pid %u solving step %u processed %u nodes %u "
+                            "(%.2f MB)\n",
                             (int)getpid(), n->steps, stats.processed,
-                            stats.registered);
+                            stats.registered,
+                            (float)sizeof(struct node) * stats.registered /
+                                    1024 / 1024);
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
                 if (n->steps != curstep) {
