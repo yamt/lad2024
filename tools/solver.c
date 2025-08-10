@@ -240,6 +240,10 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
         map_t map;
 #endif
         while ((n = SLIST_FIRST(&todo)) != NULL) {
+                /*
+                 * REVISIT: doing this here may affect performance.
+                 * it's better to do this on demand.
+                 */
                 setprocinfo("pid %u solving step %u processed %u nodes %u "
                             "(%.2f MB)\n",
                             (int)getpid(), n->steps, stats.processed,
