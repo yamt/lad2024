@@ -244,11 +244,12 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                  * REVISIT: doing this here may affect performance.
                  * it's better to do this on demand.
                  */
-                setprocinfo("pid %u %s step %u processed %u nodes %u "
-                            "(%.2f MB)\n",
+                setprocinfo("pid %u %s step %u itr %u (%.1lf %%) mem %u "
+                            "(%.2lf MB)\n",
                             (int)getpid(), msg, n->steps, stats.processed,
+                            (double)stats.processed / stats.registered * 100,
                             stats.registered,
-                            (float)sizeof(struct node) * stats.registered /
+                            (double)sizeof(struct node) * stats.registered /
                                     1024 / 1024);
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
