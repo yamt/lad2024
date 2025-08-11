@@ -102,8 +102,8 @@ validate_slow(const map_t map, const struct solution *solution,
         assert(solution->detached);
         solve_cleanup();
         struct solution solution_after_refinement;
-        unsigned int result =
-                solve(map, param, false, &solution_after_refinement);
+        unsigned int result = solve("validating", map, param, false,
+                                    &solution_after_refinement);
         clear_solution(&solution_after_refinement);
         if (result != SOLVE_SOLVED ||
             (!allow_removed_players &&

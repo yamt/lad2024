@@ -26,7 +26,7 @@ load_and_refine_stage(unsigned int stage_number)
         }
         struct solution solution;
         unsigned int result =
-                solve(map, &solver_default_param, true, &solution);
+                solve("solving", map, &solver_default_param, true, &solution);
         map_t orig;
         map_copy(orig, map);
         if (result == SOLVE_SOLVED &&

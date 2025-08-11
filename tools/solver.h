@@ -34,8 +34,9 @@ struct solver_param {
 extern struct solver_param solver_default_param;
 
 struct node;
-unsigned int solve(const map_t map, const struct solver_param *param,
-                   bool verbose, struct solution *solution);
+unsigned int solve(const char *msg, const map_t map,
+                   const struct solver_param *param, bool verbose,
+                   struct solution *solution);
 void solve_cleanup(void);
 
 void detach_solution(struct solution *solution);

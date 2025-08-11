@@ -28,7 +28,7 @@ load_and_evaluate_stage(unsigned int stage_number, struct evaluation *ev,
 
         struct solution solution;
         unsigned int result =
-                solve(map, &solver_default_param, true, &solution);
+                solve("solving", map, &solver_default_param, true, &solution);
         if (result == SOLVE_SOLVED) {
                 evaluate(map, &solution.moves, ev);
         }

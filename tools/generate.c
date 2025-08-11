@@ -397,7 +397,8 @@ main(int argc, char **argv)
                 printf("solving (seed %" PRIx64 ")\n", seed);
                 struct solution solution;
                 unsigned int result =
-                        solve(map, &solver_default_param, false, &solution);
+                        solve("solving", map, &solver_default_param, false,
+                              &solution);
                 if (result == SOLVE_SOLVED &&
                     validate(map, &solution, false, false)) {
                         /* must be a bug */

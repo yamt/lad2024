@@ -181,8 +181,8 @@ return_solution(struct node *n, struct node_slist *solution,
 #define BRANCH_HIST_NBUCKETS 10
 
 unsigned int
-solve1(const map_t root_map, const struct solver_param *param, bool verbose,
-       const map_t goal, struct solution *solution)
+solve1(const char *msg, const map_t root_map, const struct solver_param *param,
+       bool verbose, const map_t goal, struct solution *solution)
 {
         solution->detached = false;
         SLIST_HEAD_INIT(&solution->moves);
@@ -244,9 +244,9 @@ solve1(const map_t root_map, const struct solver_param *param, bool verbose,
                  * REVISIT: doing this here may affect performance.
                  * it's better to do this on demand.
                  */
-                setprocinfo("pid %u solving step %u processed %u nodes %u "
+                setprocinfo("pid %u %s step %u processed %u nodes %u "
                             "(%.2f MB)\n",
-                            (int)getpid(), n->steps, stats.processed,
+                            (int)getpid(), msg, n->steps, stats.processed,
                             stats.registered,
                             (float)sizeof(struct node) * stats.registered /
                                     1024 / 1024);
@@ -483,12 +483,12 @@ skip:
 }
 
 unsigned int
-solve(const map_t map, const struct solver_param *param, bool verbose,
-      struct solution *solution)
+solve(const char *msg, const map_t map, const struct solver_param *param,
+      bool verbose, struct solution *solution)
 {
         memset(&solution->stat, 0, sizeof(solution->stat));
         unsigned int result;
-        result = solve1(map, param, verbose, NULL, solution);
+        result = solve1(msg, map, param, verbose, NULL, solution);
 #if !defined(SMALL_NODE)
         while (result == SOLVE_SOLVABLE) {
                 {
@@ -513,7 +513,7 @@ solve(const map_t map, const struct solver_param *param, bool verbose,
                 printf("re-solving up to the intermediate goal (step %u):\n",
                        n->steps - 1);
                 dump_map(goal);
-                result = solve1(map, param, false, goal, &solution2);
+                result = solve1(msg, map, param, false, goal, &solution2);
                 if (result != SOLVE_SOLVED && result != SOLVE_SOLVABLE) {
                         printf("solve() returned an unexpected result %u\n",
                                result);
