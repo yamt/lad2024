@@ -6,10 +6,12 @@
 
 #include "info.h"
 
-static char g_msg[128] = "none\n";
+static char g_msg_buf[128] = "none\n";
+static const char *g_msg;
+static sig_atomic_t g_pending;
 
 void
-setprocinfo(const char *fmt, ...)
+siginfo_set_message(const char *fmt, ...)
 {
         sigset_t set;
         sigset_t oset;
@@ -18,19 +20,39 @@ setprocinfo(const char *fmt, ...)
         sigemptyset(&set);
         sigaddset(&set, SIGINFO);
         sigprocmask(SIG_BLOCK, &set, &oset);
-        vsnprintf(g_msg, sizeof(g_msg), fmt, ap);
+        vsnprintf(g_msg_buf, sizeof(g_msg_buf), fmt, ap);
+        g_msg = g_msg_buf;
         sigprocmask(SIG_SETMASK, &oset, NULL);
         va_end(ap);
+        g_pending = false;
+}
+
+void
+siginfo_clear_message(void)
+{
+        g_msg = NULL;
 }
 
 static void
 handler(int sig)
 {
-        write(STDERR_FILENO, g_msg, strlen(g_msg));
+        if (g_msg != NULL) {
+                write(STDERR_FILENO, g_msg, strlen(g_msg));
+        } else {
+                g_pending = true;
+        }
+}
+
+bool
+siginfo_latch_pending(void)
+{
+        bool p = g_pending;
+        g_pending = false;
+        return p;
 }
 
 void
-setup_handler(void)
+siginfo_setup_handler(void)
 {
         signal(SIGINFO, handler);
 }

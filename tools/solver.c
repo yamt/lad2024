@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "analyze.h"
@@ -184,6 +185,8 @@ unsigned int
 solve1(const char *msg, const map_t root_map, const struct solver_param *param,
        bool verbose, const map_t goal, struct solution *solution)
 {
+        time_t start = time(NULL);
+        siginfo_clear_message();
         solution->detached = false;
         SLIST_HEAD_INIT(&solution->moves);
 
@@ -244,13 +247,20 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                  * REVISIT: doing this here may affect performance.
                  * it's better to do this on demand.
                  */
-                setprocinfo("pid %u %s step %u itr %u (%.1lf %%) mem %u "
-                            "(%.2lf MB)\n",
-                            (int)getpid(), msg, n->steps, stats.processed,
-                            (double)stats.processed / stats.registered * 100,
-                            stats.registered,
-                            (double)sizeof(struct node) * stats.registered /
-                                    1024 / 1024);
+                if (siginfo_latch_pending()) {
+                        time_t now = time(NULL);
+                        fprintf(stderr,
+                                "pid %u %s step %u itr %u (%.1lf /s) (%.1lf "
+                                "%%) mem %u "
+                                "(%.2lf MB)\n",
+                                (int)getpid(), msg, n->steps, stats.processed,
+                                (double)stats.processed / (now - start),
+                                (double)stats.processed / stats.registered *
+                                        100,
+                                stats.registered,
+                                (double)sizeof(struct node) *
+                                        stats.registered / 1024 / 1024);
+                }
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
                 if (n->steps != curstep) {

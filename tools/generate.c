@@ -323,8 +323,8 @@ main(int argc, char **argv)
         if (!seed_specified) {
                 seed = random_seed();
         }
-        setprocinfo("pid %u main\n", (int)getpid());
-        setup_handler();
+        siginfo_set_message("pid %u main\n", (int)getpid());
+        siginfo_setup_handler();
         struct genctx ctx;
         ctx.bb.x = 0;
         ctx.bb.y = 0;
@@ -361,7 +361,7 @@ main(int argc, char **argv)
         node_allocator_init();
         time_t start = time(NULL);
         do {
-                setprocinfo("pid %u generate\n", (int)getpid());
+                siginfo_set_message("pid %u generate\n", (int)getpid());
                 map_t map;
                 struct rng rng;
                 rng_init(&rng, seed);
@@ -393,7 +393,7 @@ main(int argc, char **argv)
                         continue;
                 }
                 dump_map(map);
-                setprocinfo("pid %u solving\n", (int)getpid());
+                siginfo_set_message("pid %u solving\n", (int)getpid());
                 printf("solving (seed %" PRIx64 ")\n", seed);
                 struct solution solution;
                 unsigned int result =
@@ -424,8 +424,8 @@ main(int argc, char **argv)
                         if (score >= score_thresh ||
                             solution.nmoves >= nmoves_thresh ||
                             seed_specified) {
-                                setprocinfo("pid %u refining\n",
-                                            (int)getpid());
+                                siginfo_set_message("pid %u refining\n",
+                                                    (int)getpid());
                                 const char *suffix = "";
                                 map_t orig;
                                 map_copy(orig, map);
@@ -507,7 +507,7 @@ main(int argc, char **argv)
                        (float)dur / ngood2, nrefined, (float)nrefined / ntotal,
                        max_iterations_solved, max_iterations_impossible);
                 printf("cleaning\n");
-                setprocinfo("pid %u cleaning\n", (int)getpid());
+                siginfo_set_message("pid %u cleaning\n", (int)getpid());
                 clear_solution(&solution);
                 solve_cleanup();
                 seed++;
