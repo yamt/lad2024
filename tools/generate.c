@@ -206,7 +206,7 @@ generate(struct genctx *ctx)
         }
 #endif
 
-#if 0
+#if 1
         unsigned int count[END];
         bool connect = false;
         do {
