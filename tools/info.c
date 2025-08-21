@@ -1,6 +1,8 @@
+#include <errno.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -13,16 +15,32 @@ static sig_atomic_t g_pending;
 void
 siginfo_set_message(const char *fmt, ...)
 {
+        int ret;
         sigset_t set;
         sigset_t oset;
         va_list ap;
         va_start(ap, fmt);
         sigemptyset(&set);
         sigaddset(&set, SIGINFO);
-        sigprocmask(SIG_BLOCK, &set, &oset);
-        vsnprintf(g_msg_buf, sizeof(g_msg_buf), fmt, ap);
+        ret = sigprocmask(SIG_BLOCK, &set, &oset);
+        if (ret == -1) {
+                fprintf(stderr, "sigprocmask failed with %d (%s)\n", errno,
+                        strerror(errno));
+                exit(1);
+        }
+        ret = vsnprintf(g_msg_buf, sizeof(g_msg_buf), fmt, ap);
+        if (ret == -1) {
+                fprintf(stderr, "vsnprintf failed with %d (%s)\n", errno,
+                        strerror(errno));
+                exit(1);
+        }
         g_msg = g_msg_buf;
-        sigprocmask(SIG_SETMASK, &oset, NULL);
+        ret = sigprocmask(SIG_SETMASK, &oset, NULL);
+        if (ret == -1) {
+                fprintf(stderr, "sigprocmask failed with %d (%s)\n", errno,
+                        strerror(errno));
+                exit(1);
+        }
         va_end(ap);
         g_pending = false;
 }
