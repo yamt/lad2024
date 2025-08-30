@@ -218,7 +218,7 @@ generate(struct genctx *ctx)
         } while (100 * count[_] / map_size < 20);
 #endif
 
-#if 1
+#if 0
         hmirror(ctx->map, ctx->bb.w, ctx->bb.h);
         vmirror(ctx->map, ctx->bb.w, ctx->bb.h);
 #endif
