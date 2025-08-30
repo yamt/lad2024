@@ -243,10 +243,6 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
         map_t map;
 #endif
         while ((n = SLIST_FIRST(&todo)) != NULL) {
-                /*
-                 * REVISIT: doing this here may affect performance.
-                 * it's better to do this on demand.
-                 */
                 if (siginfo_latch_pending()) {
                         time_t now = time(NULL);
                         fprintf(stderr,
