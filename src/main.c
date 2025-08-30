@@ -1376,7 +1376,7 @@ update()
                         mark_redraw_all_objects();
                         /*
                          * note: as wasm-4 has only 4 colors, we turn off
-                         * all lights here so that we can use the color
+                         * all beams here so that we can use the color
                          * for beams for the other purpose. (ie. animate
                          * players. see reset_alt_palette)
                          */
@@ -1387,6 +1387,10 @@ update()
                          */
                         need_redraw = MESSAGE;
                         animation_mode = CLEARED;
+                        /*
+                         * when the integer percentage changes (eg. 1% -> 2%)
+                         * celebrate it a bit longer
+                         */
                         if (bumping_cleared_percentage()) {
                                 animation_length = 16;
                         } else {
