@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -36,6 +38,10 @@ struct node_slist todo;
 #define BLOOM_FILTER_SIZE (1024 * 1024 * 1024)
 #endif
 static uint32_t filter[(BLOOM_FILTER_SIZE + 32 - 1) / 32];
+static struct {
+        uint32_t add;
+        uint32_t n;
+} bloom_filter_stats;
 #if !defined(BLOOM_FILTER_K)
 #define BLOOM_FILTER_K 4
 #endif
@@ -53,6 +59,10 @@ add_filter(const uint32_t h[8])
                         all = false;
                         filter[idx] |= mask;
                 }
+        }
+        bloom_filter_stats.add++;
+        if (!all) {
+                bloom_filter_stats.n++;
         }
         return all;
 }
@@ -298,6 +308,16 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                                 stats.registered,
                                 (double)sizeof(struct node) *
                                         stats.registered / 1024 / 1024);
+#if defined(USE_BLOOM_FILTER)
+                        double optimal_k =
+                                0.7 * BLOOM_FILTER_SIZE / bloom_filter_stats.n;
+                        double false_pos_prob = pow(0.5, optimal_k);
+                        fprintf(stderr,
+                                "pid %u bloom filter n=%" PRIu32
+                                " optimal-K=%.1f false-pos-prob=%f\n",
+                                (int)getpid(), bloom_filter_stats.n, optimal_k,
+                                false_pos_prob);
+#endif
                 }
                 assert(stats.ntsumi <= stats.ntsumicheck);
                 assert(stats.processed <= stats.queued);
@@ -610,6 +630,7 @@ solve_cleanup(void)
 #endif
 #if defined(USE_BLOOM_FILTER)
         memset(filter, 0, sizeof(filter));
+        memset(&bloom_filter_stats, 0, sizeof(bloom_filter_stats));
 #endif
 }
 
