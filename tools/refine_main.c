@@ -34,10 +34,7 @@ load_and_refine_stage(unsigned int stage_number)
                 printf("refined!\n");
                 dump_map(orig);
                 dump_map(map);
-                char filename[100];
-                snprintf(filename, sizeof(filename), "refined-%03u.c",
-                         stage_number);
-                dump_map_c(map, filename);
+                dump_map_c_fmt(map, "refined-%03u.c", stage_number);
         } else {
                 printf("nothing to refine\n");
         }
