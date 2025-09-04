@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -147,14 +148,26 @@ try_refine1(map_t map, struct solution *solution,
 
 #if 1
         if (validate_slow(map, solution, param, false, removed)) {
-                /* must be a bug */
+                /*
+                 * must be a bug unless USE_BLOOM_FILTER.
+                 *
+                 * with USE_BLOOM_FILTER,
+                 * as a bloom filter allows false positives,
+                 * any changes to the stage can make it unsolvable.
+                 * it's ok as far as it's rare.
+                 * we still dump it for later examination though.
+                 */
                 printf("refinement changed the solution!\n");
                 dump_map(orig);
                 dump_map(refinedmap);
                 dump_map(map);
-                dump_map_c(orig, "refine-bug-orig");
-                dump_map_c(map, "refine-bug-refined");
+                dump_map_c_fmt(orig, "refine-bug-%" PRIx64 "-orig",
+                               solution->id);
+                dump_map_c_fmt(map, "refine-bug-%" PRIx64 "-refined",
+                               solution->id);
+#if !defined(USE_BLOOM_FILTER)
                 exit(1);
+#endif
         }
 #endif
         return true;

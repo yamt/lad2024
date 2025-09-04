@@ -29,6 +29,7 @@ load_and_refine_stage(unsigned int stage_number)
                 solve("solving", map, &solver_default_param, true, &solution);
         map_t orig;
         map_copy(orig, map);
+        solution.id = stage_number; /* XXX */
         if (result == SOLVE_SOLVED &&
             try_refine(map, &solution, &solver_default_param)) {
                 printf("refined!\n");

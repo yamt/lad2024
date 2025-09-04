@@ -16,6 +16,7 @@
 #include "maputil.h"
 #include "node.h"
 #include "rule.h"
+#include "sha256.h"
 #include "solver.h"
 
 // #define HASH_SIZE 1024021
@@ -30,11 +31,48 @@
 struct node_hashlist hash_heads[HASH_SIZE];
 struct node_slist todo;
 
+#if defined(USE_BLOOM_FILTER)
+#if !defined(BLOOM_FILTER_SIZE)
+#define BLOOM_FILTER_SIZE (1024 * 1024 * 1024)
+#endif
+static uint32_t filter[(BLOOM_FILTER_SIZE + 32 - 1) / 32];
+#if !defined(BLOOM_FILTER_K)
+#define BLOOM_FILTER_K 4
+#endif
+
+bool
+add_filter(const uint32_t h[8])
+{
+        bool all = true;
+        unsigned int i;
+        for (i = 0; i < BLOOM_FILTER_K; i++) {
+                uint32_t bitidx = h[i] % BLOOM_FILTER_SIZE;
+                uint32_t idx = bitidx / 32;
+                uint32_t mask = UINT32_C(1) << (bitidx % 32);
+                if ((filter[idx] & mask) == 0) {
+                        all = false;
+                        filter[idx] |= mask;
+                }
+        }
+        return all;
+}
+#endif
+
 bool
 add(const map_t root, struct node *n, const map_t node_map)
 {
+#if defined(USE_BLOOM_FILTER)
+        uint32_t h[8];
+        sha256(node_map, map_size, h);
+        if (add_filter(h)) {
+                return true;
+        }
+        uint32_t hash = h[0];
+        uint32_t idx = h[1] % HASH_SIZE;
+#else
         uint32_t hash = sdbm_hash(node_map, map_size);
         uint32_t idx = hash % HASH_SIZE;
+#endif
 #if defined(NODE_KEEP_HASH)
         n->hash = hash;
 #endif
@@ -57,7 +95,11 @@ add(const map_t root, struct node *n, const map_t node_map)
                 const uint8_t *n2_map = n2->map;
 #endif
                 if (!memcmp(n2_map, node_map, map_size)) {
+#if defined(USE_BLOOM_FILTER)
+                        abort(); /* false negative is a bug */
+#else
                         return true;
+#endif
                 }
         }
 #if defined(SMALL_NODE)
@@ -565,6 +607,9 @@ solve_cleanup(void)
                         free_node(n);
                 }
         }
+#endif
+#if defined(USE_BLOOM_FILTER)
+        memset(filter, 0, sizeof(filter));
 #endif
 }
 

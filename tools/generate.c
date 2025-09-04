@@ -429,6 +429,7 @@ main(int argc, char **argv)
                                 const char *suffix = "";
                                 map_t orig;
                                 map_copy(orig, map);
+                                solution.id = seed; /* XXX */
                                 if (result == SOLVE_SOLVED &&
                                     try_refine(map, &solution,
                                                &solver_default_param)) {

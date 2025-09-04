@@ -24,6 +24,9 @@ struct solution {
                 GIVEUP_ITERATIONS,
         } giveup_reason;
         struct solver_stat stat;
+
+        /* just for informative purporses. */
+        uint64_t id;
 };
 
 struct solver_param {

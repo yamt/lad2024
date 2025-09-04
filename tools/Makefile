@@ -14,6 +14,13 @@ CFLAGS += -DMEMLIMIT_GB=1
 #CFLAGS += -DMEMLIMIT_GB=10
 CFLAGS += -DSMALL_NODE
 CFLAGS += -DNODE_KEEP_HASH
+
+# XXX a bit difficult to tune manually.
+# maybe we should somehow make it automatic.
+CFLAGS += -DUSE_BLOOM_FILTER
+CFLAGS += -DBLOOM_FILTER_SIZE=100000000
+CFLAGS += -DBLOOM_FILTER_K=4
+
 CLINKFLAGS = -flto=full
 
 CFLAGS += -I../src
@@ -52,6 +59,7 @@ OBJS += pool.o
 OBJS += info.o
 OBJS += item_cache.o
 OBJS += rng.o
+OBJS += sha256.o
 OBJS += solver.o
 OBJS += analyze.o
 OBJS += simplify.o
