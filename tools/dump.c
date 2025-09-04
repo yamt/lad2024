@@ -1,3 +1,5 @@
+#include <limits.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -103,4 +105,15 @@ dump_map_c(const map_t map, const char *filename)
         fprintf(fp, "        },\n");
         fprintf(fp, "    },\n");
         fclose(fp);
+}
+
+void
+dump_map_c_fmt(const map_t map, const char *filename_fmt, ...)
+{
+        char filename[PATH_MAX];
+        va_list ap;
+        va_start(ap, filename_fmt);
+        vsnprintf(filename, sizeof(filename), filename_fmt, ap);
+        va_end(ap);
+        dump_map_c(map, filename);
 }
