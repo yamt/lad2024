@@ -435,21 +435,19 @@ main(int argc, char **argv)
                                         /*
                                          * XXX: refinement can change the score
                                          */
-                                        char filename[100];
-                                        snprintf(filename, sizeof(filename),
-                                                 "generated-score-%05u-moves-%"
-                                                 "03u-seed-%016" PRIx64 ".c",
-                                                 score, solution.nmoves, seed);
-                                        dump_map_c(map, filename);
+                                        dump_map_c_fmt(
+                                                map,
+                                                "generated-score-%05u-moves-%"
+                                                "03u-seed-%016" PRIx64 ".c",
+                                                score, solution.nmoves, seed);
                                         suffix = ".orig";
                                         nrefined++;
                                 }
-                                char filename[100];
-                                snprintf(filename, sizeof(filename),
-                                         "generated-score-%05u-moves-%03u-"
-                                         "seed-%016" PRIx64 ".c%s",
-                                         score, solution.nmoves, seed, suffix);
-                                dump_map_c(orig, filename);
+                                dump_map_c_fmt(
+                                        orig,
+                                        "generated-score-%05u-moves-%03u-"
+                                        "seed-%016" PRIx64 ".c%s",
+                                        score, solution.nmoves, seed, suffix);
                                 ngood++;
                                 if (score >= score_thresh2 ||
                                     solution.nmoves >= nmoves_thresh2) {
