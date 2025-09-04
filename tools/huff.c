@@ -193,7 +193,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
         while (cons < prod) {
                 // printf("cons %02x prod %02x\n", cons, prod);
                 n = nodes[cons++];
-                assert(!n->is_leaf);
+                assert(!is_leaf(tree, n));
                 uint8_t v[3];
                 uint8_t flags = 0;
                 unsigned int i;
