@@ -429,7 +429,8 @@ skip:
 #if defined(SMALL_NODE)
                         unsigned int step = n->steps;
                         if (last_gc == step) {
-                                printf("too many registered nodes\n");
+                                printf("too many registered nodes (%u)\n",
+                                       stats.registered);
                                 solution->giveup_reason = GIVEUP_MEMORY;
                                 solution->nmoves = n->steps;
                                 solution->stat.iterations += stats.processed;
