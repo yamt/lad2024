@@ -18,8 +18,8 @@ CFLAGS += -DNODE_KEEP_HASH
 # XXX a bit difficult to tune manually.
 # maybe we should somehow make it automatic.
 CFLAGS += -DUSE_BLOOM_FILTER
-CFLAGS += -DBLOOM_FILTER_SIZE=100000000
-CFLAGS += -DBLOOM_FILTER_K=4
+CFLAGS += -DBLOOM_FILTER_SIZE=400000000
+CFLAGS += -DBLOOM_FILTER_K=3
 
 CLINKFLAGS = -flto=full
 
