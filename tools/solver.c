@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "analyze.h"
+#include "bloom_filter.h"
 #include "defs.h"
 #include "dump.h"
 #include "hash.h"
@@ -309,14 +310,17 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                                 (double)sizeof(struct node) *
                                         stats.registered / 1024 / 1024);
 #if defined(USE_BLOOM_FILTER)
-                        double optimal_k =
-                                0.7 * BLOOM_FILTER_SIZE / bloom_filter_stats.n;
-                        double false_pos_prob = pow(0.5, optimal_k);
+                        double o_k = bloom_filter_opt_k(BLOOM_FILTER_SIZE,
+                                                        bloom_filter_stats.n);
+                        double o_prob = pow(0.5, o_k);
                         fprintf(stderr,
-                                "pid %u bloom filter n=%" PRIu32
-                                " optimal-K=%.1f false-pos-prob=%f\n",
-                                (int)getpid(), bloom_filter_stats.n, optimal_k,
-                                false_pos_prob);
+                                "pid %u BF n=%" PRIu32 " opt-K=%.1f (%f)"
+                                " cur-K=%u (%f)\n",
+                                (int)getpid(), bloom_filter_stats.n, o_k,
+                                o_prob, BLOOM_FILTER_K,
+                                bloom_filter_false_pos_prob(
+                                        BLOOM_FILTER_SIZE,
+                                        bloom_filter_stats.n, BLOOM_FILTER_K));
 #endif
                 }
                 assert(stats.ntsumi <= stats.ntsumicheck);

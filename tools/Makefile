@@ -50,6 +50,7 @@ OBJS += list.o
 OBJS += slist.o
 OBJS += maputil.o
 OBJS += bb.o
+OBJS += bloom_filter.o
 OBJS += dump.o
 OBJS += draw.o
 OBJS += huff.o
