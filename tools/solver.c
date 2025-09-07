@@ -42,6 +42,8 @@ static uint32_t filter[(BLOOM_FILTER_SIZE + 32 - 1) / 32];
 static struct {
         uint32_t add;
         uint32_t n;
+        uint32_t false_positive;
+        uint32_t reclaimed;
 } bloom_filter_stats;
 #if !defined(BLOOM_FILTER_K)
 #define BLOOM_FILTER_K 4
@@ -75,7 +77,8 @@ add(const map_t root, struct node *n, const map_t node_map)
 #if defined(USE_BLOOM_FILTER)
         uint32_t h[8];
         sha256(node_map, map_size, h);
-        if (add_filter(h)) {
+        const bool dup = add_filter(h);
+        if (dup && bloom_filter_stats.reclaimed) {
                 return true;
         }
         uint32_t hash = h[0];
@@ -107,11 +110,13 @@ add(const map_t root, struct node *n, const map_t node_map)
 #endif
                 if (!memcmp(n2_map, node_map, map_size)) {
 #if defined(USE_BLOOM_FILTER)
-                        abort(); /* false negative is a bug */
-#else
-                        return true;
+                        assert(dup); /* false negative is a bug */
 #endif
+                        return true;
                 }
+        }
+        if (dup) {
+                bloom_filter_stats.false_positive++;
         }
 #if defined(SMALL_NODE)
         SLIST_INSERT_HEAD(head, n, hashq);
@@ -315,12 +320,15 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                         double o_prob = pow(0.5, o_k);
                         fprintf(stderr,
                                 "pid %u BF n=%" PRIu32 " opt-K=%.1f (%f)"
-                                " cur-K=%u (%f)\n",
+                                " cur-K=%u (%f) FP %" PRIu32 "(%.4f)\n",
                                 (int)getpid(), bloom_filter_stats.n, o_k,
                                 o_prob, BLOOM_FILTER_K,
                                 bloom_filter_false_pos_prob(
                                         BLOOM_FILTER_SIZE,
-                                        bloom_filter_stats.n, BLOOM_FILTER_K));
+                                        bloom_filter_stats.n, BLOOM_FILTER_K),
+                                bloom_filter_stats.false_positive,
+                                (double)bloom_filter_stats.false_positive /
+                                        bloom_filter_stats.add);
 #endif
                 }
                 assert(stats.ntsumi <= stats.ntsumicheck);
@@ -492,6 +500,9 @@ skip:
                         // dump_hash();
                 }
                 if (stats.registered > limit) {
+#if defined(USE_BLOOM_FILTER)
+                        bloom_filter_stats.reclaimed++;
+#endif
 #if defined(SMALL_NODE)
                         unsigned int step = n->steps;
                         if (last_gc == step) {
