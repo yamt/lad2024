@@ -115,9 +115,11 @@ add(const map_t root, struct node *n, const map_t node_map)
                         return true;
                 }
         }
+#if defined(USE_BLOOM_FILTER)
         if (dup) {
                 bloom_filter_stats.false_positive++;
         }
+#endif
 #if defined(SMALL_NODE)
         SLIST_INSERT_HEAD(head, n, hashq);
 #else
