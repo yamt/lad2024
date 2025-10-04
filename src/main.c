@@ -930,6 +930,21 @@ load_state()
 void
 save_state()
 {
+        /*
+         * although this cart has nothing with netplay,
+         * wasm-4 doesn't have a way for a cart to prevent a netplay.
+         *
+         * if netplay is enabled, only save the state for the first player.
+         * in case of netplay, other players merely have a copy of the in-core
+         * state from the first player. do not risk overwriting the local disk
+         * with the it.
+         *
+         * this can be even considered as a security measure as a bad person
+         * can attempt to overwrite your save data by sending a netplay url.
+         */
+        if ((*NETPLAY & 3) != 0) {
+                return;
+        }
         state.version = save_data_version;
         diskw(&state, sizeof(state));
 }
