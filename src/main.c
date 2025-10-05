@@ -941,8 +941,8 @@ save_state()
          * disk buffer from the first player. do not risk overwriting the
          * local storage with it.
          *
-         * as this cart loads the disk buffer only on start(), it's ok
-         * not to update the disk buffer here.
+         * as this cart loads the data from the disk buffer only on start(),
+         * it's ok to leave the disk buffer contents stale here.
          *
          * this can be even considered as a security measure as a bad person
          * can attempt to overwrite your save data by sending a netplay url.
