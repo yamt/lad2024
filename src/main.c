@@ -931,13 +931,18 @@ void
 save_state()
 {
         /*
-         * although this cart has nothing with netplay,
-         * wasm-4 doesn't have a way for a cart to prevent a netplay.
+         * although this cart currently has nothing for netplay,
+         * wasm-4 doesn't have a way for a cart to prevent users from
+         * starting a netplay.
          *
-         * if netplay is enabled, only save the state for the first player.
+         * if netplay is enabled, only perform diskw for the first player,
+         * which is the host of the netplay.
          * in case of netplay, other players merely have a copy of the in-core
-         * state from the first player. do not risk overwriting the local disk
-         * with the it.
+         * disk buffer from the first player. do not risk overwriting the
+         * local storage with it.
+         *
+         * as this cart loads the disk buffer only on start(), it's ok
+         * not to update the disk buffer here.
          *
          * this can be even considered as a security measure as a bad person
          * can attempt to overwrite your save data by sending a netplay url.
