@@ -287,6 +287,29 @@ const struct stage stages[] = {
     },
 
 #include "generated_stages.inc"
+
+#if 0
+    {
+        .data = (const uint8_t[]){
+            W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            W, _, L, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            W, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, W, END,
+            W, _, X, _, X, _, X, _, X, _, X, _, X, _, _, _, _, _, W, END,
+            W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, _, W, W, END,
+            W, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, W, END,
+            W, _, _, _, X, _, X, _, X, _, X, _, X, _, X, _, X, _, _, W, END,
+            W, W, W, _, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            W, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, W, END,
+            W, _, X, _, X, _, X, _, X, _, X, _, X, _, _, _, _, _, W, END,
+            W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, _, W, W, END,
+            W, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, W, END,
+            W, _, P, _, A, _, X, _, X, _, X, _, X, _, X, _, X, _, W, END,
+            W, _, _, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            END,
+        },
+    },
+#endif
 };
 
 /* clang-format on */
