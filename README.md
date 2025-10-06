@@ -12,13 +12,9 @@ Maybe it's simplest to run it on your browser.
 
 * [On wasm4.org]
 
-* An alternative hosting [on my GitHub pages]
-
 * [A development snapshot] for testing
 
 [On wasm4.org]: https://wasm4.org/play/lad2024
-
-[on my GitHub pages]: https://yamt.github.io/lad2024/
 
 [A development snapshot]: https://yamt.github.io/lad2024/snapshot
 
