@@ -5,11 +5,22 @@
 
 #include "analyze.h"
 #include "dump.h"
+#include "evaluater.h"
 #include "maputil.h"
 #include "refine.h"
 #include "simplify.h"
 #include "solver.h"
 #include "validate.h"
+
+static void
+update_solution(struct solution *solution, struct solution *new_solution)
+{
+        printf("UPDATE SOLUTION %d -> %d\n", solution->nmoves,
+               new_solution->nmoves);
+        clear_solution(solution);
+        /* note: slist head is copyable */
+        *solution = *new_solution;
+}
 
 /*
  * remove unnecessary spaces.
@@ -19,32 +30,38 @@
  * effectively reducing the solution space.
  */
 bool
-refine(map_t map, bool eager, const struct solution *solution,
+refine(map_t map, bool eager, struct solution *solution,
        const struct solver_param *param)
 {
-        map_t movable;
-        map_t reachable;
-
-        calc_movable(map, true, movable);
-        bool failed = calc_reachable_from_A(map, movable, reachable);
-        assert(!failed);
-
-        map_t used;
-        map_fill(used, 0);
-
-        struct node *n;
-        SLIST_FOREACH(n, &solution->moves, q) {
-                used[n->loc] = 1;
-                used[next_loc(n)] = 1;
-                if ((n->flags & MOVE_PUSH) != 0) {
-                        used[pushed_obj_loc(n)] = 1;
-                }
-        }
 
         bool modified = false;
+        bool recalc = true;
         bool more;
         loc_t loc;
         do {
+                map_t movable;
+                map_t reachable;
+                map_t used;
+
+                if (recalc) {
+                        calc_movable(map, true, movable);
+                        bool failed =
+                                calc_reachable_from_A(map, movable, reachable);
+                        assert(!failed);
+
+                        map_fill(used, 0);
+
+                        struct node *n;
+                        SLIST_FOREACH(n, &solution->moves, q) {
+                                used[n->loc] = 1;
+                                used[next_loc(n)] = 1;
+                                if ((n->flags & MOVE_PUSH) != 0) {
+                                        used[pushed_obj_loc(n)] = 1;
+                                }
+                        }
+                        recalc = false;
+                }
+
                 more = false;
                 for (loc = 0; loc < map_size; loc++) {
                         if (reachable[loc] == UNREACHABLE) {
@@ -102,13 +119,25 @@ refine(map_t map, bool eager, const struct solution *solution,
                                         continue;
                                 }
                                 map[loc] = try;
-                                if (validate(map, solution, false, false) ||
+                                /*
+                                 * always perform slow validation here because
+                                 * fast validation might fail even when
+                                 * the refinement attepmt improved the stage.
+                                 */
+                                struct solution new_solution;
+                                if (/* validate(map, solution, false, false) ||
+                                     */
                                     validate_slow(map, solution, param, false,
-                                                  false)) {
-                                        map[loc] = objidx;
+                                                  false, &new_solution)) {
+                                        map[loc] = objidx; /* revert */
                                 } else {
                                         modified = true;
                                         more = true;
+                                        update_solution(solution,
+                                                        &new_solution);
+                                        struct evaluation ev;
+                                        evaluate(map, &solution->moves, &ev);
+                                        recalc = true;
                                 }
                         }
                 }
@@ -147,7 +176,9 @@ try_refine1(map_t map, struct solution *solution,
         }
 
 #if 1
-        if (validate_slow(map, solution, param, false, removed)) {
+        struct solution alt_solution;
+        if (validate_slow(map, solution, param, false, removed,
+                          &alt_solution)) {
                 /*
                  * must be a bug unless USE_BLOOM_FILTER.
                  *
@@ -158,8 +189,11 @@ try_refine1(map_t map, struct solution *solution,
                  * we still dump it for later examination though.
                  */
                 printf("refinement changed the solution!\n");
+                printf("====== orig\n");
                 dump_map(orig);
+                printf("====== refined\n");
                 dump_map(refinedmap);
+                printf("====== simplified\n");
                 dump_map(map);
                 dump_map_c_fmt(orig, "refine-bug-%" PRIx64 "-orig",
                                solution->id);
@@ -168,6 +202,8 @@ try_refine1(map_t map, struct solution *solution,
 #if !defined(USE_BLOOM_FILTER)
                 exit(1);
 #endif
+        } else {
+                update_solution(solution, &alt_solution);
         }
 #endif
         return true;

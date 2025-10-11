@@ -664,11 +664,13 @@ detach_solution(struct solution *solution)
         struct node_slist h;
         SLIST_HEAD_INIT(&h);
         struct node *n;
+        struct node *np = NULL;
         SLIST_FOREACH(n, &solution->moves, q) {
                 struct node *nn = malloc(sizeof(*nn));
                 *nn = *n;
-                nn->parent = NULL;
+                nn->parent = np;
                 SLIST_INSERT_TAIL(&h, nn, q);
+                np = nn;
         }
         SLIST_HEAD_INIT(&solution->moves);
         SLIST_SPLICE_TAIL(&solution->moves, &h, q);
@@ -685,10 +687,12 @@ clear_solution(struct solution *solution)
          * free malloc'ed nodes
          */
         struct node *n;
+        struct node *np = NULL;
         while ((n = SLIST_FIRST(&solution->moves)) != NULL) {
-                assert(n->parent == NULL);
+                assert(n->parent == np);
                 SLIST_REMOVE(&solution->moves, (struct node *)NULL, n, q);
                 free(n);
+                np = n;
         }
 }
 

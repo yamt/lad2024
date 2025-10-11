@@ -429,13 +429,18 @@ main(int argc, char **argv)
                                 const char *suffix = "";
                                 map_t orig;
                                 map_copy(orig, map);
+                                unsigned int oscore = score;
+                                unsigned int onmoves = solution.nmoves;
                                 solution.id = seed; /* XXX */
                                 if (result == SOLVE_SOLVED &&
                                     try_refine(map, &solution,
                                                &solver_default_param)) {
                                         /*
-                                         * XXX: refinement can change the score
+                                         * refinement can change the score.
                                          */
+                                        struct evaluation ev;
+                                        evaluate(map, &solution.moves, &ev);
+                                        score = ev.score;
                                         dump_map_c_fmt(
                                                 map,
                                                 "generated-score-%05u-moves-%"
@@ -448,7 +453,7 @@ main(int argc, char **argv)
                                         orig,
                                         "generated-score-%05u-moves-%03u-"
                                         "seed-%016" PRIx64 ".c%s",
-                                        score, solution.nmoves, seed, suffix);
+                                        oscore, onmoves, seed, suffix);
                                 ngood++;
                                 if (score >= score_thresh2 ||
                                     solution.nmoves >= nmoves_thresh2) {

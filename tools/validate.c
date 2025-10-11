@@ -1,8 +1,10 @@
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "analyze.h"
 #include "dump.h"
+#include "evaluater.h"
 #include "maputil.h"
 #include "node.h"
 #include "rule.h"
@@ -93,24 +95,41 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
 
 /*
  * validate a solution by solving the stage again.
+ *
+ * when returning false, it's the caller's responsibility to clear
+ * new_solution.
  */
 bool
-validate_slow(const map_t map, const struct solution *solution,
+validate_slow(const map_t map, struct solution *solution,
               const struct solver_param *param, bool verbose,
-              bool allow_removed_players)
+              bool allow_removed_players, struct solution *new_solution)
 {
-        assert(solution->detached);
+        detach_solution(solution);
         solve_cleanup();
-        struct solution solution_after_refinement;
-        unsigned int result = solve("validating", map, param, false,
-                                    &solution_after_refinement);
-        clear_solution(&solution_after_refinement);
-        if (result != SOLVE_SOLVED ||
-            (!allow_removed_players &&
-             solution_after_refinement.nmoves != solution->nmoves) ||
-            (allow_removed_players &&
-             solution_after_refinement.nmoves > solution->nmoves)) {
+        unsigned int result =
+                solve("validating", map, param, false, new_solution);
+        if (result != SOLVE_SOLVED) {
                 return true;
         }
+        if (new_solution->nmoves < solution->nmoves) {
+                /*
+                 * we don't want to apply a refinement which decreases
+                 * the number of steps.
+                 *
+                 * REVISIT: it might be better to perform the full evaluation
+                 * and compare scores.
+                 */
+                clear_solution(new_solution);
+                return true;
+        }
+#if 1
+        if (new_solution->nmoves > solution->nmoves) {
+                struct evaluation ev;
+                evaluate(map, &new_solution->moves, &ev);
+                dump_map(map);
+                printf("refinement increased steps\n");
+                // exit(1);
+        }
+#endif
         return false;
 }
