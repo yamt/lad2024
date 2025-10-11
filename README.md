@@ -31,9 +31,12 @@ Maybe it's simplest to run it on your browser.
 
 You can use the mouse for some of operations.
 
-| Mouse operation | Operation
-| --------------- | -----------------------------------------------------------
-| Left click      | Move the current player to the clicked location if possible
+| Left click / tap on                  | Operation
+| ------------------------------------ | -----------------------------
+| an empty location                    | Move the location if possible
+| the current player                   | Switch to the next player
+| an object next to you                | Push it
+| the other player (not next to you)   | Switch to the player
 
 ### Save data
 

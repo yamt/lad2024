@@ -332,6 +332,17 @@ switch_player()
         cur_player_idx = (cur_player_idx + 1) % meta.nplayers;
 }
 
+void
+switch_player_to(unsigned idx)
+{
+        if (cur_player_idx == idx) {
+                /* if switching to myself, switch to the next one */
+                switch_player();
+                return;
+        }
+        cur_player_idx = idx;
+}
+
 bool
 is_moving(loc_t loc)
 {
@@ -1185,6 +1196,7 @@ update()
 
                 enum diridx dir = NONE;
                 loc_t loc;
+                int switch_to = -1;
                 if (automove) {
                         gamepad_cur = 0;
                 } else if ((mouse_buttons & MOUSE_LEFT) != 0 &&
@@ -1201,10 +1213,16 @@ update()
                                 }
                         }
                         if (dir == NONE) {
-                                route_calculate(map, beam[beamidx], loc,
-                                                p->loc, map[p->loc] == A,
-                                                automove_route);
-                                automove = true;
+                                const struct player *t = player_at(&meta, loc);
+                                if (t != NULL) {
+                                        switch_to = t - meta.players;
+                                } else {
+                                        route_calculate(map, beam[beamidx],
+                                                        loc, p->loc,
+                                                        map[p->loc] == A,
+                                                        automove_route);
+                                        automove = true;
+                                }
                         }
                 } else {
                         dir = gamepad_to_dir(gamepad);
@@ -1218,7 +1236,10 @@ update()
                         }
                 }
 
-                if (dir == NONE && (gamepad & BUTTON_1) != 0) {
+                if (switch_to != -1) {
+                        mark_redraw_cur_player();
+                        switch_player_to((unsigned int)switch_to);
+                } else if (dir == NONE && (gamepad & BUTTON_1) != 0) {
                         mark_redraw_cur_player();
                         switch_player();
                 }
