@@ -5,4 +5,4 @@ struct evaluation {
 };
 
 void evaluate(const map_t map, const struct node_slist *solution,
-              struct evaluation *ev);
+              bool verbose, struct evaluation *ev);

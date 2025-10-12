@@ -13,10 +13,18 @@
 #include "rule.h"
 #include "simplify.h"
 
+static int
+noop_printf(const char *fmt, ...)
+{
+        return 0;
+}
+
 void
-evaluate(const map_t map, const struct node_slist *solution,
+evaluate(const map_t map, const struct node_slist *solution, bool verbose,
          struct evaluation *ev)
 {
+        int (*printf_fn)(const char *fmt, ...) =
+                verbose ? printf : noop_printf;
         unsigned int nswitch = 0;
         unsigned int npush = 0;
         unsigned int npush_cont = 0;
@@ -42,16 +50,17 @@ evaluate(const map_t map, const struct node_slist *solution,
                 const bool is_robot = objidx == A;
                 const int chr = objchr(objidx);
                 if (same) {
-                        printf("step %3u:               dir=%c", n->steps,
-                               dirchr(n->dir));
+                        printf_fn("step %3u:               dir=%c", n->steps,
+                                  dirchr(n->dir));
                 } else {
-                        printf("step %3u: %c (x=%2u y=%2u) dir=%c", n->steps,
-                               chr, loc_x(n->loc), loc_y(n->loc),
-                               dirchr(n->dir));
+                        printf_fn("step %3u: %c (x=%2u y=%2u) dir=%c",
+                                  n->steps, chr, loc_x(n->loc), loc_y(n->loc),
+                                  dirchr(n->dir));
                         nswitch++;
                 }
                 if ((n->flags & MOVE_PUSH) != 0) {
-                        printf(" PUSH(%c)", objchr(n_map[pushed_obj_loc(n)]));
+                        printf_fn(" PUSH(%c)",
+                                  objchr(n_map[pushed_obj_loc(n)]));
                         loc_t obj_loc_before_push = next_loc(n);
                         if (prev != NULL && (prev->flags & MOVE_PUSH) != 0 &&
                             prev->dir == n->dir) {
@@ -64,27 +73,27 @@ evaluate(const map_t map, const struct node_slist *solution,
                         last_pushed_obj_loc = pushed_obj_loc(n);
                 }
                 if ((n->flags & MOVE_GET_BOMB) != 0) {
-                        printf(" GET_BOMB");
+                        printf_fn(" GET_BOMB");
                         last_pushed_obj_loc = -1;
                 }
                 if ((n->flags & MOVE_BEAM) != 0) {
-                        printf(" BEAM");
+                        printf_fn(" BEAM");
                         nbeam_changed++;
                 }
                 calc_beam(n_map, beam_map);
                 if (is_robot != (beam_map[next_loc(n)] != 0)) {
                         nsuicide++;
-                        printf(" SUICIDAL");
+                        printf_fn(" SUICIDAL");
                 }
-                printf("\n");
+                printf_fn("\n");
                 prev = n;
         }
-        printf("nswitch %u\n", nswitch);
-        printf("npush %u\n", npush);
-        printf("npush_cont %u\n", npush_cont);
-        printf("npush_sameobj %u\n", npush_sameobj);
-        printf("nbeam_changed %u\n", nbeam_changed);
-        printf("nsuicide %u\n", nsuicide);
+        printf_fn("nswitch %u\n", nswitch);
+        printf_fn("npush %u\n", npush);
+        printf_fn("npush_cont %u\n", npush_cont);
+        printf_fn("npush_sameobj %u\n", npush_sameobj);
+        printf_fn("nbeam_changed %u\n", nbeam_changed);
+        printf_fn("nsuicide %u\n", nsuicide);
         map_t simplified_map;
         map_copy(simplified_map, map);
         simplify(simplified_map);
@@ -92,10 +101,10 @@ evaluate(const map_t map, const struct node_slist *solution,
         measure_size(simplified_map, &size);
         unsigned int map_area =
                 (size.xmax - size.xmin + 1) * (size.ymax - size.ymin + 1);
-        printf("map size %u\n", map_area);
+        printf_fn("map size %u\n", map_area);
         unsigned int score = nswitch * 2 + npush * 2 - npush_cont -
                              npush_sameobj + nsuicide;
         score = score * 20 * 20 / map_area;
-        printf("score %u\n", score);
+        printf_fn("score %u\n", score);
         ev->score = score;
 }

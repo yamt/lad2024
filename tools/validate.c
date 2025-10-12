@@ -125,7 +125,7 @@ validate_slow(const map_t map, struct solution *solution,
 #if 1
         if (new_solution->nmoves > solution->nmoves) {
                 struct evaluation ev;
-                evaluate(map, &new_solution->moves, &ev);
+                evaluate(map, &new_solution->moves, true, &ev);
                 dump_map(map);
                 printf("refinement increased steps\n");
                 // exit(1);

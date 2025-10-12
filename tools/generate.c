@@ -414,7 +414,7 @@ main(int argc, char **argv)
                         unsigned int score = 99999; /* unknown */
                         if (result == SOLVE_SOLVED) {
                                 struct evaluation ev;
-                                evaluate(map, &solution.moves, &ev);
+                                evaluate(map, &solution.moves, true, &ev);
                                 printf("seed %" PRIx64 " score %u\n", seed,
                                        ev.score);
                                 score = ev.score;
@@ -439,7 +439,8 @@ main(int argc, char **argv)
                                          * refinement can change the score.
                                          */
                                         struct evaluation ev;
-                                        evaluate(map, &solution.moves, &ev);
+                                        evaluate(map, &solution.moves, true,
+                                                 &ev);
                                         score = ev.score;
                                         dump_map_c_fmt(
                                                 map,

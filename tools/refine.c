@@ -136,7 +136,8 @@ refine(map_t map, bool eager, struct solution *solution,
                                         update_solution(solution,
                                                         &new_solution);
                                         struct evaluation ev;
-                                        evaluate(map, &solution->moves, &ev);
+                                        evaluate(map, &solution->moves, true,
+                                                 &ev);
                                         recalc = true;
                                 }
                         }
