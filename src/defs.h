@@ -7,7 +7,7 @@ enum block {
         _ = 0, /* floor */
         W,     /* wall */
         B,     /* box */
-        X,     /* big bomb */
+        X,     /* bomb */
         L,     /* light left */
         D,     /* light down */
         R,     /* light right */
