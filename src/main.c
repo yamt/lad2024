@@ -692,13 +692,18 @@ bordered_text(const char *msg, int x, int y)
 }
 
 void
-digits(unsigned int v, int x, int y)
+digits(unsigned int v, unsigned int n, int x, int y)
 {
-        char buf[4];
-        buf[0] = '0' + ((v / 100) % 10);
-        buf[1] = '0' + ((v / 10) % 10);
-        buf[2] = '0' + (v % 10);
-        buf[3] = 0;
+        ASSERT(n == 3 || n == 4);
+        char buf[5];
+        char *p = buf;
+        if (n == 4) {
+                *p++ = '0' + ((v / 1000) % 10);
+        }
+        *p++ = '0' + ((v / 100) % 10);
+        *p++ = '0' + ((v / 10) % 10);
+        *p++ = '0' + (v % 10);
+        *p = 0;
         bordered_text(buf, x, y);
 }
 
@@ -746,19 +751,19 @@ void
 draw_message()
 {
         *DRAW_COLORS = 0x04;
-        bordered_text("STAGE     (   %)", (20 - 7 - 3 - 6) * 8, 19 * 8);
+        bordered_text("STAGE      (   %)", (20 - 7 - 4 - 6) * 8, 19 * 8);
         if ((state.clear_bitmap[state.cur_stage / 32] &
              1 << (state.cur_stage % 32)) == 0) {
                 *DRAW_COLORS = 0x02;
         }
-        digits(state.cur_stage + 1, (20 - 7 - 3) * 8, 19 * 8);
+        digits(state.cur_stage + 1, 4, (20 - 7 - 4) * 8, 19 * 8);
         unsigned int percent = cleared_percentage(state.cleared_stages);
         if (percent == 100 && animation_mode != CLEARED) {
                 *DRAW_COLORS = 0x03;
         } else {
                 *DRAW_COLORS = 0x04;
         }
-        digits(percent, (20 - 2 - 3) * 8, 19 * 8);
+        digits(percent, 3, (20 - 2 - 3) * 8, 19 * 8);
 
         if (draw_info.message == NULL) {
                 return;
