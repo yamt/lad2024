@@ -1,4 +1,4 @@
-CFLAGS = -std=c99 -Wall
+CFLAGS = -std=c99 -Wall -Werror
 CFLAGS += -MMD -MP
 CFLAGS += -fshort-enums
 #CFLAGS += -flto=full -O3 -DNDEBUG -Wno-unused-variable
@@ -24,6 +24,7 @@ CFLAGS += -DBLOOM_FILTER_SIZE=1600000000
 CFLAGS += -DBLOOM_FILTER_K=4
 
 CLINKFLAGS = -flto=full
+#CLINKFLAGS += -g
 
 CFLAGS += -I../src
 VPATH = ../src
