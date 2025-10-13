@@ -318,6 +318,7 @@ const struct stage stages[] = {
         },
     },
 #endif
+#include "edit/1.c"
 };
 
 /* clang-format on */
