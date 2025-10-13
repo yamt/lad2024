@@ -111,7 +111,7 @@ generate(struct genctx *ctx)
         rect(ctx->map, 1, 1, 9, 5, _);
 #endif
 #if 1
-        rect(ctx->map, 1, 1, 8, 8, _);
+        rect(ctx->map, 1, 1, 4, 6, _);
 #endif
 
 #if 0
@@ -215,7 +215,7 @@ generate(struct genctx *ctx)
                 }
                 count_objects(ctx->map, count);
                 connect = true;
-        } while (100 * count[_] / map_size < 30);
+        } while (100 * count[_] / map_size < 20);
 #endif
 
 #if 0
