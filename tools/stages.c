@@ -308,6 +308,16 @@ const struct stage stages[] = {
             END,
         },
     },
+#if 0 /* a template used to create lad-tiles.png */
+    {
+        .data = (const uint8_t[]){
+            W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            W, _, W, B, X, L, D, R, U, P, A, W, A, END,
+            W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
+            END,
+        },
+    },
+#endif
 };
 
 /* clang-format on */
