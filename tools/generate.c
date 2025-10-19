@@ -111,7 +111,7 @@ generate(struct genctx *ctx)
         rect(ctx->map, 1, 1, 9, 5, _);
 #endif
 #if 1
-        rect(ctx->map, 1, 1, 4, 6, _);
+        rect(ctx->map, 1, 1, 4, 5, _);
 #endif
 
 #if 0
