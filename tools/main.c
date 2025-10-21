@@ -6,6 +6,7 @@
 #include "defs.h"
 #include "dump.h"
 #include "evaluater.h"
+#include "info.h"
 #include "list.h"
 #include "loader.h"
 #include "node.h"
@@ -71,6 +72,7 @@ main(int argc, char **argv)
         }
 
         node_allocator_init();
+        siginfo_setup_handler();
         struct result {
                 unsigned int solve_flags;
                 unsigned int nmoves;
