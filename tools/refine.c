@@ -19,7 +19,9 @@ update_solution(struct solution *solution, struct solution *new_solution)
                new_solution->nmoves);
         clear_solution(solution);
         /* note: slist head is copyable */
+        uint64_t id = solution->id;
         *solution = *new_solution;
+        solution->id = id; /* keep the id */
 }
 
 /*
