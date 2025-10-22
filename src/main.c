@@ -1221,16 +1221,14 @@ update()
                                         }
                                 }
                                 if (dir == NONE) {
-                                        const struct player *t =
-                                                player_at(&meta, loc);
+                                        const struct player *t = player_at(&meta, loc);
                                         if (t != NULL) {
                                                 switch_to = t - meta.players;
                                         } else {
-                                                route_calculate(
-                                                        map, beam[beamidx],
-                                                        loc, p->loc,
-                                                        map[p->loc] == A,
-                                                        automove_route);
+                                                route_calculate(map, beam[beamidx],
+                                                                loc, p->loc,
+                                                                map[p->loc] == A,
+                                                                automove_route);
                                                 automove = true;
                                         }
                                 }
