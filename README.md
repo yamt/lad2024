@@ -35,7 +35,6 @@ You can use the mouse for some of operations.
 | ------------------------------------ | -----------------------------
 | an empty location                    | Move the location if possible
 | the current player                   | Switch to the next player
-| a wall                               | Switch to the next player
 | an object next to you                | Push it
 | the other player (not next to you)   | Switch to the player
 

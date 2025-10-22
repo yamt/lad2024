@@ -1210,27 +1210,23 @@ update()
                         const struct player *p = cur_player();
 
                         gamepad_cur = 0;
-                        if (map[loc] == W) {
-                                switch_to = p - meta.players;
-                        } else {
-                                enum diridx i;
-                                for (i = 0; i < 4; i++) {
-                                        if (p->loc + dir_loc_diff(i) == loc) {
-                                                dir = i;
-                                                break;
-                                        }
+                        enum diridx i;
+                        for (i = 0; i < 4; i++) {
+                                if (p->loc + dir_loc_diff(i) == loc) {
+                                        dir = i;
+                                        break;
                                 }
-                                if (dir == NONE) {
-                                        const struct player *t = player_at(&meta, loc);
-                                        if (t != NULL) {
-                                                switch_to = t - meta.players;
-                                        } else {
-                                                route_calculate(map, beam[beamidx],
-                                                                loc, p->loc,
-                                                                map[p->loc] == A,
-                                                                automove_route);
-                                                automove = true;
-                                        }
+                        }
+                        if (dir == NONE) {
+                                const struct player *t = player_at(&meta, loc);
+                                if (t != NULL) {
+                                        switch_to = t - meta.players;
+                                } else {
+                                        route_calculate(map, beam[beamidx],
+                                                        loc, p->loc,
+                                                        map[p->loc] == A,
+                                                        automove_route);
+                                        automove = true;
                                 }
                         }
                 } else {
