@@ -205,6 +205,9 @@ try_refine1(map_t map, struct solution *solution,
 #if !defined(USE_BLOOM_FILTER)
                 exit(1);
 #endif
+                /* revert the map and give up */
+                map_copy(map, orig);
+                return false;
         } else {
                 update_solution(solution, &alt_solution);
         }
