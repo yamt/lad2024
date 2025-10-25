@@ -6,6 +6,8 @@ CFLAGS += -flto=full -O3 -Wno-unused-variable
 #CFLAGS += -Og -g -DLIST_DISABLE_HEAVY_CHECK
 # CFLAGS += -Dmap_height=16 -Dmap_width=16
 # CFLAGS += -Dmap_height=10 -Dmap_width=10
+#CFLAGS += -Dmap_height=20 -Dmap_width=6
+CFLAGS += -Dmap_height=6 -Dmap_width=20
 # CFLAGS += -DMAX_ITERATIONS=1000000000
 # CFLAGS += -DMAX_ITERATIONS=4294967295
 # CFLAGS += -DMEMLIMIT_GB=10
