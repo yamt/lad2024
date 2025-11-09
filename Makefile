@@ -21,7 +21,7 @@ else
 endif
 
 # Linker flags
-LDFLAGS = -Wl,-zstack-size=14752,--no-entry,--import-memory -mexec-model=reactor \
+LDFLAGS = -Wl,-zstack-size=12000,--no-entry,--import-memory -mexec-model=reactor \
 	-Wl,--initial-memory=65536,--max-memory=65536,--stack-first
 ifeq ($(DEBUG), 1)
 	LDFLAGS += -Wl,--export-all,--no-gc-sections
