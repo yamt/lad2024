@@ -30,12 +30,15 @@ update_solution(struct solution *solution, struct solution *new_solution)
  *
  * a possible downside; it might make the game easier by
  * effectively reducing the solution space.
+ *
+ * returns true if this function made modifications to the map.
  */
 bool
 refine(map_t map, bool eager, struct solution *solution,
        const struct solver_param *param)
 {
-
+        unsigned int commit = 0;
+        unsigned int revert = 0;
         bool modified = false;
         bool recalc = true;
         bool more;
@@ -132,6 +135,9 @@ refine(map_t map, bool eager, struct solution *solution,
                                     validate_slow(map, solution, param, false,
                                                   false, &new_solution)) {
                                         map[loc] = objidx; /* revert */
+                                        printf("a refinement attempt has been "
+                                               "reverted\n");
+                                        revert++;
                                 } else {
                                         modified = true;
                                         more = true;
@@ -141,10 +147,18 @@ refine(map_t map, bool eager, struct solution *solution,
                                         evaluate(map, &solution->moves, true,
                                                  &ev);
                                         recalc = true;
+                                        printf("a refinement attempt has been "
+                                               "commited\n");
+                                        commit++;
                                 }
                         }
                 }
         } while (more);
+        if (eager) {
+                printf("eager refinement stats: commit %u revert %u modified "
+                       "%u\n",
+                       commit, revert, modified);
+        }
         return modified;
 }
 
@@ -166,6 +180,8 @@ try_refine1(map_t map, struct solution *solution,
         simplify(map);
         count_objects(map, count2);
         if (count2[X] == 0) {
+                printf("no Xs after simplification\n");
+                map_copy(map, orig);
                 return false;
         }
         bool removed = count1[A] > count2[A] || count1[P] > count2[P];
@@ -178,40 +194,53 @@ try_refine1(map_t map, struct solution *solution,
                 exit(1);
         }
 
-#if 1
-        struct solution alt_solution;
-        if (validate_slow(map, solution, param, false, removed,
-                          &alt_solution)) {
-                /*
-                 * must be a bug unless USE_BLOOM_FILTER.
-                 *
-                 * with USE_BLOOM_FILTER,
-                 * as a bloom filter allows false positives,
-                 * any changes to the stage can make it unsolvable.
-                 * it's ok as far as it's rare.
-                 * we still dump it for later examination though.
-                 */
-                printf("refinement changed the solution!\n");
-                printf("====== orig\n");
-                dump_map(orig);
-                printf("====== refined\n");
-                dump_map(refinedmap);
-                printf("====== simplified\n");
-                dump_map(map);
-                dump_map_c_fmt(orig, "refine-bug-%" PRIx64 "-orig",
-                               solution->id);
-                dump_map_c_fmt(map, "refine-bug-%" PRIx64 "-refined",
-                               solution->id);
+        /*
+         * re-validate the solution after simplification.
+         * at this point, it should be still solvable unless the refinement
+         * or simplification logic above have some bugs.
+         * however, even without bugs, when removed is true, the
+         * simplification step might have degraded the solution steps
+         * a lot.
+         */
+        if (removed) {
+                struct solution alt_solution;
+                if (validate_slow(map, solution, param, false, removed,
+                                  &alt_solution)) {
+                        /*
+                         * must be a bug unless USE_BLOOM_FILTER.
+                         *
+                         * with USE_BLOOM_FILTER,
+                         * as a bloom filter allows false positives,
+                         * any changes to the stage can make it unsolvable.
+                         * it's ok as far as it's rare.
+                         * we still dump it for later examination though.
+                         */
+                        printf("refinement changed the solution!\n");
+                        printf("====== orig\n");
+                        dump_map(orig);
+                        printf("====== refined\n");
+                        dump_map(refinedmap);
+                        printf("====== simplified\n");
+                        dump_map(map);
+                        dump_map_c_fmt(orig, "refine-bug-%" PRIx64 "-orig",
+                                       solution->id);
+                        dump_map_c_fmt(refinedmap,
+                                       "refine-bug-%" PRIx64 "-refined",
+                                       solution->id);
+                        dump_map_c_fmt(map,
+                                       "refine-bug-%" PRIx64 "-simplified",
+                                       solution->id);
 #if !defined(USE_BLOOM_FILTER)
-                exit(1);
+                        exit(1);
 #endif
-                /* revert the map and give up */
-                map_copy(map, orig);
-                return false;
-        } else {
-                update_solution(solution, &alt_solution);
+                        /* revert the map and give up */
+                        printf("giving up refinement\n");
+                        map_copy(map, orig);
+                        return false;
+                } else {
+                        update_solution(solution, &alt_solution);
+                }
         }
-#endif
         return true;
 }
 
@@ -220,8 +249,13 @@ try_refine(map_t map, struct solution *solution,
            const struct solver_param *param)
 {
         bool modified = false;
+        unsigned int n = 1;
         while (try_refine1(map, solution, param)) {
                 modified = true;
+                n++;
+                printf("try_refine1 made some progress. trying another round "
+                       "(%u)\n",
+                       n);
         }
         align_to_top_left(map);
         return modified;

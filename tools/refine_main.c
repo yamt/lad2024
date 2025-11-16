@@ -30,14 +30,19 @@ load_and_refine_stage(unsigned int stage_number)
         map_t orig;
         map_copy(orig, map);
         solution.id = stage_number; /* XXX */
+        unsigned int onmoves = solution.nmoves;
         if (result == SOLVE_SOLVED &&
             try_refine(map, &solution, &solver_default_param)) {
                 printf("refined!\n");
                 dump_map(orig);
                 dump_map(map);
-                dump_map_c_fmt(map, "refined-%03u.c", stage_number);
+                dump_map_c_fmt(
+                        map,
+                        "refined-%03u-refined-moves-%03u-old-moves-%03u.c",
+                        stage_number, solution.nmoves, onmoves);
         } else {
                 printf("nothing to refine\n");
+                dump_map_c_fmt(map, "refined-%03u-nochange.c", stage_number);
         }
         clear_solution(&solution);
         solve_cleanup();
