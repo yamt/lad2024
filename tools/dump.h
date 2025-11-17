@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "platform.h"
 #include "rule.h"
 
@@ -8,3 +10,4 @@ void dump_map_raw(const map_t map);
 void dump_map_c(const map_t map, const char *filename);
 void dump_map_c_fmt(const map_t map, const char *filename_fmt, ...)
         __printflike(2, 3);
+void dump_map_c_to(const map_t map, FILE *fp);

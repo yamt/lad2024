@@ -67,13 +67,8 @@ dump_map(const map_t map)
 }
 
 void
-dump_map_c(const map_t map, const char *filename)
+dump_map_c_to(const map_t map, FILE *fp)
 {
-        FILE *fp = fopen(filename, "w");
-        if (fp == NULL) {
-                fprintf(stderr, "failed to open %s\n", filename);
-                exit(1);
-        }
         int x;
         int y;
         fprintf(fp, "    {\n");
@@ -104,6 +99,17 @@ dump_map_c(const map_t map, const char *filename)
         fprintf(fp, "            END, END,\n");
         fprintf(fp, "        },\n");
         fprintf(fp, "    },\n");
+}
+
+void
+dump_map_c(const map_t map, const char *filename)
+{
+        FILE *fp = fopen(filename, "w");
+        if (fp == NULL) {
+                fprintf(stderr, "failed to open %s\n", filename);
+                exit(1);
+        }
+        dump_map_c_to(map, fp);
         fclose(fp);
 }
 
