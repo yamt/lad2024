@@ -38,6 +38,8 @@ GENERATOR_OBJS = generate.o
 
 REFINER_OBJS = refine_main.o
 
+DUMPER_OBJS = dump_main.o
+
 RNG_TEST_OBJS = rng_test.o
 
 HASH_TEST_OBJS = hash_test.o
@@ -84,7 +86,7 @@ ALL_OBJS += ${ANALYZE_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 ALL_OBJS += ${PACK_STAGES_OBJS}
 
-BINS = solver generator refiner rng_test hash_test analyze_test stage_uniq pack_stages
+BINS = solver generator refiner dumper rng_test hash_test analyze_test stage_uniq pack_stages
 
 .PHONY: all
 all: $(BINS)
@@ -103,6 +105,11 @@ refiner: $(REFINER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(REFINER_OBJS) $(OBJS)
+
+dumper: $(DUMPER_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(DUMPER_OBJS) $(OBJS)
 
 rng_test: $(RNG_TEST_OBJS) $(OBJS)
 	$(CC) \
