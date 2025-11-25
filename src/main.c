@@ -251,6 +251,7 @@ static enum animation_mode {
 } animation_mode;
 static unsigned int animation_length = 0;
 static unsigned int animation_frame = 0;
+static bool animation_all_cleared = false;
 
 #define moving_nsteps 8
 static unsigned int moving_speed;
@@ -987,14 +988,16 @@ update_palette()
 }
 
 static bool
-bumping_cleared_percentage(void)
+bumping_cleared_percentage(unsigned int *npercentp)
 {
         uint32_t mask = 1 << (state.cur_stage % 32);
         if ((state.clear_bitmap[state.cur_stage / 32] & mask) != 0) {
                 return false;
         }
-        return cleared_percentage(state.cleared_stages + 1) !=
-               cleared_percentage(state.cleared_stages);
+        unsigned int opercent = cleared_percentage(state.cleared_stages);
+        unsigned int npercent = cleared_percentage(state.cleared_stages + 1);
+        *npercentp = npercent;
+        return opercent != npercent;
 }
 
 void
@@ -1136,7 +1139,7 @@ reset_palette(void)
 }
 
 static void
-reset_alt_palette(void)
+update_alt_palette(void)
 {
         /*
          * an alternative palette used during the stage-clear animation.
@@ -1146,7 +1149,14 @@ reset_alt_palette(void)
          * note: no beams are shown during the animation.
          */
 
-        PALETTE[0] = 0x000018;
+        if (animation_all_cleared) {
+                unsigned int phase = animation_frame;
+                unsigned int v =
+                        ((phase & 0x40) != 0 ? -phase - 1 : phase) & 0x3f;
+                PALETTE[0] = 0x010200 * v + 0x000018;
+        } else {
+                PALETTE[0] = 0x000018;
+        }
         PALETTE[1] = 0x600000;
         PALETTE[2] = 0xa0a0a0; /* jumping players */
         PALETTE[3] = 0x505050;
@@ -1348,7 +1358,7 @@ update()
 
         frame++;
         if (animation_mode == CLEARED) {
-                reset_alt_palette();
+                update_alt_palette();
         } else {
                 if (animation_mode == GAVEUP) {
                         reset_alt_palette2();
@@ -1437,8 +1447,15 @@ update()
                          * when the integer percentage changes (eg. 1% -> 2%)
                          * celebrate it a bit longer
                          */
-                        if (bumping_cleared_percentage()) {
-                                animation_length = 16;
+                        animation_all_cleared = false;
+                        unsigned int npercent;
+                        if (bumping_cleared_percentage(&npercent)) {
+                                if (npercent == 100) {
+                                        animation_all_cleared = true;
+                                        animation_length = 32;
+                                } else {
+                                        animation_length = 16;
+                                }
                         } else {
                                 animation_length = 4;
                         }
