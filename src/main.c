@@ -908,7 +908,7 @@ static void
 validate_state(void)
 {
         ASSERT(state.cur_stage < nstages);
-        ASSERT(state.cleared_stages < nstages);
+        ASSERT(state.cleared_stages <= nstages);
         unsigned int n = 0;
         unsigned int i;
         for (i = 0; i < max_stages; i++) {
