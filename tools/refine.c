@@ -133,7 +133,7 @@ refine(map_t map, bool eager, struct solution *solution,
                                 if (/* validate(map, solution, false, false) ||
                                      */
                                     validate_slow(map, solution, param, false,
-                                                  false, &new_solution)) {
+                                                  &new_solution)) {
                                         map[loc] = objidx; /* revert */
                                         printf("a refinement attempt has been "
                                                "reverted\n");
@@ -204,7 +204,7 @@ try_refine1(map_t map, struct solution *solution,
          */
         if (removed) {
                 struct solution alt_solution;
-                if (validate_slow(map, solution, param, false, removed,
+                if (validate_slow(map, solution, param, false,
                                   &alt_solution)) {
                         /*
                          * must be a bug unless USE_BLOOM_FILTER.

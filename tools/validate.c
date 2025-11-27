@@ -102,7 +102,7 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
 bool
 validate_slow(const map_t map, struct solution *solution,
               const struct solver_param *param, bool verbose,
-              bool allow_removed_players, struct solution *new_solution)
+              struct solution *new_solution)
 {
         detach_solution(solution);
         solve_cleanup();
