@@ -127,7 +127,7 @@ refine(map_t map, bool eager, struct solution *solution,
                                 /*
                                  * always perform slow validation here because
                                  * fast validation might fail even when
-                                 * the refinement attepmt improved the stage.
+                                 * the refinement attempt improved the stage.
                                  */
                                 struct solution new_solution;
                                 if (/* validate(map, solution, false, false) ||
