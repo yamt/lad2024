@@ -248,15 +248,7 @@ bool
 try_refine(map_t map, struct solution *solution,
            const struct solver_param *param)
 {
-        bool modified = false;
-        unsigned int n = 1;
-        while (try_refine1(map, solution, param)) {
-                modified = true;
-                n++;
-                printf("try_refine1 made some progress. trying another round "
-                       "(%u)\n",
-                       n);
-        }
+        bool modified = try_refine1(map, solution, param);
         align_to_top_left(map);
         return modified;
 }
