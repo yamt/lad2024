@@ -33,7 +33,7 @@ update_solution(struct solution *solution, struct solution *new_solution)
  *
  * returns true if this function made modifications to the map.
  */
-bool
+static bool
 refine(map_t map, bool eager, struct solution *solution,
        const struct solver_param *param)
 {
@@ -162,7 +162,7 @@ refine(map_t map, bool eager, struct solution *solution,
         return modified;
 }
 
-bool
+static bool
 try_refine1(map_t map, struct solution *solution,
             const struct solver_param *param)
 {
