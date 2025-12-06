@@ -18,4 +18,5 @@
             W, W, W, B, W, W, W, W, W, W, W, W, W, W, W, W, B, W, W, W, END,
             END,
         },
+        .message = "HAPPY NEW YEAR 2026!",
     },
