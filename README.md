@@ -29,11 +29,12 @@ Maybe it's simplest to run it on your browser.
 | `Z` + `RIGHT`              | Move to the next stage (hold to move faster)
 | `Z` + `LEFT`               | Move to the previous stage (hold to move faster)
 
-You can use the mouse for some of operations.
+You can use the mouse (or maybe screen tap on phone-like devices)
+for some of operations.
 
 | Left click / tap on                  | Operation
 | ------------------------------------ | -----------------------------
-| an empty location                    | Move the location if possible
+| an empty location                    | Move to the location if possible
 | the current player                   | Switch to the next player
 | an object next to you                | Push it
 | the other player (not next to you)   | Switch to the player
