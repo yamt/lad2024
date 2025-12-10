@@ -6,6 +6,7 @@
 #include "util.h"
 #include "wasm4.h"
 
+/* 2 * max(map_width, map_height) is enough */
 #define MAX_SEARCH_WIDTH 40
 
 static unsigned int cidx;
