@@ -321,6 +321,7 @@ const struct stage stages[] = {
 #include "edit/1.c"
 #include "edit/2.c"
 #include "edit/3.c"
+#include "edit/5.c"
 #include "edit/4.c"
 };
 
