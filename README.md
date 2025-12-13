@@ -34,10 +34,10 @@ for some of operations.
 
 | Left click / tap on                  | Operation
 | ------------------------------------ | -----------------------------
-| an empty location                    | Move to the location if possible
-| the current player                   | Switch to the next player
-| an object next to you                | Push it
-| the other player (not next to you)   | Switch to the player
+| An empty location                    | Move to the location if possible
+| The current player                   | Switch to the next player
+| An object next to the current player | Push it
+| The other player (not next to you)   | Switch to the player
 
 ### Save data
 
