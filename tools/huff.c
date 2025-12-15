@@ -20,7 +20,7 @@ leaf_value(const struct hufftree *tree, const struct hnode *n)
         return n - tree->nodes;
 }
 
-void
+static void
 init_leaf_nodes(struct hufftree *tree)
 {
 }
@@ -37,7 +37,7 @@ huff_update(struct hufftree *tree, const uint8_t *p, size_t len)
         }
 }
 
-int
+static int
 cmp_node(const void *a, const void *b)
 {
         struct hnode *na = *(struct hnode **)a;
@@ -51,7 +51,7 @@ cmp_node(const void *a, const void *b)
         return 0;
 }
 
-void
+static void
 build_tree(struct hufftree *tree)
 {
         struct hnode *nodes[256];
@@ -82,7 +82,7 @@ build_tree(struct hufftree *tree)
         }
 }
 
-void
+static void
 finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
             uint16_t bits)
 {
@@ -102,7 +102,7 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
         finish_node(tree, n->u.inner.children[1], nbits + 1, (bits << 1) | 1);
 }
 
-void
+static void
 finish_tree(struct hufftree *tree)
 {
         finish_node(tree, &tree->nodes[256 * 2 - 2], 0, 0);
