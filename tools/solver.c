@@ -564,6 +564,11 @@ skip:
                         return SOLVE_GIVENUP;
                 }
         }
+        /*
+         * note: this "impossible" claim can be a false positive unless
+         * bloom_filter_stats.reclaimed == 0.
+         * maybe it makes more sense to turn this SOLVE_GIVENUP.
+         */
         printf("impossible\n");
         solution->stat.iterations += stats.processed;
         return SOLVE_IMPOSSIBLE;
