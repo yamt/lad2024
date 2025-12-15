@@ -309,6 +309,10 @@ static struct rng rng;
 static unsigned int bomb_animate_step;
 static loc_t bomb_animate_loc;
 
+/* 0(stopped) -> 1, 2, 3, ..., explosion_animate_nsteps -> 0 */
+#define explosion_animate_nsteps 16
+static unsigned int explosion_animate_step;
+
 static bool automove;
 static map_t automove_route;
 
@@ -979,12 +983,67 @@ move(enum diridx dir)
         return player_move(&meta, p, dir, map, beam[beamidx], true);
 }
 
-void
-update_palette()
+static unsigned int
+explosion_color(void)
+{
+        if (explosion_animate_step > 0) {
+                unsigned int v = 0x38 - explosion_animate_step / 2;
+                return 0x000101 * v;
+        }
+        return 0;
+}
+
+static unsigned int
+background_color(void)
+{
+        if (animation_mode == GAVEUP) {
+                return 0x300000; /* red */
+        }
+        return 0x000030; /* blue */
+}
+
+static unsigned int
+add_colors(unsigned int c1, unsigned int c2)
+{
+        unsigned int r = (c1 & 0xff0000) + (c2 & 0xff0000);
+        if (r > 0xff0000) {
+                r = 0xff0000;
+        }
+        unsigned int g = (c1 & 0xff00) + (c2 & 0xff00);
+        if (g > 0xff00) {
+                g = 0xff00;
+        }
+        unsigned int b = (c1 & 0xff) + (c2 & 0xff);
+        if (b > 0xff) {
+                b = 0xff;
+        }
+        return r | g | b;
+}
+
+static unsigned int
+halve_color(unsigned int a)
+{
+        return (a >> 1) & 0x3f3f3f;
+}
+
+static unsigned int
+beam_color(void)
 {
         unsigned int phase = frame / 8;
         unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
-        PALETTE[2] = 0x111100 * (v + 2);
+        return 0x111100 * (v + 2);
+}
+
+void
+update_palette()
+{
+        unsigned int bg = add_colors(background_color(), explosion_color());
+
+        /* background */
+        PALETTE[0] = bg;
+
+        /* beam */
+        PALETTE[2] = add_colors(bg, beam_color());
 }
 
 static bool
@@ -1146,35 +1205,26 @@ update_alt_palette(void)
          *
          * 0,1,3 are the darken version of the normal palette.
          * 2 is used to show jumping players.
-         * note: no beams are shown during the animation.
+         *
+         * note: beams, which normally uses the color 2, are NOT shown
+         * during this animation. we use the color 2 for the jumping
+         * players instead.
          */
 
+        unsigned int bg;
         if (animation_all_cleared) {
                 unsigned int phase = animation_frame;
                 unsigned int v =
                         ((phase & 0x40) != 0 ? -phase - 1 : phase) & 0x3f;
-                PALETTE[0] = 0x010200 * v + 0x000018;
+                bg = 0x010200 * v + 0x000018;
         } else {
-                PALETTE[0] = 0x000018;
+                bg = halve_color(background_color());
         }
+        bg = add_colors(bg, explosion_color());
+        PALETTE[0] = bg;
         PALETTE[1] = 0x600000;
         PALETTE[2] = 0xa0a0a0; /* jumping players */
         PALETTE[3] = 0x505050;
-}
-
-static void
-reset_alt_palette2(void)
-{
-        /*
-         * an alternative palette used during the give-up animation.
-         *
-         * 1,2,3 are same as the normal palette.
-         */
-
-        PALETTE[0] = 0x300000; /* background (red) */
-        PALETTE[1] = 0xc00000;
-        PALETTE[2] = 0xffff00;
-        PALETTE[3] = 0xa0a0a0;
 }
 
 void
@@ -1349,6 +1399,7 @@ update()
                                         tone(400, (2 << 16) | 8 | (30 << 8),
                                              (VOLUME << 8) | (VOLUME * 6 / 16),
                                              TONE_NOISE);
+                                        explosion_animate_step = 1;
                                 }
                                 moving_step += moving_speed;
                         }
@@ -1360,17 +1411,19 @@ update()
         if (animation_mode == CLEARED) {
                 update_alt_palette();
         } else {
-                if (animation_mode == GAVEUP) {
-                        reset_alt_palette2();
-                } else {
-                        reset_palette();
-                }
+                reset_palette();
                 update_palette();
         }
         animate_bomb();
         if ((need_redraw & CALC_BEAM) != 0) {
                 update_beam();
                 need_redraw &= ~CALC_BEAM;
+        }
+        if (explosion_animate_step > 0) {
+                explosion_animate_step++;
+                if (explosion_animate_step > explosion_animate_nsteps) {
+                        explosion_animate_step = 0;
+                }
         }
         draw_beam();
         if ((need_redraw & OUTSIDE) != 0) {
