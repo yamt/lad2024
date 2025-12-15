@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 enum sprite_idx {
         SPIDX_NONE = -1,
         SPIDX_PERSON = 0,
