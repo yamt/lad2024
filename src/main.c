@@ -1216,7 +1216,8 @@ update_alt_palette(void)
                 unsigned int phase = animation_frame;
                 unsigned int v =
                         ((phase & 0x40) != 0 ? -phase - 1 : phase) & 0x3f;
-                bg = 0x010200 * v + 0x000018;
+                unsigned int fanfare = 0x010200 * v;
+                bg = add_colors(fanfare, background_color());
         } else {
                 bg = halve_color(background_color());
         }
