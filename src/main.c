@@ -983,69 +983,6 @@ move(enum diridx dir)
         return player_move(&meta, p, dir, map, beam[beamidx], true);
 }
 
-static unsigned int
-explosion_color(void)
-{
-        if (explosion_animate_step > 0) {
-                unsigned int v = 0x38 - explosion_animate_step / 2;
-                return 0x000101 * v;
-        }
-        return 0;
-}
-
-static unsigned int
-background_color(void)
-{
-        if (animation_mode == GAVEUP) {
-                return 0x300000; /* red */
-        }
-        return 0x000030; /* blue */
-}
-
-static unsigned int
-add_colors(unsigned int c1, unsigned int c2)
-{
-        unsigned int r = (c1 & 0xff0000) + (c2 & 0xff0000);
-        if (r > 0xff0000) {
-                r = 0xff0000;
-        }
-        unsigned int g = (c1 & 0xff00) + (c2 & 0xff00);
-        if (g > 0xff00) {
-                g = 0xff00;
-        }
-        unsigned int b = (c1 & 0xff) + (c2 & 0xff);
-        if (b > 0xff) {
-                b = 0xff;
-        }
-        return r | g | b;
-}
-
-static unsigned int
-halve_color(unsigned int a)
-{
-        return (a >> 1) & 0x3f3f3f;
-}
-
-static unsigned int
-beam_color(void)
-{
-        unsigned int phase = frame / 8;
-        unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
-        return 0x111100 * (v + 2);
-}
-
-void
-update_palette()
-{
-        unsigned int bg = add_colors(background_color(), explosion_color());
-
-        /* background */
-        PALETTE[0] = bg;
-
-        /* beam */
-        PALETTE[2] = add_colors(bg, beam_color());
-}
-
 static bool
 bumping_cleared_percentage(unsigned int *npercentp)
 {
@@ -1188,6 +1125,57 @@ gamepad_to_dir(uint8_t pad)
         return dir;
 }
 
+static unsigned int
+explosion_color(void)
+{
+        if (explosion_animate_step > 0) {
+                unsigned int v = 0x38 - explosion_animate_step / 2;
+                return 0x000101 * v;
+        }
+        return 0;
+}
+
+static unsigned int
+background_color(void)
+{
+        if (animation_mode == GAVEUP) {
+                return 0x300000; /* red */
+        }
+        return 0x000030; /* blue */
+}
+
+static unsigned int
+add_colors(unsigned int c1, unsigned int c2)
+{
+        unsigned int r = (c1 & 0xff0000) + (c2 & 0xff0000);
+        if (r > 0xff0000) {
+                r = 0xff0000;
+        }
+        unsigned int g = (c1 & 0xff00) + (c2 & 0xff00);
+        if (g > 0xff00) {
+                g = 0xff00;
+        }
+        unsigned int b = (c1 & 0xff) + (c2 & 0xff);
+        if (b > 0xff) {
+                b = 0xff;
+        }
+        return r | g | b;
+}
+
+static unsigned int
+halve_color(unsigned int a)
+{
+        return (a >> 1) & 0x3f3f3f;
+}
+
+static unsigned int
+beam_color(void)
+{
+        unsigned int phase = frame / 8;
+        unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
+        return 0x111100 * (v + 2);
+}
+
 static void
 reset_palette(void)
 {
@@ -1195,6 +1183,18 @@ reset_palette(void)
         PALETTE[1] = 0xc00000; /* movable objects */
         PALETTE[2] = 0xffff00; /* beams */
         PALETTE[3] = 0xa0a0a0; /* wall, players, text */
+}
+
+static void
+update_palette()
+{
+        unsigned int bg = add_colors(background_color(), explosion_color());
+
+        /* background */
+        PALETTE[0] = bg;
+
+        /* beam */
+        PALETTE[2] = add_colors(bg, beam_color());
 }
 
 static void
