@@ -1434,7 +1434,7 @@ update()
                          * note: as wasm-4 has only 4 colors, we turn off
                          * all beams here so that we can use the color
                          * for beams for the other purpose. (ie. animate
-                         * players. see reset_alt_palette)
+                         * players. see update_alt_palette)
                          */
                         memset(beam[beamidx], 0, map_width * map_height);
                         /*
