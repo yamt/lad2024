@@ -54,7 +54,7 @@ static bool undoing = false;
 #define moving_beam ((~undos[undo_idx].flags & (MOVE_PUSH | MOVE_BEAM)) == 0)
 
 struct move {
-        loc_t loc;
+        loc_t loc; /* the location after a move */
         enum diridx dir;
         move_flags_t flags; /* MOVE_ flags */
 };
@@ -1080,10 +1080,12 @@ update()
                                                 ASSERT(cur_player() == p);
                                         }
 
-                                        /* undo, recalculate beam, redo */
+                                        /* recalculate beam if necessary */
                                         if ((flags & MOVE_BEAM) != 0) {
+                                                /* undo temporarily */
                                                 undo_move(undo);
                                                 update_beam();
+                                                /* redo */
                                                 flags = move(undo->dir);
                                                 ASSERT(flags == undo->flags);
                                                 need_redraw |= CALC_BEAM;
@@ -1111,7 +1113,8 @@ update()
                                 mark_redraw_after_move(undo);
 
                                 moving_speed = 2;
-                                if (map[cur_player()->loc] == A) {
+                                loc_t cur_loc = cur_player()->loc;
+                                if (map[cur_loc] == A) {
                                         static unsigned int toggle;
                                         toggle = 1 - toggle;
                                         tone((110 + 100 * toggle) |
@@ -1126,6 +1129,22 @@ update()
                                         tone(270, 4 << 24,
                                              (VOLUME << 8) | VOLUME,
                                              TONE_NOISE);
+                                        /*
+                                         * update bomb_animate_loc for the case
+                                         * we pushed the animating bomb.
+                                         *
+                                         * note: we don't bother to check the
+                                         * object kind here because there is no
+                                         * harm to update bomb_animate_loc when
+                                         * pushing an object of other kind.
+                                         * (bomb_animate_loc can point to
+                                         * a non-bomb object when an animated
+                                         * bomb is collected.)
+                                         */
+                                        if (cur_loc == bomb_animate_loc) {
+                                                bomb_animate_loc +=
+                                                        dir_loc_diff(dir);
+                                        }
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, (2 << 16) | 8 | (30 << 8),
@@ -1195,9 +1214,19 @@ update()
                         // tracef("undo step %d", moving_step);
                         moving_step -= moving_speed;
                         if (moving_step == 0) {
+                                /* finish an undo */
                                 struct move *undo = &undos[undo_idx];
                                 undo_move(undo);
                                 mark_redraw_after_move(undo);
+                                /* update bomb_animate_loc after undo_move */
+                                if ((undo->flags & MOVE_PUSH) != 0 &&
+                                    undo->loc + dir_loc_diff(undo->dir) ==
+                                            bomb_animate_loc) {
+                                        // tracef("undo update
+                                        // bomb_animate_loc");
+                                        bomb_animate_loc -=
+                                                dir_loc_diff(undo->dir);
+                                }
                                 undoing = false;
                                 undo->flags = 0; /* mark this invalid */
                                 undo_idx =
