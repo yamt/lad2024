@@ -123,7 +123,7 @@ huff_build(struct hufftree *tree)
         finish_tree(tree);
 }
 
-static uint16_t
+uint16_t
 huff_encode_byte(const struct hufftree *tree, uint8_t c, uint8_t *nbitsp)
 {
         const struct hnode *n = &tree->nodes[c];

@@ -1,0 +1,20 @@
+/* context-dependent huffman encoding */
+
+#include "huff.h"
+
+#define CHUFF_NTABLES 256
+struct chuff {
+        uint8_t context;
+        uint16_t ntables;
+        struct hufftree trees[CHUFF_NTABLES];
+};
+
+void chuff_init(struct chuff *ch);
+void chuff_update(struct chuff *ch, const uint8_t *p, size_t len);
+void chuff_build(struct chuff *ch);
+void chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, uint8_t *out,
+                  size_t *lenp);
+
+#define CHUFF_TABLE_SIZE_MAX (CHUFF_NTABLES * HUFF_TABLE_SIZE_MAX)
+void chuff_table(const struct chuff *ch, uint8_t *out,
+                 uint8_t *outsp[CHUFF_NTABLES], size_t lensp[CHUFF_NTABLES]);

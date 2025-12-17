@@ -7,4 +7,5 @@ struct hstage {
 
 extern const uint8_t stages_huff_data[];
 extern const uint8_t stages_huff_table[];
+extern const uint16_t stages_huff_table_idx[];
 extern const struct hstage packed_stages[];

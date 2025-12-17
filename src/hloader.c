@@ -6,28 +6,42 @@
 #include "huff_decode.h"
 #include "rule.h"
 
+struct chuff_decode_context {
+        struct huff_decode_context hctx;
+        uint8_t chuff_ctx;
+};
+
+static uint8_t
+chuff_decode_byte(struct chuff_decode_context *ctx)
+{
+        ctx->chuff_ctx = huff_decode_byte(
+                &ctx->hctx,
+                &stages_huff_table[stages_huff_table_idx[ctx->chuff_ctx]]);
+        return ctx->chuff_ctx;
+}
+
 void
 decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
 {
         const struct hstage *stage = &packed_stages[stage_number];
-        struct huff_decode_context ctx;
+        struct chuff_decode_context ctx;
 
-        huff_decode_init(&ctx, &stages_huff_data[stage->data_offset]);
+        huff_decode_init(&ctx.hctx, &stages_huff_data[stage->data_offset]);
+        ctx.chuff_ctx = 0;
         memset(map, 0, map_height * map_width);
         int x;
         int y;
         x = y = 0;
         int xmax = 0;
         uint8_t ch;
-        while ((ch = huff_decode_byte(&ctx, stages_huff_table)) != END) {
+        while ((ch = chuff_decode_byte(&ctx)) != END) {
                 do {
                         map[genloc(x, y)] = ch;
                         x++;
                         if (xmax < x) {
                                 xmax = x;
                         }
-                } while ((ch = huff_decode_byte(&ctx, stages_huff_table)) !=
-                         END);
+                } while ((ch = chuff_decode_byte(&ctx)) != END);
                 x = 0;
                 y++;
         }
