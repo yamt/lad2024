@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bitbuf.h"
 #include "huff.h"
 
 static bool
@@ -122,6 +123,19 @@ huff_build(struct hufftree *tree)
         finish_tree(tree);
 }
 
+static uint16_t
+huff_encode_byte(const struct hufftree *tree, uint8_t c, uint8_t *nbitsp)
+{
+        const struct hnode *n = &tree->nodes[c];
+        assert(n->count > 0);
+        assert(is_leaf(tree, n));
+        uint16_t bits = n->u.leaf.encoded_bits;
+        uint8_t nbits = n->u.leaf.encoded_nbits;
+        assert(nbits > 0);
+        *nbitsp = nbits;
+        return bits;
+}
+
 /*
  * huffman-encoded data encoding:
  *
@@ -136,29 +150,14 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         const uint8_t *cp = p;
         const uint8_t *ep = cp + len;
         uint8_t *outp = out;
-        uint32_t buf = 0;
-        unsigned int bufoff = 0;
+        struct bitbuf os;
+        bitbuf_init(&os);
         while (cp < ep) {
-                uint8_t c = *cp++;
-                const struct hnode *n = &tree->nodes[c];
-                assert(n->count > 0);
-                assert(is_leaf(tree, n));
-                uint16_t bits = n->u.leaf.encoded_bits;
-                uint8_t nbits = n->u.leaf.encoded_nbits;
-                assert(nbits > 0);
-                unsigned int shift = 32 - bufoff - nbits;
-                buf |= (uint32_t)bits << shift;
-                bufoff += nbits;
-                while (bufoff >= 8) {
-                        *outp++ = buf >> 24;
-                        buf <<= 8;
-                        bufoff -= 8;
-                }
+                uint8_t nbits;
+                uint16_t bits = huff_encode_byte(tree, *cp++, &nbits);
+                bitbuf_write(&os, &outp, bits, nbits);
         }
-        if (bufoff > 0) {
-                assert(bufoff < 8);
-                *outp++ = buf >> 24;
-        }
+        bitbuf_flush(&os, &outp);
         assert(outp - out <= len);
         *lenp = outp - out;
 }
