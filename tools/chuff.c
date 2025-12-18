@@ -23,7 +23,7 @@ chuff_update(struct chuff *ch, const uint8_t *p, size_t len)
                 huff_update(&ch->trees[ch->context], &c, 1);
                 ch->context = c;
                 if (ch->ntables < c + 1) {
-                    ch->ntables = c + 1;
+                        ch->ntables = c + 1;
                 }
         }
 }
