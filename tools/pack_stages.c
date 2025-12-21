@@ -29,64 +29,108 @@ stage_data_size(const uint8_t *p)
         }
 }
 
+struct ctx {
+        struct chuff ch;
+        uint8_t chtable[CHUFF_TABLE_SIZE_MAX];
+        uint8_t *hufftables[CHUFF_NTABLES];
+        size_t hufftablesizes[CHUFF_NTABLES];
+};
+
 int
 main(int argc, char **argv)
 {
         size_t curoff = 0;
         size_t offset[nstages];
+        size_t moffset[nstages];
+        size_t maxmlen = 0;
 
-        struct chuff ch;
-        chuff_init(&ch);
+        struct ctx ctx;
+        struct ctx mctx;
+        chuff_init(&ctx.ch);
+        chuff_init(&mctx.ch);
         unsigned int i;
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
-                ch.context = 0;
-                chuff_update(&ch, data, data_size);
+                ctx.ch.context = 0;
+                chuff_update(&ctx.ch, data, data_size);
+                if (stage->message != NULL) {
+                        size_t len = strlen(stage->message) + 1;
+                        if (len > maxmlen) {
+                                maxmlen = len;
+                        }
+                        mctx.ch.context = 0;
+                        chuff_update(&mctx.ch, (const void *)stage->message,
+                                     len);
+                }
         }
-        chuff_build(&ch);
+        chuff_build(&ctx.ch);
+        chuff_build(&mctx.ch);
 
-        uint8_t chtable[CHUFF_TABLE_SIZE_MAX];
-        uint8_t *hufftables[CHUFF_NTABLES];
-        size_t hufftablesizes[CHUFF_NTABLES];
-        chuff_table(&ch, chtable, hufftables, hufftablesizes);
-        assert(chtable == hufftables[0]);
-        assert(hufftables[1] == hufftables[0] + hufftablesizes[0]);
-        assert(hufftables[2] == hufftables[1] + hufftablesizes[1]);
+        chuff_table(&ctx.ch, ctx.chtable, ctx.hufftables, ctx.hufftablesizes);
+        assert(ctx.chtable == ctx.hufftables[0]);
+        assert(ctx.hufftables[1] == ctx.hufftables[0] + ctx.hufftablesizes[0]);
+        assert(ctx.hufftables[2] == ctx.hufftables[1] + ctx.hufftablesizes[1]);
+        chuff_table(&mctx.ch, mctx.chtable, mctx.hufftables,
+                    mctx.hufftablesizes);
 
         printf("#include \"hstages.h\"\n");
 
         printf("const uint8_t stages_huff_data[] = {\n");
         for (i = 0; i < nstages; i++) {
-                offset[i] = curoff;
                 const struct stage *stage = &stages[i];
-                const uint8_t *data = stage->data;
-                size_t data_size = stage_data_size(data);
-                uint8_t encoded[data_size];
-                size_t encoded_len;
-                ch.context = 0;
-                chuff_encode(&ch, data, data_size, encoded, &encoded_len);
-                printf("// stage %03u %zu bytes (%.1f %%)\n", i + 1,
-                       encoded_len, (float)encoded_len / data_size * 100);
-                curoff += encoded_len;
 
-                unsigned int j;
+                {
+                        offset[i] = curoff;
+                        const uint8_t *data = stage->data;
+                        size_t data_size = stage_data_size(data);
+                        uint8_t encoded[data_size];
+                        size_t encoded_len;
+                        ctx.ch.context = 0;
+                        chuff_encode(&ctx.ch, data, data_size, encoded,
+                                     &encoded_len);
+                        printf("// stage %03u %zu bytes (%.1f %%)\n", i + 1,
+                               encoded_len,
+                               (float)encoded_len / data_size * 100);
+                        curoff += encoded_len;
+                        unsigned int j;
 #if 1 /* debug */
-                struct huff_decode_context ctx;
-                huff_decode_init(&ctx, encoded);
-                uint8_t decoded[data_size];
-                uint8_t chuff_ctx = 0;
-                for (j = 0; j < data_size; j++) {
-                        decoded[j] = chuff_ctx =
-                                huff_decode_byte(&ctx, hufftables[chuff_ctx]);
-                }
-                assert(!memcmp(data, decoded, data_size));
+                        struct huff_decode_context dctx;
+                        huff_decode_init(&dctx, encoded);
+                        uint8_t decoded[data_size];
+                        uint8_t chuff_ctx = 0;
+                        for (j = 0; j < data_size; j++) {
+                                decoded[j] = chuff_ctx = huff_decode_byte(
+                                        &dctx, ctx.hufftables[chuff_ctx]);
+                        }
+                        assert(!memcmp(data, decoded, data_size));
 #endif
-                for (j = 0; j < encoded_len; j++) {
-                        printf("%#02x,", (unsigned int)encoded[j]);
+                        for (j = 0; j < encoded_len; j++) {
+                                printf("%#02x,", (unsigned int)encoded[j]);
+                        }
+                        printf("\n");
                 }
-                printf("\n");
+
+                if (stage->message != NULL) {
+                        moffset[i] = curoff;
+                        const uint8_t *data = (const void *)stage->message;
+                        size_t data_size = strlen(stage->message) + 1;
+                        uint8_t encoded[data_size];
+                        size_t encoded_len;
+                        mctx.ch.context = 0;
+                        chuff_encode(&mctx.ch, data, data_size, encoded,
+                                     &encoded_len);
+                        printf("// stage %03u message %zu bytes (%.1f %%)\n",
+                               i + 1, encoded_len,
+                               (float)encoded_len / data_size * 100);
+                        curoff += encoded_len;
+                        unsigned int j;
+                        for (j = 0; j < encoded_len; j++) {
+                                printf("%#02x,", (unsigned int)encoded[j]);
+                        }
+                        printf("\n");
+                }
         }
         printf("};\n");
 
@@ -97,40 +141,52 @@ main(int argc, char **argv)
                 printf("\t[%u] = {\n", i);
                 printf("\t\t.data_offset = %zu,\n", offset[i]);
                 if (stage->message != NULL) {
-                        printf("\t\t.message = (const uint8_t[]){\n");
-
-                        const char *cp = stage->message;
-                        char ch;
-                        do {
-                                ch = *cp++;
-                                printf("%#02x,", (unsigned int)(uint8_t)ch);
-                        } while (ch != 0);
-                        printf("\n");
-
-                        printf("\t\t},\n");
+                        printf("\t\t.msg_offset = %zu\n", moffset[i]);
                 }
                 printf("\t},\n");
         }
         printf("};\n");
 
-        printf("const uint16_t stages_huff_table_idx[] = {\n");
-        uint16_t idx = 0;
-        for (i = 0; i < ch.ntables; i++) {
-                printf("%#04x,", idx);
-                size_t sz = hufftablesizes[i];
-                assert(sz <= UINT16_MAX - idx);
-                idx += sz;
+        {
+                printf("const uint16_t stages_huff_table_idx[] = {\n");
+                uint16_t idx = 0;
+                for (i = 0; i < ctx.ch.ntables; i++) {
+                        printf("%#04x,", idx);
+                        size_t sz = ctx.hufftablesizes[i];
+                        assert(sz <= UINT16_MAX - idx);
+                        idx += sz;
+                }
+                printf("};\n");
+                size_t htablesize = idx;
+                printf("// table size %zu bytes\n", htablesize);
+                printf("const uint8_t stages_huff_table[] = {\n");
+                for (i = 0; i < htablesize; i++) {
+                        printf("%#02x,", (unsigned int)ctx.chtable[i]);
+                }
+                printf("};\n");
         }
-        printf("};\n");
-        size_t htablesize = idx;
-        printf("// table size %zu bytes\n", htablesize);
-        printf("const uint8_t stages_huff_table[] = {\n");
-        for (i = 0; i < htablesize; i++) {
-                printf("%#02x,", (unsigned int)chtable[i]);
+
+        {
+                printf("const uint16_t stages_msg_huff_table_idx[] = {\n");
+                uint16_t idx = 0;
+                for (i = 0; i < mctx.ch.ntables; i++) {
+                        printf("%#04x,", idx);
+                        size_t sz = mctx.hufftablesizes[i];
+                        assert(sz <= UINT16_MAX - idx);
+                        idx += sz;
+                }
+                printf("};\n");
+                size_t htablesize = idx;
+                printf("// table size %zu bytes\n", htablesize);
+                printf("const uint8_t stages_msg_huff_table[] = {\n");
+                for (i = 0; i < htablesize; i++) {
+                        printf("%#02x,", (unsigned int)mctx.chtable[i]);
+                }
+                printf("};\n");
         }
-        printf("};\n");
 
         printf("const unsigned int nstages = %u;\n", nstages);
+        printf("const unsigned int maxmlen = %zu;\n", maxmlen);
 
         exit(0);
 }
