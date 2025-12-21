@@ -12,17 +12,18 @@ struct chuff_decode_context {
 };
 
 static uint8_t
-chuff_decode_byte(struct chuff_decode_context *ctx)
+chuff_decode_byte(struct chuff_decode_context *ctx, const uint8_t *tbl,
+                  const uint16_t *tblidx)
 {
-        ctx->chuff_ctx = huff_decode_byte(
-                &ctx->hctx,
-                &stages_huff_table[stages_huff_table_idx[ctx->chuff_ctx]]);
+        ctx->chuff_ctx =
+                huff_decode_byte(&ctx->hctx, &tbl[tblidx[ctx->chuff_ctx]]);
         return ctx->chuff_ctx;
 }
 
 void
 decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
 {
+        static char msgbuf[140];
         const struct hstage *stage = &packed_stages[stage_number];
         struct chuff_decode_context ctx;
 
@@ -34,18 +35,36 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         x = y = 0;
         int xmax = 0;
         uint8_t ch;
-        while ((ch = chuff_decode_byte(&ctx)) != END) {
+        while ((ch = chuff_decode_byte(&ctx, stages_huff_table,
+                                       stages_huff_table_idx)) != END) {
                 do {
                         map[genloc(x, y)] = ch;
                         x++;
                         if (xmax < x) {
                                 xmax = x;
                         }
-                } while ((ch = chuff_decode_byte(&ctx)) != END);
+                } while ((ch = chuff_decode_byte(&ctx, stages_huff_table,
+                                                 stages_huff_table_idx)) !=
+                         END);
                 x = 0;
                 y++;
         }
         info->w = (unsigned int)xmax;
         info->h = (unsigned int)y;
-        info->message = (const char *)stage->message;
+
+        if (stage->msg_offset != 0) {
+                huff_decode_init(&ctx.hctx,
+                                 &stages_huff_data[stage->msg_offset]);
+                ctx.chuff_ctx = 0;
+                char *p = msgbuf;
+                char ch;
+                do {
+                        *p++ = ch = (char)chuff_decode_byte(
+                                &ctx, stages_msg_huff_table,
+                                stages_msg_huff_table_idx);
+                } while (ch != 0);
+                info->message = msgbuf;
+        } else {
+                info->message = NULL;
+        }
 }
