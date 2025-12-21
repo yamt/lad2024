@@ -4,8 +4,8 @@
 
 #define CHUFF_NTABLES 256
 struct chuff {
-        uint8_t context;
-        uint16_t ntables;
+        uint8_t context;  /* current index in trees[]. 0..CHUFF_NTABLES-1 */
+        uint16_t ntables; /* used elements in trees[]. 0..CHUFF_NTABLES */
         struct hufftree trees[CHUFF_NTABLES];
 };
 
