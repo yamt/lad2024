@@ -7,7 +7,7 @@
             _, _, W, X, W, _, _, _, P, X, X, X, X, W, _, _, _, W, B, W, END,
             _, _, W, X, W, _, W, _, W, X, D, X, X, W, _, W, _, W, B, W, END,
             _, _, W, X, A, _, _, _, A, X, B, X, B, W, _, _, _, W, B, W, END,
-            _, _, W, U, D, W, W, W, D, X, X, X, R, X, W, W, A, L, L, W, END,
+            _, _, W, U, D, W, W, W, X, X, X, X, R, X, W, W, A, L, L, W, END,
             _, _, _, W, X, X, X, X, X, X, X, X, X, X, X, X, X, L, W, _, END,
             _, W, W, W, X, W, W, X, X, U, U, U, X, R, X, X, X, W, _, _, END,
             W, B, B, W, X, W, _, W, X, W, W, W, X, W, W, W, X, W, _, _, END,
