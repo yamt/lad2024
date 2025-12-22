@@ -38,26 +38,20 @@ chuff_build(struct chuff *ch)
 }
 
 void
-chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, uint8_t *out,
-             size_t *lenp)
+chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, struct bitbuf *os,
+             uint8_t **outp)
 {
         const uint8_t *cp = p;
         const uint8_t *ep = cp + len;
-        uint8_t *outp = out;
-        struct bitbuf os;
-        bitbuf_init(&os);
         while (cp < ep) {
                 const struct hufftree *tree = &ch->trees[ch->context];
                 uint8_t c = *cp++;
                 assert(c < ch->ntables);
                 uint8_t nbits;
                 uint16_t bits = huff_encode_byte(tree, c, &nbits);
-                bitbuf_write(&os, &outp, bits, nbits);
+                bitbuf_write(os, outp, bits, nbits);
                 ch->context = c;
         }
-        bitbuf_flush(&os, &outp);
-        assert(outp - out <= len);
-        *lenp = outp - out;
 }
 
 void

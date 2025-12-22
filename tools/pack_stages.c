@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bitbuf.h"
 #include "chuff.h"
 #include "defs.h"
 #include "dump.h"
@@ -12,6 +13,8 @@
 #include "loader.h"
 #include "maputil.h"
 #include "stages.h"
+
+#define MSG_SIZE_MAX 140
 
 size_t
 stage_data_size(const uint8_t *p)
@@ -41,7 +44,6 @@ main(int argc, char **argv)
 {
         size_t curoff = 0;
         size_t offset[nstages];
-        size_t moffset[nstages];
         size_t maxmlen = 0;
 
         struct ctx ctx;
@@ -69,9 +71,6 @@ main(int argc, char **argv)
         chuff_build(&mctx.ch);
 
         chuff_table(&ctx.ch, ctx.chtable, ctx.hufftables, ctx.hufftablesizes);
-        assert(ctx.chtable == ctx.hufftables[0]);
-        assert(ctx.hufftables[1] == ctx.hufftables[0] + ctx.hufftablesizes[0]);
-        assert(ctx.hufftables[2] == ctx.hufftables[1] + ctx.hufftablesizes[1]);
         chuff_table(&mctx.ch, mctx.chtable, mctx.hufftables,
                     mctx.hufftablesizes);
 
@@ -81,56 +80,55 @@ main(int argc, char **argv)
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
 
-                {
-                        offset[i] = curoff;
-                        const uint8_t *data = stage->data;
-                        size_t data_size = stage_data_size(data);
-                        uint8_t encoded[data_size];
-                        size_t encoded_len;
-                        ctx.ch.context = 0;
-                        chuff_encode(&ctx.ch, data, data_size, encoded,
-                                     &encoded_len);
-                        printf("// stage %03u %zu bytes (%.1f %%)\n", i + 1,
-                               encoded_len,
-                               (float)encoded_len / data_size * 100);
-                        curoff += encoded_len;
-                        unsigned int j;
-#if 1 /* debug */
-                        struct huff_decode_context dctx;
-                        huff_decode_init(&dctx, encoded);
-                        uint8_t decoded[data_size];
-                        uint8_t chuff_ctx = 0;
-                        for (j = 0; j < data_size; j++) {
-                                decoded[j] = chuff_ctx = huff_decode_byte(
-                                        &dctx, ctx.hufftables[chuff_ctx]);
-                        }
-                        assert(!memcmp(data, decoded, data_size));
-#endif
-                        for (j = 0; j < encoded_len; j++) {
-                                printf("%#02x,", (unsigned int)encoded[j]);
-                        }
-                        printf("\n");
-                }
+                /*
+                 * encode stage->data and then stage->message,
+                 * without flushing the bitbuf.
+                 */
 
+                offset[i] = curoff;
+                const uint8_t *data = stage->data;
+                size_t data_size = stage_data_size(data);
+                uint8_t encoded[data_size + MSG_SIZE_MAX];
+                ctx.ch.context = 0;
+                struct bitbuf os;
+                bitbuf_init(&os);
+                uint8_t *out = encoded;
+                chuff_encode(&ctx.ch, data, data_size, &os, &out);
+
+                size_t msg_size = 0;
                 if (stage->message != NULL) {
-                        moffset[i] = curoff;
-                        const uint8_t *data = (const void *)stage->message;
-                        size_t data_size = strlen(stage->message) + 1;
-                        uint8_t encoded[data_size];
-                        size_t encoded_len;
+                        msg_size = strlen(stage->message) + 1;
+                        assert(msg_size <= MSG_SIZE_MAX);
+
                         mctx.ch.context = 0;
-                        chuff_encode(&mctx.ch, data, data_size, encoded,
-                                     &encoded_len);
-                        printf("// stage %03u message %zu bytes (%.1f %%)\n",
-                               i + 1, encoded_len,
-                               (float)encoded_len / data_size * 100);
-                        curoff += encoded_len;
-                        unsigned int j;
-                        for (j = 0; j < encoded_len; j++) {
-                                printf("%#02x,", (unsigned int)encoded[j]);
-                        }
-                        printf("\n");
+                        chuff_encode(&mctx.ch, (const void *)stage->message,
+                                     msg_size, &os, &out);
                 }
+                bitbuf_flush(&os, &out);
+
+                size_t encoded_len = out - encoded;
+
+                printf("// stage %03u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
+                       data_size, msg_size, encoded_len,
+                       (float)encoded_len / (data_size + msg_size) * 100);
+				assert(encoded_len <= sizeof(encoded));
+                curoff += encoded_len;
+                unsigned int j;
+                for (j = 0; j < encoded_len; j++) {
+                        printf("%#02x,", (unsigned int)encoded[j]);
+                }
+                printf("\n");
+#if 1 /* debug */
+                struct huff_decode_context dctx;
+                huff_decode_init(&dctx, encoded);
+                uint8_t decoded[data_size];
+                uint8_t chuff_ctx = 0;
+                for (j = 0; j < data_size; j++) {
+                        decoded[j] = chuff_ctx = huff_decode_byte(
+                                &dctx, ctx.hufftables[chuff_ctx]);
+                }
+                assert(!memcmp(data, decoded, data_size));
+#endif
         }
         printf("};\n");
 
@@ -139,9 +137,13 @@ main(int argc, char **argv)
                 const struct stage *stage = &stages[i];
 
                 printf("\t[%u] = {\n", i);
-                printf("\t\t.data_offset = %zu,\n", offset[i]);
+                assert(offset[i] < 0x8000);
                 if (stage->message != NULL) {
-                        printf("\t\t.msg_offset = %zu\n", moffset[i]);
+                        printf("\t\t.data_offset = %zu | "
+                               "HSTAGE_HAS_MESSAGE,\n",
+                               offset[i]);
+                } else {
+                        printf("\t\t.data_offset = %zu,\n", offset[i]);
                 }
                 printf("\t},\n");
         }
