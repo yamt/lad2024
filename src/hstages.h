@@ -2,8 +2,9 @@
 
 struct hstage {
         const uint16_t data_offset;
-        const uint16_t msg_offset;
 };
+
+#define HSTAGE_HAS_MESSAGE 0x8000
 
 extern const uint8_t stages_huff_data[];
 extern const uint8_t stages_huff_table[];

@@ -27,7 +27,11 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         const struct hstage *stage = &packed_stages[stage_number];
         struct chuff_decode_context ctx;
 
-        huff_decode_init(&ctx.hctx, &stages_huff_data[stage->data_offset]);
+        uint16_t offset = stage->data_offset;
+        const bool has_message = (offset & HSTAGE_HAS_MESSAGE) != 0;
+        offset &= ~HSTAGE_HAS_MESSAGE;
+
+        huff_decode_init(&ctx.hctx, &stages_huff_data[offset]);
         ctx.chuff_ctx = 0;
         memset(map, 0, map_height * map_width);
         int x;
@@ -52,9 +56,7 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         info->w = (unsigned int)xmax;
         info->h = (unsigned int)y;
 
-        if (stage->msg_offset != 0) {
-                huff_decode_init(&ctx.hctx,
-                                 &stages_huff_data[stage->msg_offset]);
+        if (has_message) {
                 ctx.chuff_ctx = 0;
                 char *p = msgbuf;
                 char ch;
