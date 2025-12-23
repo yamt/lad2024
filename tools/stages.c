@@ -28,7 +28,8 @@ const struct stage stages[] = {
         },
         .message =
         "Move "C_A" with \x84\x85\x86\x87 and\n"
-        "collect all "C_X".\n"
+        "collect all the "C_X" to\n"
+        "clear a stage.\n"
     },
 
     {
@@ -43,11 +44,10 @@ const struct stage stages[] = {
             END,
         },
         .message =
-        C_R" emits the beam.\n"
+        C_R" emits a beam.\n"
         "\n"
         C_A" can only move when\n"
-        "the beam is hitting\n"
-        "it.\n"
+        "the beam hits it.\n"
         "\n"
         "\x81+\x86 to give up and\n"
         "reset the stage.",
@@ -95,8 +95,8 @@ const struct stage stages[] = {
         "including "C_A" and "C_X".\n"
         "\n"
         C_P" can move only\n"
-        "when the beam is NOT\n"
-        "hitting it.\n"
+        "when the beam does\n"
+        "NOT hit it.\n"
     },
 
     {
