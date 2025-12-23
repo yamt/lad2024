@@ -8701,6 +8701,10 @@
             _,W,W,W,W,W, END,
             END, END,
         },
+        .message =
+                   " " C_A C_P C_A "            " C_P C_A C_P "\n"
+                   "     HNY 2025!!\n"
+                   " " C_P C_A C_P "            " C_A C_P C_A,
     },
     /* stage 639 */
     {
