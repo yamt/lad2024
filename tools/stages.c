@@ -307,6 +307,7 @@ const struct stage stages[] = {
             W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, END,
             END,
         },
+        .message = "A bit boring...",
     },
 #if 0 /* a template used to create lad-tiles.png */
     {
