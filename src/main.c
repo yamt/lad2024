@@ -110,6 +110,19 @@ static map_t automove_route;
 
 /* end of global mutable states */
 
+/*
+ * https://wasm4.org/docs/reference/functions#tone-frequency-duration-volume-flags
+ * https://wasm4.org/docs/guides/audio
+ */
+#define TONE_FREQ(start_freq, end_freq) ((start_freq) | ((end_freq) << 16))
+#define TONE_NOTE_FREQ(note, bend) ((note) | ((bend) << 8))
+#define TONE_DURATION(sustain, release, decay, attack)                        \
+        ((sustain) | ((release) << 8) | ((decay) << 16) | ((attack) << 24))
+#define TONE_VOLUME(sustain_volume, peak_volume)                              \
+        ((sustain_volume) | ((peak_volume) << 8))
+#define TONE_FLAGS(channel, mode, pan, note)                                  \
+        ((channel) | ((mode) << 2) | ((pan) << 4) | (note))
+
 bool
 is_cur_player(loc_t loc)
 {
@@ -400,7 +413,8 @@ draw_object(int x, int y, uint8_t objidx)
                                 uint32_t jump_ix2 = jump_ix - 16;
                                 dy = -(scale(jump[jump_ix2]) >> 3);
                                 if (jump_ix2 == 0) {
-                                        tone(110 | (340 << 16), 10 | (15 << 8),
+                                        tone(TONE_FREQ(110, 340),
+                                             TONE_DURATION(10, 15, 0, 0),
                                              VOLUME, TONE_PULSE1);
                                 }
                         }
@@ -1054,7 +1068,8 @@ update()
                                 load_stage();
                         } else if (dir == UP) {
                                 // trace("reset");
-                                tone(440 | (10 << 16), 40 | (8 << 8), 80,
+                                tone(TONE_FREQ(440, 10),
+                                     TONE_DURATION(40, 8, 0, 0), 80,
                                      TONE_TRIANGLE);
                                 animation_mode = GAVEUP;
                                 animation_frame = 0;
@@ -1117,8 +1132,8 @@ update()
                                 if (map[cur_loc] == A) {
                                         static unsigned int toggle;
                                         toggle = 1 - toggle;
-                                        tone((110 + 100 * toggle) |
-                                                     (160 << 16),
+                                        tone(TONE_FREQ(110 + 100 * toggle,
+                                                       160),
                                              4, VOLUME, TONE_PULSE1);
                                 } else if ((flags & MOVE_PUSH) != 0) {
                                         /*
@@ -1126,8 +1141,8 @@ update()
                                          * make it slow.
                                          */
                                         moving_speed = 1;
-                                        tone(270, 4 << 24,
-                                             (VOLUME << 8) | VOLUME,
+                                        tone(270, TONE_DURATION(0, 0, 0, 4),
+                                             TONE_VOLUME(VOLUME, VOLUME),
                                              TONE_NOISE);
                                         /*
                                          * update bomb_animate_loc for the case
@@ -1149,8 +1164,9 @@ update()
                                         tone(440, 1, VOLUME / 2, TONE_NOISE);
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
-                                        tone(400, (2 << 16) | 8 | (30 << 8),
-                                             (VOLUME << 8) | (VOLUME * 6 / 16),
+                                        tone(400, TONE_DURATION(8, 30, 2, 0),
+                                             TONE_VOLUME((VOLUME * 6 / 16),
+                                                         VOLUME),
                                              TONE_NOISE);
                                         explosion_animate_step = 1;
                                 }
