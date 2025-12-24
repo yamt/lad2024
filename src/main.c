@@ -1161,7 +1161,7 @@ update()
                                                         dir_loc_diff(dir);
                                         }
                                 } else {
-                                        tone(440, 1, VOLUME / 2, TONE_NOISE);
+                                        tone(330, 1, VOLUME / 2, TONE_NOISE);
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, TONE_DURATION(8, 30, 2, 0),
