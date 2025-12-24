@@ -1145,6 +1145,8 @@ update()
                                                 bomb_animate_loc +=
                                                         dir_loc_diff(dir);
                                         }
+                                } else {
+                                        tone(440, 1, VOLUME / 2, TONE_NOISE);
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, (2 << 16) | 8 | (30 << 8),
