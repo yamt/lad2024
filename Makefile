@@ -6,8 +6,8 @@ CC = "$(WASI_SDK_PATH)/bin/clang" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot
 CXX = "$(WASI_SDK_PATH)/bin/clang++" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot"
 
 # Optional dependency from binaryen for smaller builds
-WASM_OPT = wasm-opt
-WASM_OPT_FLAGS = -Oz --zero-filled-memory --strip-producers --enable-bulk-memory
+WASM_OPT ?= wasm-opt
+WASM_OPT_FLAGS = -Oz --zero-filled-memory --strip-producers --enable-bulk-memory --enable-nontrapping-float-to-int
 
 # Whether to build for debugging instead of release
 DEBUG = 0
@@ -22,7 +22,7 @@ endif
 
 # Linker flags
 LDFLAGS = -Wl,-zstack-size=12000,--no-entry,--import-memory -mexec-model=reactor \
-	-Wl,--initial-memory=65536,--max-memory=65536,--stack-first
+	-Wl,--initial-memory=65536,--max-memory=65536,--stack-first --no-wasm-opt
 ifeq ($(DEBUG), 1)
 	LDFLAGS += -Wl,--export-all,--no-gc-sections
 else
