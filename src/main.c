@@ -753,6 +753,8 @@ save_state()
          *
          * this can be even considered as a security measure as a bad person
          * can attempt to overwrite your save data by sending a netplay url.
+         *
+         * cf. https://github.com/aduros/wasm4/issues/837
          */
         if ((*NETPLAY & 3) != 0) {
                 return;
