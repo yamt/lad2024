@@ -108,7 +108,7 @@ main(int argc, char **argv)
 
                 size_t encoded_len = out - encoded;
 
-                printf("// stage %03u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
+                printf("// stage %04u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
                        data_size, msg_size, encoded_len,
                        (float)encoded_len / (data_size + msg_size) * 100);
 				assert(encoded_len <= sizeof(encoded));
