@@ -17,6 +17,8 @@
 #define C_P "\x98"
 #define C_A "\x99"
 
+#define C_COPYRIGHT "\xa9"
+
 /* clang-format off */
 
 const struct stage stages[] = {
@@ -33,6 +35,9 @@ const struct stage stages[] = {
             END,
         },
         .message =
+        "  " C_COPYRIGHT "1994,2024,2025\n"
+        "  YAMAMOTO Takashi\n"
+        "\n"
         "Move "C_A" with \x84\x85\x86\x87 and\n"
         "collect all the "C_X" to\n"
         "clear a stage.\n"
