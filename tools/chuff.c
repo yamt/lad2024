@@ -60,8 +60,12 @@ chuff_table(const struct chuff *ch, uint8_t *out,
 {
         unsigned int i;
         for (i = 0; i < ch->ntables; i++) {
+                const struct hufftree *t = &ch->trees[i];
                 size_t outlen;
-                huff_table(&ch->trees[i], out, &outlen);
+                if (huff_is_empty(t)) {
+                        continue;
+                }
+                huff_table(t, out, &outlen);
                 outsp[i] = out;
                 lensp[i] = outlen;
                 out += outlen;
