@@ -111,7 +111,7 @@ main(int argc, char **argv)
                 printf("// stage %04u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
                        data_size, msg_size, encoded_len,
                        (float)encoded_len / (data_size + msg_size) * 100);
-				assert(encoded_len <= sizeof(encoded));
+                assert(encoded_len <= sizeof(encoded));
                 curoff += encoded_len;
                 unsigned int j;
                 for (j = 0; j < encoded_len; j++) {
