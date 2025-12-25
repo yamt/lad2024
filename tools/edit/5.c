@@ -16,4 +16,5 @@
             _, W, W, W, W, W, W, W, _, W, W, W, _, END,
             END,
         },
+        .message = "        " C_B C_P C_A C_B,
     },
