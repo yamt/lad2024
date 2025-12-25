@@ -103,10 +103,13 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
         finish_node(tree, n->u.inner.children[1], nbits + 1, (bits << 1) | 1);
 }
 
+/* this is a macro because it's used for both of const/non-const trees */
+#define root_node(tree) (&(tree)->nodes[256 * 2 - 2])
+
 static void
 finish_tree(struct hufftree *tree)
 {
-        finish_node(tree, &tree->nodes[256 * 2 - 2], 0, 0);
+        finish_node(tree, root_node(tree), 0, 0);
 }
 
 void
@@ -162,6 +165,12 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         *lenp = outp - out;
 }
 
+bool
+huff_is_empty(const struct hufftree *tree)
+{
+        return root_node(tree)->count == 0;
+}
+
 /*
  * table encoding:
  *
@@ -184,7 +193,7 @@ void
 huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
 {
         uint8_t *outp = out;
-        const struct hnode *n = &tree->nodes[256 * 2 - 2];
+        const struct hnode *n = root_node(tree);
         const struct hnode *nodes[255];
         unsigned int prod = 0;
         unsigned int cons = 0;

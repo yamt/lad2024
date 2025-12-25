@@ -44,7 +44,10 @@ void huff_build(struct hufftree *tree);
 
 void huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
                  uint8_t *out, size_t *lenp);
-uint16_t huff_encode_byte(const struct hufftree *tree, uint8_t c, uint8_t *nbitsp);
+uint16_t huff_encode_byte(const struct hufftree *tree, uint8_t c,
+                          uint8_t *nbitsp);
+/* a tree with no huff_update() called is "empty" */
+bool huff_is_empty(const struct hufftree *tree);
 
 #define HUFF_TABLE_SIZE_MAX (255 * 3)
 void huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp);
