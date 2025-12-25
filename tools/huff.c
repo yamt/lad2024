@@ -165,12 +165,6 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         *lenp = outp - out;
 }
 
-bool
-huff_is_empty(const struct hufftree *tree)
-{
-        return root_node(tree)->count == 0;
-}
-
 /*
  * table encoding:
  *
