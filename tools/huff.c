@@ -181,6 +181,10 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
  *     bit 2-7  unused. must be zero.
  *   byte 1: child node index or leaf value (for encoded bit 0)
  *   byte 2: child node index or leaf value (for encoded bit 1)
+ *
+ * note: byte 2 of the last entry is omitted if the count of the
+ * corresponding node is 0. it's safe because the decoder logic
+ * should never access it.
  */
 
 void
@@ -202,6 +206,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                 uint8_t v[3];
                 uint8_t flags = 0;
                 unsigned int i;
+                size_t entry_size = 3;
                 for (i = 0; i < 2; i++) {
                         struct hnode *cn = n->u.inner.children[i];
                         if (is_leaf(tree, cn)) {
@@ -209,7 +214,8 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                                 v[i + 1] = leaf_value(tree, cn);
                         } else if (cn->count == 0) {
                                 assert(i == 1);
-                                v[i + 1] = 0;
+                                assert(cons == prod);
+                                entry_size = 2;
                         } else {
                                 v[i + 1] = prod;
                                 assert(prod < 255);
@@ -221,8 +227,8 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                 printf("%02x: %02x %02x %02x\n", cons - 1, (unsigned int)v[0],
                        (unsigned int)v[1], (unsigned int)v[2]);
 #endif
-                memcpy(outp, v, 3);
-                outp += 3;
+                memcpy(outp, v, entry_size);
+                outp += entry_size;
         }
 done:
         assert(outp - out <= HUFF_TABLE_SIZE_MAX);
