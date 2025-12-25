@@ -188,7 +188,7 @@ main(int argc, char **argv)
         }
 
         printf("const unsigned int nstages = %u;\n", nstages);
-        printf("const unsigned int maxmlen = %zu;\n", maxmlen);
+        // printf("const unsigned int maxmlen = %zu;\n", maxmlen);
 
         exit(0);
 }
