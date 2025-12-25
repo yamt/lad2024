@@ -194,6 +194,9 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
 {
         uint8_t *outp = out;
         const struct hnode *n = root_node(tree);
+        if (n->count == 0) {
+                goto done;
+        }
         const struct hnode *nodes[255];
         unsigned int prod = 0;
         unsigned int cons = 0;
@@ -226,6 +229,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                 memcpy(outp, v, 3);
                 outp += 3;
         }
+done:
         assert(outp - out <= HUFF_TABLE_SIZE_MAX);
         *lenp = outp - out;
 }
