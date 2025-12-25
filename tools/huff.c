@@ -208,6 +208,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                                 flags |= 1 << i;
                                 v[i + 1] = leaf_value(tree, cn);
                         } else if (cn->count == 0) {
+                                assert(i == 1);
                                 v[i + 1] = 0;
                         } else {
                                 v[i + 1] = prod;
