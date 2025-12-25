@@ -9,6 +9,7 @@
  *
  * cf. https://wasm4.org/docs/guides/text
  */
+#define C_W "\x91"
 #define C_B "\x92"
 #define C_X "\x93"
 
@@ -82,6 +83,7 @@ const struct stage stages[] = {
         "\n"
         C_A" can push objects\n"
         "like "C_R" and other "C_A".\n"
+        C_W" is immovable.\n"
         "\n"
         "\x81+\x87 to undo the last\n"
         "move.",
