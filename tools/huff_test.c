@@ -74,7 +74,7 @@ main(void)
         printf("table size: %zu bytes\n", htablesize);
         assert(htablesize <= sizeof(htable));
 
-        printf("total compression ratio: (%zu + %zu) / %zu = %.2f\n", encsize,
+        printf("total compression ratio: (%zu + %zu) / %zu = %.4f\n", encsize,
                htablesize, inputsize,
                (double)(encsize + htablesize) / inputsize);
 
