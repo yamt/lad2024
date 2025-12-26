@@ -143,7 +143,7 @@ uint16_t
 huff_encode_byte(const struct hufftree *tree, uint8_t c, uint8_t *nbitsp)
 {
         const struct hnode *n = &tree->nodes[c];
-        assert(n->count > 0);
+        assert(n->count > 0); /* "c" hasn't fed into huff_update? */
         assert(is_leaf(tree, n));
         uint16_t bits = n->u.leaf.encoded_bits;
         uint8_t nbits = n->u.leaf.encoded_nbits;
