@@ -20,6 +20,10 @@ struct hnode {
         size_t count;
         union {
                 struct leaf {
+                        /*
+                         * theoretical limit of nbits is 256.
+                         * consider a degenerated tree.
+                         */
                         uint16_t encoded_nbits;
                         uint8_t encoded_bits[256 / 8];
                 } leaf;
