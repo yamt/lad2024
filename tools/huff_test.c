@@ -50,11 +50,14 @@ main(void)
                 printf("encoded bits for each values:\n");
                 unsigned int i;
                 for (i = 0; i < 256; i++) {
-                        uint16_t nbits = t.nodes[i].u.leaf.encoded_nbits;
+                        const struct hnode *n = &t.nodes[i];
+                        uint16_t nbits = n->u.leaf.encoded_nbits;
                         if (nbits == 0) {
                                 continue;
                         }
-                        printf("    %02x: %3u bits\n", i, nbits);
+                        size_t count = n->count;
+                        printf("    %02x: %3u bits (%7.3f %%)\n", i, nbits,
+                               (double)count / inputsize * 100);
                 }
         }
 
