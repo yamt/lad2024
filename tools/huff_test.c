@@ -38,6 +38,7 @@ main(void)
                 }
         }
 
+        printf("buffer size: %zu bytes\n", bufsz);
         printf("input size: %zu bytes\n", inputsize);
 
         struct hufftree t;
