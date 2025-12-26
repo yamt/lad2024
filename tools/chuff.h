@@ -1,4 +1,8 @@
-/* context-dependent huffman encoding */
+/*
+ * context-dependent huffman encoding
+ *
+ * use a one-byte context to select hufftree to use.
+ */
 
 #include "huff.h"
 
