@@ -6,4 +6,4 @@ struct chuff_decode_context {
 };
 
 uint8_t chuff_decode_byte(struct chuff_decode_context *ctx, const uint8_t *tbl,
-                  const uint16_t *tblidx);
+                          const uint16_t *tblidx);
