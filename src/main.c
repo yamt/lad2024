@@ -189,6 +189,14 @@ mark_redraw_object(loc_t loc)
         if (redraw_rect.ymax <= y) {
                 redraw_rect.ymax = y + 1;
         }
+
+        /*
+         * STAGE 1324 has the STAGE line partially overlying on non-wall
+         * blocks.
+         */
+        if (y >= map_height - 2) {
+            need_redraw |= MESSAGE;
+        }
 }
 
 /*
