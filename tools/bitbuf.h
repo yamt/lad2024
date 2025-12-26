@@ -1,3 +1,7 @@
+/*
+ * bit-stream output buffer
+ */
+
 #include <stdint.h>
 
 struct bitbuf {
