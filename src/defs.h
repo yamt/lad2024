@@ -17,6 +17,8 @@ enum block {
         END,
 };
 
+#define MSG_SIZE_MAX 140
+
 extern const unsigned int nstages;
 
 #endif /* !defined(_LAD_DEFS_H) */

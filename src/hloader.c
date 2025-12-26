@@ -23,7 +23,7 @@ chuff_decode_byte(struct chuff_decode_context *ctx, const uint8_t *tbl,
 void
 decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
 {
-        static char msgbuf[140];
+        static char msgbuf[MSG_SIZE_MAX];
         const struct hstage *stage = &packed_stages[stage_number];
         struct chuff_decode_context ctx;
 

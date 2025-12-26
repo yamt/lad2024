@@ -14,8 +14,6 @@
 #include "maputil.h"
 #include "stages.h"
 
-#define MSG_SIZE_MAX 140
-
 size_t
 stage_data_size(const uint8_t *p)
 {
