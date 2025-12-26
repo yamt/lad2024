@@ -195,7 +195,7 @@ mark_redraw_object(loc_t loc)
          * blocks.
          */
         if (y >= map_height - 2) {
-            need_redraw |= MESSAGE;
+                need_redraw |= MESSAGE;
         }
 }
 
