@@ -3,23 +3,6 @@
 #include "defs.h"
 #include "stages.h"
 
-/*
- * we use unmapped characters (0x90-0x99) for our special symbols.
- * see draw_message()
- *
- * cf. https://wasm4.org/docs/guides/text
- */
-#define C_W "\x91"
-#define C_B "\x92"
-#define C_X "\x93"
-
-#define C_R "\x96"
-
-#define C_P "\x98"
-#define C_A "\x99"
-
-#define C_COPYRIGHT "\xa9"
-
 /* clang-format off */
 
 const struct stage stages[] = {
