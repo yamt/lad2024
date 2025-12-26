@@ -47,8 +47,8 @@ chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, struct bitbuf *os,
                 const struct hufftree *tree = &ch->trees[ch->context];
                 uint8_t c = *cp++;
                 assert(c < ch->ntables);
-                uint8_t nbits;
-                uint16_t bits = huff_encode_byte(tree, c, &nbits);
+                uint16_t nbits;
+                const uint8_t *bits = huff_encode_byte(tree, c, &nbits);
                 bitbuf_write(os, outp, bits, nbits);
                 ch->context = c;
         }

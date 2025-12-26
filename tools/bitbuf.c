@@ -9,8 +9,8 @@ bitbuf_init(struct bitbuf *s)
         s->bufoff = 0;
 }
 
-void
-bitbuf_write(struct bitbuf *s, uint8_t **outpp, uint16_t bits, uint8_t nbits)
+static void
+bitbuf_write1(struct bitbuf *s, uint8_t **outpp, uint16_t bits, uint8_t nbits)
 {
         unsigned int shift = 32 - s->bufoff - nbits;
         s->buf |= (uint32_t)bits << shift;
@@ -20,6 +20,17 @@ bitbuf_write(struct bitbuf *s, uint8_t **outpp, uint16_t bits, uint8_t nbits)
                 s->buf <<= 8;
                 s->bufoff -= 8;
         }
+}
+
+void
+bitbuf_write(struct bitbuf *s, uint8_t **outpp, const uint8_t *bits,
+             uint16_t nbits)
+{
+        while (nbits > 8) {
+                bitbuf_write1(s, outpp, *bits++, 8);
+                nbits -= 8;
+        }
+        bitbuf_write1(s, outpp, *bits, nbits);
 }
 
 void

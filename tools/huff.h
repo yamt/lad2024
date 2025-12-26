@@ -20,8 +20,8 @@ struct hnode {
         size_t count;
         union {
                 struct leaf {
-                        uint8_t encoded_nbits;
-                        uint16_t encoded_bits;
+                        uint16_t encoded_nbits;
+                        uint8_t encoded_bits[256 / 8];
                 } leaf;
                 struct inner {
                         struct hnode *children[2];
@@ -61,8 +61,8 @@ void huff_build(struct hufftree *tree);
  */
 void huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
                  uint8_t *out, size_t *lenp);
-uint16_t huff_encode_byte(const struct hufftree *tree, uint8_t c,
-                          uint8_t *nbitsp);
+const uint8_t *huff_encode_byte(const struct hufftree *tree, uint8_t c,
+                                uint16_t *nbitsp);
 
 /*
  * serialize the tree for the decoder. (huff_decode.c)

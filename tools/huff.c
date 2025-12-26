@@ -92,8 +92,9 @@ build_tree(struct hufftree *tree)
 
 static void
 finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
-            uint16_t bits)
+            uint8_t *bits)
 {
+        assert(nbits <= 256);
         if (n->count == 0) {
                 return;
         }
@@ -103,11 +104,17 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
                        (unsigned int)leaf_value(tree, n));
 #endif
                 n->u.leaf.encoded_nbits = nbits;
-                n->u.leaf.encoded_bits = bits;
+                memcpy(n->u.leaf.encoded_bits, bits, (nbits + 7) / 8);
                 return;
         }
-        finish_node(tree, n->u.inner.children[0], nbits + 1, (bits << 1));
-        finish_node(tree, n->u.inner.children[1], nbits + 1, (bits << 1) | 1);
+        unsigned int idx = nbits / 8;
+        nbits++;
+        bits[idx] <<= 1;
+        finish_node(tree, n->u.inner.children[0], nbits, bits);
+        bits[idx] |= 1;
+        finish_node(tree, n->u.inner.children[1], nbits, bits);
+        bits[idx] >>= 1;
+        nbits--;
 }
 
 /* this is a macro because it's used for both of const/non-const trees */
@@ -122,7 +129,9 @@ finish_tree(struct hufftree *tree)
          * note: leaf nodes with count==0 are left uninitialized.
          * (thus u.leaf.encoded_bits==0)
          */
-        finish_node(tree, root_node(tree), 0, 0);
+        uint8_t bits[256 / 8];
+        memset(bits, 0, sizeof(bits));
+        finish_node(tree, root_node(tree), 0, bits);
 }
 
 void
@@ -139,15 +148,16 @@ huff_build(struct hufftree *tree)
         finish_tree(tree);
 }
 
-uint16_t
-huff_encode_byte(const struct hufftree *tree, uint8_t c, uint8_t *nbitsp)
+const uint8_t *
+huff_encode_byte(const struct hufftree *tree, uint8_t c, uint16_t *nbitsp)
 {
         const struct hnode *n = &tree->nodes[c];
         assert(n->count > 0); /* "c" hasn't fed into huff_update? */
         assert(is_leaf(tree, n));
-        uint16_t bits = n->u.leaf.encoded_bits;
-        uint8_t nbits = n->u.leaf.encoded_nbits;
+        const uint8_t *bits = n->u.leaf.encoded_bits;
+        uint16_t nbits = n->u.leaf.encoded_nbits;
         assert(nbits > 0);
+        assert(nbits <= 256);
         *nbitsp = nbits;
         return bits;
 }
@@ -169,8 +179,8 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         struct bitbuf os;
         bitbuf_init(&os);
         while (cp < ep) {
-                uint8_t nbits;
-                uint16_t bits = huff_encode_byte(tree, *cp++, &nbits);
+                uint16_t nbits;
+                const uint8_t *bits = huff_encode_byte(tree, *cp++, &nbits);
                 bitbuf_write(&os, &outp, bits, nbits);
         }
         bitbuf_flush(&os, &outp);

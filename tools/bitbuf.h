@@ -10,6 +10,6 @@ struct bitbuf {
 };
 
 void bitbuf_init(struct bitbuf *s);
-void bitbuf_write(struct bitbuf *s, uint8_t **outpp, uint16_t bits,
-                  uint8_t nbits);
+void bitbuf_write(struct bitbuf *s, uint8_t **outpp, const uint8_t *bits,
+                  uint16_t nbits);
 void bitbuf_flush(struct bitbuf *s, uint8_t **outpp);
