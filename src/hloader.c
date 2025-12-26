@@ -3,22 +3,8 @@
 #include "defs.h"
 #include "hloader.h"
 #include "hstages.h"
-#include "huff_decode.h"
+#include "chuff_decode.h"
 #include "rule.h"
-
-struct chuff_decode_context {
-        struct huff_decode_context hctx;
-        uint8_t chuff_ctx;
-};
-
-static uint8_t
-chuff_decode_byte(struct chuff_decode_context *ctx, const uint8_t *tbl,
-                  const uint16_t *tblidx)
-{
-        ctx->chuff_ctx =
-                huff_decode_byte(&ctx->hctx, &tbl[tblidx[ctx->chuff_ctx]]);
-        return ctx->chuff_ctx;
-}
 
 void
 decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
