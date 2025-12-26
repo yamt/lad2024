@@ -147,6 +147,14 @@ main(int argc, char **argv)
         }
         printf("};\n");
 
+        /*
+         * note: for our stage data, 16-bit indexes are good enough.
+         *
+         * for arbitrary inputs, it might not fit into 16-bit.
+         * however, such a large table does not fit into wasm4's
+         * 64KB linear memory anyway.
+         */
+
         {
                 printf("const uint16_t stages_huff_table_idx[] = {\n");
                 uint16_t idx = 0;
