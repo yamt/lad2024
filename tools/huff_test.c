@@ -46,6 +46,18 @@ main(void)
         huff_update(&t, input, inputsize);
         huff_build(&t);
 
+        {
+                printf("encoded bits for each values:\n");
+                unsigned int i;
+                for (i = 0; i < 256; i++) {
+                        uint16_t nbits = t.nodes[i].u.leaf.encoded_nbits;
+                        if (nbits == 0) {
+                                continue;
+                        }
+                        printf("    %02x: %3u bits\n", i, nbits);
+                }
+        }
+
         uint8_t *encbuf = malloc(inputsize);
         if (encbuf == NULL) {
                 fprintf(stderr, "malloc failed\n");
