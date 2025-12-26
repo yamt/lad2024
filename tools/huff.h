@@ -31,6 +31,10 @@ struct hnode {
 
 struct hufftree {
         /*
+         * 256 leaf nodes
+         * 255 inner nodes
+         * the last inner node is the root node
+         *
          * [0]..[255]           - leaf nodes
          * [256]..[256 * 2 - 3] - inner nodes
          * [256 * 2 - 2]        - root node

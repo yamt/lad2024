@@ -66,20 +66,27 @@ build_tree(struct hufftree *tree)
                  */
 
                 /*
+                 * the number of valid elements in 'nodes'.
+                 */
+                const unsigned int n = 256 - i;
+                /*
                  * pick the two nodes with the smallest count.
                  */
-                qsort(nodes, 256 - i, sizeof(*nodes), cmp_node);
+                qsort(nodes, n, sizeof(*nodes), cmp_node);
                 struct hnode *inner = &tree->nodes[256 + i];
-                struct hnode *na = nodes[256 - 2 - i];
-                struct hnode *nb = nodes[256 - 1 - i];
+                struct hnode *na = nodes[n - 2];
+                struct hnode *nb = nodes[n - 1];
                 /*
                  * build a new inner node to represent the picked two nodes.
                  */
                 inner->count = na->count + nb->count;
                 inner->u.inner.children[0] = na;
                 inner->u.inner.children[1] = nb;
-                nodes[256 - 2 - i] = inner;
-                nodes[256 - 1 - i] = NULL; /* just in case */
+                /*
+                 * replace the two nodes with the inner node.
+                 */
+                nodes[n - 2] = inner;
+                nodes[n - 1] = NULL; /* just in case */
         }
 }
 
@@ -109,6 +116,12 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
 static void
 finish_tree(struct hufftree *tree)
 {
+        /*
+         * assign encoded bits to leaf nodes.
+         *
+         * note: leaf nodes with count==0 are left uninitialized.
+         * (thus u.leaf.encoded_bits==0)
+         */
         finish_node(tree, root_node(tree), 0, 0);
 }
 
