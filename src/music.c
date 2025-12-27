@@ -17,19 +17,39 @@ struct note {
                 0, n, NOTE_FLAG_GOTO                                          \
         }
 
+/* clang-format off */
+
 static const struct note notes[] = {
-        NOTE(60, 8), NOTE(61, 8), NOTE(60, 4), NOTE(55, 8), NOTE(56, 8),
+        NOTE(60, 8),
+        NOTE(61, 8),
+        NOTE(60, 4),
+        NOTE(55, 8),
+        NOTE(56, 8),
         NOTE(55, 4),
 
-        NOTE(60, 8), NOTE(61, 8), NOTE(60, 8), NOTE(60, 8), NOTE(55, 4),
+        NOTE(60, 8),
+        NOTE(61, 8),
+        NOTE(60, 8),
+        NOTE(60, 8),
+        NOTE(55, 4),
         NOTE(-1, 4),
 
-        NOTE(60, 4), NOTE(60, 4), NOTE(55, 8), NOTE(55, 8), NOTE(55, 4),
+        NOTE(60, 4),
+        NOTE(60, 4),
+        NOTE(55, 8),
+        NOTE(55, 8),
+        NOTE(55, 4),
 
-        NOTE(60, 4), NOTE(60, 8), NOTE(60, 8), NOTE(55, 4), NOTE(-1, 4),
+        NOTE(60, 4),
+        NOTE(60, 8),
+        NOTE(60, 8),
+        NOTE(55, 4),
+        NOTE(-1, 4),
 
         GOTO(0),
 };
+
+/* clang-format on */
 
 static const unsigned int frames_per_measure = 96;
 
