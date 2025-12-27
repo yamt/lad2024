@@ -2,10 +2,14 @@
 
 #include "scoredefs.h"
 
+/*
+ * iwau uta
+ */
+
 /* clang-format off */
 
 const struct score score4 = {
-        .frames_per_measure = 64,
+        .frames_per_measure = 72,
         .nparts = 2,
         .parts = {
                 PART(0, TONE_PULSE1,
