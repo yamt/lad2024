@@ -2,6 +2,12 @@
 
 #include "scoredefs.h"
 
+/*
+ * curry bento no uta
+ *
+ * YAMAMOTO Takashi
+ */
+
 const struct score score2 = {
         .frames_per_measure = 64,
         .nparts = 2,
