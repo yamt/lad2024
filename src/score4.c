@@ -85,7 +85,7 @@ const struct score score4 = {
 
                         NOTE(-1, 1),
 
-                        GOTO_NTIMES(25, 2), /* jump to 10 */
+                        GOTO_NTIMES(25, 7), /* jump to 10, repeat 8 times */
 
                         /* 18 */
 
@@ -173,7 +173,7 @@ const struct score score4 = {
                         NOTE(E3, 4),
                         NOTE(G3, 4),
 
-                        GOTO_NTIMES(12, 2), /* jump to 10 */
+                        GOTO_NTIMES(12, 7), /* jump to 10, repeat 8 times */
 
                         /* 18 */
 
