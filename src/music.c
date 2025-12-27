@@ -34,7 +34,8 @@ next:
         if (state->curframe == 0) {
                 const struct note *cur = &part->notes[state->curnote_idx];
                 if ((cur->flags & NOTE_FLAG_NTIMES) != 0) {
-                        tracef("ntimes %d/%d", state->ntimes_count, cur->num);
+                        // tracef("ntimes %d/%d", state->ntimes_count,
+                        // cur->num);
                         if (state->ntimes_count >= (unsigned int)cur->num) {
                                 state->ntimes_count = 0;
                                 state->curnote_idx++;
@@ -58,7 +59,8 @@ next:
                         if (master_volume != 256) {
                                 volume = (volume * master_volume) >> 8;
                         }
-                        tracef("tone %d %d", cur->num, state->curnote_nframes);
+                        // tracef("tone %d %d", cur->num,
+                        // state->curnote_nframes);
                         tone((uint8_t)cur->num, state->curnote_nframes << 8,
                              volume, part->channel | TONE_NOTE_MODE);
                 }
