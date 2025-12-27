@@ -96,7 +96,12 @@ music_change(const struct score *score)
         }
         nextscore = score;
         if (curscore == NULL) {
-                start_next_score();
+                // start_next_score();
+                /*
+                 * short delay to hide audio hiccup on startup
+                 */
+                start_fading();
+                master_volume = 8;
         } else {
                 start_fading();
         }
@@ -112,6 +117,9 @@ music_update(void)
                 } else {
                         master_volume--;
                 }
+        }
+        if (curscore == NULL) {
+                return;
         }
         unsigned int i;
         for (i = 0; i < curscore->nparts; i++) {
