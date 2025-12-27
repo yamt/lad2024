@@ -1,7 +1,7 @@
 #include "wasm4.h"
 
-#include "scores.h"
 #include "scoredefs.h"
+#include "scores.h"
 
 static const struct score *curscore = &score1;
 

@@ -58,4 +58,3 @@ const struct score score1 = {
         },
         /* clang-format on */
 };
-
