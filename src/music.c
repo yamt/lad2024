@@ -7,6 +7,7 @@ struct note {
 };
 
 struct part {
+        unsigned int channel;
         const struct note *notes;
 };
 
@@ -27,15 +28,16 @@ struct score {
                 0, n, NOTE_FLAG_GOTO                                          \
         }
 
-#define PART(part_no, ...)                                                    \
-        [part_no] = {.notes = (const struct note[]){__VA_ARGS__}}
+#define PART(part_no, channel_no, ...)                                        \
+        [part_no] = {.channel = channel_no,                                   \
+                     .notes = (const struct note[]){__VA_ARGS__}}
 
 static const struct score score1 = {
         .frames_per_measure = 96,
         .nparts = 1,
         /* clang-format off */
         .parts = {
-                PART(0,
+                PART(0, TONE_PULSE1,
                         NOTE(60, 8),
                         NOTE(61, 8),
                         NOTE(60, 4),
@@ -92,7 +94,7 @@ next:
                 if (cur->num != -1) {
                         tracef("tone %d %d", cur->num, state->curnote_nframes);
                         tone((uint8_t)cur->num, state->curnote_nframes << 8,
-                             32, TONE_PULSE1 | TONE_NOTE_MODE);
+                             32, part->channel | TONE_NOTE_MODE);
                 }
         }
 
