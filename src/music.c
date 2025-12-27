@@ -3,7 +3,7 @@
 #include "scoredefs.h"
 #include "scores.h"
 
-static const struct score *curscore = &score1;
+static const struct score *curscore = &score2;
 
 struct part_state {
         unsigned int curnote_idx;

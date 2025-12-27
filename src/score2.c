@@ -1,0 +1,118 @@
+#include "wasm4.h"
+
+#include "scoredefs.h"
+
+enum note_number {
+        C3 = 48,
+        C3SHARP,
+        D3,
+        D3SHARP,
+        E3,
+        F3,
+        F3SHARP,
+        G3,
+        G3SHARP,
+        A3,
+        A3SHARP,
+        B3,
+
+        C4,
+        C4SHARP,
+        D4,
+        D4SHARP,
+        E4,
+        F4,
+        F4SHARP,
+        G4,
+        G4SHARP,
+        A4,
+        A4SHARP,
+        B4,
+};
+
+const struct score score2 = {
+        .frames_per_measure = 64,
+        .nparts = 2,
+        /* clang-format off */
+        .parts = {
+                PART(0, TONE_PULSE1,
+                        NOTE(-1, 1),
+
+                        NOTE(-1, 1),
+
+                        NOTE(-1, 1),
+
+                        NOTE(-1, 4),
+                        NOTE(C4, 4),
+                        NOTE(D4, 4),
+                        NOTE(E4, 4),
+
+                        NOTE(F4, 4),
+                        NOTE(F4, 2),
+                        NOTE(F4, 4),
+
+                        NOTE(C4, 4),
+                        NOTE(C4, 2),
+                        NOTE(C4, 4),
+
+                        NOTE(F4, 4),
+                        NOTE(F4, 2),
+                        NOTE(F4, 4),
+
+                        NOTE(C4, 4),
+                        NOTE(C4, 2),
+                        NOTE(C4, 4),
+
+                        NOTE(F4, 4),
+                        NOTE(F4, 2),
+                        NOTE(F4, 4),
+
+                        NOTE(D4, 4),
+                        NOTE(C4, 4),
+                        NOTE(D4, 4),
+                        NOTE(F4, 4),
+
+                        NOTE(-1, 1),
+
+                        NOTE(C4, 4),
+                        NOTE(D4, 4),
+                        NOTE(E4, 4),
+                        NOTE(F4, 4),
+
+                        NOTE(G4, 4),
+                        NOTE(G4, 2),
+                        NOTE(G4, 4),
+
+                        NOTE(D4, 4),
+                        NOTE(D4, 2),
+                        NOTE(D4, 4),
+
+                        NOTE(G4, 4),
+                        NOTE(G4, 2),
+                        NOTE(G4, 4),
+
+                        NOTE(D4, 4),
+                        NOTE(D4, 2),
+                        NOTE(D4, 4),
+
+                        NOTE(G4, 4),
+                        NOTE(G4, 2),
+                        NOTE(G4, 4),
+
+                        NOTE(D4, 4),
+                        NOTE(C4, 4),
+                        NOTE(D4, 4),
+                        NOTE(F4, 4),
+                        GOTO(2),
+                ),
+                PART(1, TONE_PULSE2,
+                        NOTE(C3, 4),
+                        NOTE(G3, 4),
+                        NOTE(E3, 4),
+                        NOTE(G3, 4),
+
+                        GOTO(0),
+                ),
+        },
+        /* clang-format on */
+};
