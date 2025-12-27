@@ -21,6 +21,7 @@ struct score {
 
 #define NOTE_FLAG_GOTO 0x01
 #define NOTE_FLAG_DYN 0x02
+#define NOTE_FLAG_NTIMES 0x04
 
 #define NOTE(n, s)                                                            \
         {                                                                     \
@@ -29,6 +30,10 @@ struct score {
 #define GOTO(n)                                                               \
         {                                                                     \
                 0, n, NOTE_FLAG_GOTO                                          \
+        }
+#define GOTO_NTIMES(n,count)                                                               \
+        {                                                                     \
+                count, n, NOTE_FLAG_NTIMES|NOTE_FLAG_GOTO                                          \
         }
 #define DYN(n)                                                                \
         {                                                                     \

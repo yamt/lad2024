@@ -16,6 +16,7 @@ struct part_state {
         unsigned int curframe;
         unsigned int curnote_nframes;
         unsigned int volume;
+        unsigned int ntimes_count;
 } part_state[MAX_PARTS];
 
 static void
@@ -32,11 +33,20 @@ part_update(const struct score *score, const struct part *part,
 next:
         if (state->curframe == 0) {
                 const struct note *cur = &part->notes[state->curnote_idx];
-                if ((cur->flags & NOTE_FLAG_GOTO)) {
+                if ((cur->flags & NOTE_FLAG_NTIMES) != 0) {
+                        tracef("ntimes %d/%d", state->ntimes_count, cur->num);
+                        if (state->ntimes_count >= (unsigned int)cur->num) {
+                                state->ntimes_count = 0;
+                                state->curnote_idx++;
+                                goto next;
+                        }
+                        state->ntimes_count++;
+                }
+                if ((cur->flags & NOTE_FLAG_GOTO) != 0) {
                         state->curnote_idx = cur->length;
                         goto next;
                 }
-                if ((cur->flags & NOTE_FLAG_DYN)) {
+                if ((cur->flags & NOTE_FLAG_DYN) != 0) {
                         state->volume = cur->length;
                         state->curnote_idx++;
                         goto next;

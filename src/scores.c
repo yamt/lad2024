@@ -4,6 +4,7 @@ static const struct score *scores[] = {
 	&score1,
 	&score2,
 	&score3,
+	&score4,
 };
 
 const struct score *
