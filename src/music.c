@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 
 #include "wasm4.h"
@@ -6,6 +7,9 @@
 #include "scores.h"
 
 static const struct score *curscore;
+static const struct score *nextscore;
+static unsigned int master_volume;
+static bool fading;
 
 struct part_state {
         unsigned int curnote_idx;
@@ -40,9 +44,13 @@ next:
                 state->curnote_nframes =
                         score->frames_per_measure / cur->length;
                 if (cur->num != -1) {
+                        unsigned int volume = state->volume;
+                        if (master_volume != 256) {
+                                volume = (volume * master_volume) >> 8;
+                        }
                         tracef("tone %d %d", cur->num, state->curnote_nframes);
                         tone((uint8_t)cur->num, state->curnote_nframes << 8,
-                             state->volume, part->channel | TONE_NOTE_MODE);
+                             volume, part->channel | TONE_NOTE_MODE);
                 }
         }
 
@@ -53,22 +61,48 @@ next:
         }
 }
 
-void
-music_change(const struct score *score)
+static void
+start_next_score(void)
 {
-        if (curscore == score) {
-                return;
-        }
         unsigned int i;
         for (i = 0; i < MAX_PARTS; i++) {
                 part_init(&part_state[i]);
         }
-        curscore = score;
+        master_volume = 255;
+        curscore = nextscore;
+}
+
+static void
+start_fading(void)
+{
+        fading = true;
+}
+
+void
+music_change(const struct score *score)
+{
+        if (nextscore == score) {
+                return;
+        }
+        nextscore = score;
+        if (curscore == NULL) {
+                start_next_score();
+        } else {
+                start_fading();
+        }
 }
 
 void
 music_update(void)
 {
+        if (fading) {
+                if (master_volume == 0) {
+                        fading = false;
+                        start_next_score();
+                } else {
+                        master_volume--;
+                }
+        }
         unsigned int i;
         for (i = 0; i < curscore->nparts; i++) {
                 const struct part *part = &curscore->parts[i];
