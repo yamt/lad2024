@@ -17,7 +17,7 @@ struct score {
         const struct part parts[MAX_PARTS];
 };
 
-#define DEFAULT_VOLUME 32
+#define DEFAULT_VOLUME 24
 
 #define NOTE_FLAG_GOTO 0x01
 #define NOTE_FLAG_DYN 0x02
