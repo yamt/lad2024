@@ -36,6 +36,34 @@ const struct score score1 = {
 
                         GOTO_NTIMES(0, 1),
 
+                        NOTE(E4, 8),
+                        NOTE(F4, 8),
+                        NOTE(E4, 4),
+                        NOTE(B3, 8),
+                        NOTE(C4, 8),
+                        NOTE(B3, 4),
+
+                        NOTE(F4, 8),
+                        NOTE(G4, 8),
+                        NOTE(F4, 4),
+                        NOTE(B3, 8),
+                        NOTE(C4, 8),
+                        NOTE(B3, 4),
+
+                        NOTE(G4, 8),
+                        NOTE(A4, 8),
+                        NOTE(G4, 4),
+                        NOTE(D4, 8),
+                        NOTE(E4, 8),
+                        NOTE(D4, 4),
+
+                        NOTE(A4, 8),
+                        NOTE(B4, 8),
+                        NOTE(A4, 4),
+                        NOTE(D4, 8),
+                        NOTE(E4, 8),
+                        NOTE(D4, 4),
+
                         NOTE(G4, 8),
                         NOTE(A4, 8),
                         NOTE(G4, 4),
@@ -84,6 +112,14 @@ const struct score score1 = {
                         NOTE(-1, 4),
 
                         GOTO_NTIMES(0, 1),
+
+                        NOTE(-1, 1),
+
+                        NOTE(-1, 1),
+
+                        NOTE(-1, 1),
+
+                        NOTE(-1, 1),
 
                         NOTE(-1, 1),
 
