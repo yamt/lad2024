@@ -5,6 +5,7 @@
 #include "defs.h"
 #include "hloader.h"
 #include "input.h"
+#include "music.h"
 #include "rng.h"
 #include "route.h"
 #include "rule.h"
@@ -1002,6 +1003,7 @@ start()
 void
 update()
 {
+        music_update();
         uint8_t gamepad_cur;
         uint8_t gamepad;
         uint8_t gamepad_with_repeat;
