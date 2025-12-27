@@ -1,4 +1,8 @@
+#include <stdint.h>
+
 struct score;
 
-extern struct score score1;
-extern struct score score2;
+extern const struct score score1;
+extern const struct score score2;
+
+const struct score *pick_score(uint32_t index);

@@ -703,7 +703,7 @@ load_stage()
         mark_redraw_all();
         update_beam();
 
-        music_change(&score2);
+        music_change(pick_score(rng_rand_u32(&rng)));
 }
 
 static void
