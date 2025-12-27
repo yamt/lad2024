@@ -2,11 +2,11 @@
 
 #include "scoredefs.h"
 
-const struct score score3 =
-        {
-                .frames_per_measure = 64,
-                .nparts = 2,
-                /* clang-format off */
+/* clang-format off */
+
+const struct score score3 = {
+        .frames_per_measure = 64,
+        .nparts = 2,
         .parts = {
                 PART(0, TONE_PULSE1,
 
@@ -133,5 +133,6 @@ const struct score score3 =
                         GOTO(0),
                 ),
         },
-                /* clang-format on */
 };
+
+/* clang-format on */
