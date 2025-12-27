@@ -424,7 +424,7 @@ draw_object(int x, int y, uint8_t objidx)
                                 if (jump_ix2 == 0) {
                                         tone(TONE_FREQ(110, 340),
                                              TONE_DURATION(10, 15, 0, 0),
-                                             VOLUME, TONE_PULSE1);
+                                             VOLUME, TONE_PULSE2);
                                 }
                         }
                 } else if (animation_mode == GAVEUP || is_cur_player(loc)) {
@@ -1146,7 +1146,7 @@ update()
                                         toggle = 1 - toggle;
                                         tone(TONE_FREQ(110 + 100 * toggle,
                                                        160),
-                                             4, VOLUME, TONE_PULSE1);
+                                             4, VOLUME, TONE_PULSE2);
                                 } else if ((flags & MOVE_PUSH) != 0) {
                                         /*
                                          * when P is pushing something,
