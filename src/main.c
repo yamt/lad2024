@@ -9,6 +9,7 @@
 #include "rng.h"
 #include "route.h"
 #include "rule.h"
+#include "scores.h"
 #include "sprite.h"
 #include "util.h"
 #include "wasm4.h"
@@ -701,6 +702,8 @@ load_stage()
 
         mark_redraw_all();
         update_beam();
+
+        music_change(&score2);
 }
 
 static void

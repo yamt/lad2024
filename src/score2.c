@@ -106,6 +106,8 @@ const struct score score2 = {
                         GOTO(2),
                 ),
                 PART(1, TONE_PULSE2,
+                        DYN(DEFAULT_VOLUME / 3 * 2),
+
                         NOTE(C3, 4),
                         NOTE(G3, 4),
                         NOTE(E3, 4),

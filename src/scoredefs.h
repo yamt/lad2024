@@ -9,13 +9,18 @@ struct part {
         const struct note *notes;
 };
 
+#define MAX_PARTS 2
+
 struct score {
         unsigned int frames_per_measure;
         unsigned int nparts;
-        const struct part parts[2];
+        const struct part parts[MAX_PARTS];
 };
 
+#define DEFAULT_VOLUME 32
+
 #define NOTE_FLAG_GOTO 0x01
+#define NOTE_FLAG_DYN 0x02
 
 #define NOTE(n, s)                                                            \
         {                                                                     \
@@ -24,6 +29,10 @@ struct score {
 #define GOTO(n)                                                               \
         {                                                                     \
                 0, n, NOTE_FLAG_GOTO                                          \
+        }
+#define DYN(n)                                                                \
+        {                                                                     \
+                0, n, NOTE_FLAG_DYN                                           \
         }
 
 #define PART(part_no, channel_no, ...)                                        \
