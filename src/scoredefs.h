@@ -31,9 +31,9 @@ struct score {
         {                                                                     \
                 0, n, NOTE_FLAG_GOTO                                          \
         }
-#define GOTO_NTIMES(n,count)                                                               \
+#define GOTO_NTIMES(n, count)                                                 \
         {                                                                     \
-                count, n, NOTE_FLAG_NTIMES|NOTE_FLAG_GOTO                                          \
+                count, n, NOTE_FLAG_NTIMES | NOTE_FLAG_GOTO                   \
         }
 #define DYN(n)                                                                \
         {                                                                     \
@@ -84,4 +84,3 @@ enum note_number {
         A5SHARP,
         B5,
 };
-
