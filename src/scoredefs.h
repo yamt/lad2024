@@ -65,5 +65,18 @@ enum note_number {
         A4,
         A4SHARP,
         B4,
+
+        C5,
+        C5SHARP,
+        D5,
+        D5SHARP,
+        E5,
+        F5,
+        F5SHARP,
+        G5,
+        G5SHARP,
+        A5,
+        A5SHARP,
+        B5,
 };
 

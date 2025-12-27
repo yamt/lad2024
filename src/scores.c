@@ -3,10 +3,11 @@
 static const struct score *scores[] = {
 	&score1,
 	&score2,
+	&score3,
 };
 
 const struct score *
-pick_score(uint32_t index)
+pick_score(uint32_t idx)
 {
-	return scores[index % (sizeof(scores) / sizeof(scores[0]))];
+	return scores[idx % (sizeof(scores) / sizeof(scores[0]))];
 }
