@@ -2,6 +2,8 @@
 
 #include "scoredefs.h"
 
+/* "suteki" */
+
 /* clang-format off */
 
 const struct score score3 = {
