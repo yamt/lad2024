@@ -100,7 +100,8 @@ music_change(const struct score *score)
         if (curscore == NULL) {
                 // start_next_score();
                 /*
-                 * short delay to hide audio hiccup on startup
+                 * short delay to avoid the audio hiccup seen
+                 * on startup of wasm4 native runtime
                  */
                 start_fading();
                 master_volume = 8;
