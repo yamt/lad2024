@@ -62,7 +62,11 @@ next:
                         }
                         // tracef("tone %d %d", cur->num,
                         // state->curnote_nframes);
-                        tone((uint8_t)cur->num, state->curnote_nframes << 8,
+                        unsigned int a = 0;
+                        unsigned int d = 0;
+                        unsigned int s = state->curnote_nframes << 8;
+                        unsigned int r = 0;
+                        tone((uint8_t)cur->num, TONE_DURATION(a, d, s, r),
                              volume, part->channel | TONE_NOTE_MODE);
                 }
         }
