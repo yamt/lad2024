@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "wasm4.h"
+#include "wasm4util.h"
 
 #include "scoredefs.h"
 #include "scores.h"

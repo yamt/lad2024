@@ -412,7 +412,7 @@ draw_object(int x, int y, uint8_t objidx)
                                 dy = -(scale(jump[jump_ix2]) >> 3);
                                 if (jump_ix2 == 0) {
                                         tone(TONE_FREQ(110, 340),
-                                             TONE_DURATION(10, 15, 0, 0),
+                                             TONE_DURATION(0, 0, 10, 15),
                                              VOLUME, TONE_PULSE2);
                                 }
                         }
@@ -1072,7 +1072,7 @@ update()
                         } else if (dir == UP) {
                                 // trace("reset");
                                 tone(TONE_FREQ(440, 10),
-                                     TONE_DURATION(40, 8, 0, 0), 80,
+                                     TONE_DURATION(0, 0, 40, 8), 80,
                                      TONE_TRIANGLE);
                                 animation_mode = GAVEUP;
                                 animation_frame = 0;
@@ -1144,7 +1144,7 @@ update()
                                          * make it slow.
                                          */
                                         moving_speed = 1;
-                                        tone(270, TONE_DURATION(0, 0, 0, 4),
+                                        tone(270, TONE_DURATION(4, 0, 0, 0),
                                              TONE_VOLUME(VOLUME, VOLUME),
                                              TONE_NOISE);
                                         /*
@@ -1167,7 +1167,7 @@ update()
                                         tone(330, 1, VOLUME / 2, TONE_NOISE);
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
-                                        tone(400, TONE_DURATION(8, 30, 2, 0),
+                                        tone(400, TONE_DURATION(0, 2, 8, 30),
                                              TONE_VOLUME((VOLUME * 6 / 16),
                                                          VOLUME),
                                              TONE_NOISE);
