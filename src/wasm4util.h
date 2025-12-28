@@ -6,7 +6,7 @@
 #define TONE_NOTE_FREQ(note, bend) ((note) | ((bend) << 8))
 #define TONE_DURATION(attack, decay, sustain, release) \
         ((sustain) | ((release) << 8) | ((decay) << 16) | ((attack) << 24))
-#define TONE_VOLUME(sustain_volume, peak_volume)                              \
+#define TONE_VOLUME(peak_volume, sustain_volume)                              \
         ((sustain_volume) | ((peak_volume) << 8))
 #define TONE_FLAGS(channel, mode, pan, note)                                  \
         ((channel) | ((mode) << 2) | ((pan) << 4) | (note))

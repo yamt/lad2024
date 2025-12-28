@@ -1168,8 +1168,8 @@ update()
                                 }
                                 if ((flags & MOVE_GET_BOMB)) {
                                         tone(400, TONE_DURATION(0, 2, 8, 30),
-                                             TONE_VOLUME((VOLUME * 6 / 16),
-                                                         VOLUME),
+                                             TONE_VOLUME(VOLUME,
+                                                         (VOLUME * 6 / 16)),
                                              TONE_NOISE);
                                         explosion_animate_step = 1;
                                 }
