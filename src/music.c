@@ -20,6 +20,7 @@ struct part_state {
         unsigned int volume;
         unsigned int ntimes_count;
         unsigned int channel; /* channel and pan */
+        uint8_t tone;
 } part_state[MAX_PARTS];
 
 static void
@@ -28,6 +29,26 @@ part_init(struct part_state *state, const struct part *part)
         memset(state, 0, sizeof(*state));
         state->volume = DEFAULT_VOLUME;
         state->channel = part->channel;
+}
+
+static const struct tone {
+        uint8_t a;
+        uint8_t d;
+        uint8_t s;
+        uint8_t r;
+
+        /* volume */
+        uint8_t peak;
+        uint8_t sustain;
+} tones[] = {
+        {0, 255, 0, 0, 255, 0},
+        {128, 255, 128, 0, 255, 128},
+};
+
+unsigned int
+scale(unsigned int a, uint8_t b)
+{
+        return (a * (unsigned int)b) >> 8;
 }
 
 static void
@@ -61,6 +82,11 @@ next:
                         state->curnote_idx++;
                         goto next;
                 }
+                if (cur->type == NOTE_TYPE_TONE) {
+                        state->tone = (uint8_t)NOTE_VALUE(cur);
+                        state->curnote_idx++;
+                        goto next;
+                }
                 state->curnote_nframes =
                         score->frames_per_measure / cur->length;
                 if (!NOTE_IS_REST(cur) && master_volume > 0) {
@@ -73,12 +99,14 @@ next:
                         ASSERT(state->curnote_nframes <= 65535);
                         uint16_t len = (uint8_t)state->curnote_nframes;
 
-                        unsigned int a = 0;
-                        unsigned int d = len;
-                        unsigned int s = 0;
-                        unsigned int r = 0;
-                        unsigned int volume_peak = volume;
-                        unsigned int volume_sustain = 0;
+                        const struct tone *t = &tones[state->tone];
+                        unsigned int a = scale(len, t->a);
+                        unsigned int d = scale(len, t->d);
+                        unsigned int s = scale(len, t->s);
+                        unsigned int r = scale(len, t->r);
+                        unsigned int volume_peak = scale(volume, t->peak);
+                        unsigned int volume_sustain =
+                                scale(volume, t->sustain);
 
                         if (volume_peak == 0) {
                                 /*

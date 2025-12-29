@@ -42,6 +42,8 @@ const struct score score1 = {
 
                         GOTO_NTIMES(0, 1),
 
+                        SET_TONE(1),
+
                         NOTE(E4, 8),
                         NOTE(F4, 8),
                         NOTE(E4, 4),
@@ -97,6 +99,8 @@ const struct score score1 = {
                         NOTE(E4, 8),
                         NOTE(F4, 8),
                         NOTE(E4, 4),
+
+                        SET_TONE(0),
 
                         GOTO(0),
                 ),
