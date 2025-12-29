@@ -17,9 +17,9 @@ struct part_state {
         unsigned int curnote_idx;
         unsigned int curframe;
         unsigned int curnote_nframes;
-        unsigned int volume;
-        unsigned int ntimes_count;
-        unsigned int channel; /* channel and pan */
+        uint16_t ntimes_count;
+        uint16_t channel; /* channel and pan */
+        uint8_t volume;
         uint8_t tone;
 } part_state[MAX_PARTS];
 
@@ -73,12 +73,12 @@ next:
                         goto next;
                 }
                 if (cur->type == NOTE_TYPE_DYN) {
-                        state->volume = NOTE_VALUE(cur);
+                        state->volume = (uint8_t)NOTE_VALUE(cur);
                         state->curnote_idx++;
                         goto next;
                 }
                 if (cur->type == NOTE_TYPE_CHANNEL) {
-                        state->channel = NOTE_VALUE(cur);
+                        state->channel = (uint8_t)NOTE_VALUE(cur);
                         state->curnote_idx++;
                         goto next;
                 }

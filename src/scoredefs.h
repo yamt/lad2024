@@ -5,15 +5,15 @@ struct note {
 };
 
 struct part {
-        unsigned int channel;
+        uint8_t channel;
         const struct note *notes;
 };
 
 #define MAX_PARTS 2
 
 struct score {
-        unsigned int frames_per_measure;
-        unsigned int nparts;
+        uint8_t frames_per_measure;
+        uint8_t nparts;
         const struct part parts[MAX_PARTS];
 };
 
