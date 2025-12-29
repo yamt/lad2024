@@ -58,6 +58,10 @@ play_note(uint8_t num, uint8_t len, uint8_t volume, uint8_t channel,
 {
         ASSERT(volume <= 100);
 
+        /*
+         * REVISIT: probably it makes more sense to use constant values
+         * rather than scale values. eg. A, D for for some kind of tones.
+         */
         unsigned int a = scale(len, t->a);
         unsigned int d = scale(len, t->d);
         unsigned int s = scale(len, t->s);
