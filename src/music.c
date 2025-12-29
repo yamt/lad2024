@@ -35,37 +35,36 @@ part_update(const struct score *score, const struct part *part,
 next:
         if (state->curframe == 0) {
                 const struct note *cur = &part->notes[state->curnote_idx];
-                if ((cur->flags & NOTE_FLAG_NTIMES) != 0) {
-                        // tracef("ntimes %d/%d", state->ntimes_count,
-                        // cur->num);
-                        if (state->ntimes_count >= (unsigned int)cur->num) {
+                if (cur->type == NOTE_TYPE_NTIMES) {
+                        if (state->ntimes_count >= NOTE_VALUE(cur)) {
                                 state->ntimes_count = 0;
-                                state->curnote_idx++;
+                                state->curnote_idx += 2;
                                 goto next;
                         }
                         state->ntimes_count++;
-                }
-                if ((cur->flags & NOTE_FLAG_GOTO) != 0) {
-                        state->curnote_idx = cur->length;
+                        state->curnote_idx++;
                         goto next;
                 }
-                if ((cur->flags & NOTE_FLAG_DYN) != 0) {
-                        state->volume = cur->length;
+                if (cur->type == NOTE_TYPE_GOTO) {
+                        state->curnote_idx = NOTE_VALUE(cur);
+                        goto next;
+                }
+                if (cur->type == NOTE_TYPE_DYN) {
+                        state->volume = NOTE_VALUE(cur);
                         state->curnote_idx++;
                         goto next;
                 }
                 state->curnote_nframes =
                         score->frames_per_measure / cur->length;
-                if (cur->num != -1 && master_volume > 0) {
+                if (!NOTE_IS_REST(cur) && master_volume > 0) {
+                        uint8_t num = NOTE_NUM(cur);
+                        ASSERT(num <= 127);
                         unsigned int volume = state->volume;
                         if (master_volume < 256) {
                                 volume = (volume * master_volume) >> 8;
                         }
                         ASSERT(state->curnote_nframes <= 65535);
-                        ASSERT(cur->num >= 0);
-                        ASSERT(cur->num <= 127);
                         uint16_t len = (uint8_t)state->curnote_nframes;
-                        uint8_t num = (uint8_t)cur->num;
 
                         unsigned int a = 0;
                         unsigned int d = len;

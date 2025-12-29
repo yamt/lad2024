@@ -1,7 +1,7 @@
 struct note {
-        int8_t num; /* midi note number (0-127), or rest (-1) */
-        uint8_t length;
-        uint8_t flags;
+        uint8_t num;        /* midi note number (0-127), or rest (-1) */
+        uint8_t length : 5; /* 0-31 */
+        uint8_t type : 3;
 };
 
 struct part {
@@ -19,26 +19,31 @@ struct score {
 
 #define DEFAULT_VOLUME 24
 
-#define NOTE_FLAG_GOTO 0x01
-#define NOTE_FLAG_DYN 0x02
-#define NOTE_FLAG_NTIMES 0x04
+#define NOTE_TYPE_GOTO 0x01
+#define NOTE_TYPE_DYN 0x02
+#define NOTE_TYPE_NTIMES 0x03
+
+/* get a 13-bit value (0-8191) */
+#define NOTE_VALUE(n) (((uint32_t)(n)->length << 8) | (n)->num)
+#define NOTE_HIGH(v) ((v) >> 8)
+#define NOTE_LOW(v) ((v)&0xff)
+
+#define NOTE_IS_REST(n) ((n)->num == (uint8_t)-1)
+#define NOTE_NUM(n) ((n)->num)
+#define NOTE_DEST(n) ((int8_t)(n)->num)
 
 #define NOTE(n, s)                                                            \
         {                                                                     \
-                n, s, 0                                                       \
+                (uint8_t) n, s, 0                                             \
         }
-#define GOTO(n)                                                               \
+#define NOTE_SPECIAL(t, n)                                                    \
         {                                                                     \
-                0, n, NOTE_FLAG_GOTO                                          \
+                NOTE_LOW(n), NOTE_HIGH(n), t,                                 \
         }
-#define GOTO_NTIMES(n, count)                                                 \
-        {                                                                     \
-                count, n, NOTE_FLAG_NTIMES | NOTE_FLAG_GOTO                   \
-        }
-#define DYN(n)                                                                \
-        {                                                                     \
-                0, n, NOTE_FLAG_DYN                                           \
-        }
+#define GOTO(n) NOTE_SPECIAL(NOTE_TYPE_GOTO, n)
+#define NTIMES(n) NOTE_SPECIAL(NOTE_TYPE_NTIMES, n)
+#define GOTO_NTIMES(n, count) NTIMES(count), GOTO(n)
+#define DYN(n) NOTE_SPECIAL(NOTE_TYPE_DYN, n)
 
 #define PART(part_no, channel_no, ...)                                        \
         [part_no] = {.channel = channel_no,                                   \
