@@ -43,7 +43,7 @@ static const struct tone {
         uint8_t sustain;
 } tones[] = {
         {0, 255, 0, 0, 255, 0},
-        {128, 255, 128, 0, 255, 128},
+        {128, 128, 0, 128, 255, 128},
 };
 
 static unsigned int
