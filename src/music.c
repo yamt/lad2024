@@ -19,13 +19,15 @@ struct part_state {
         unsigned int curnote_nframes;
         unsigned int volume;
         unsigned int ntimes_count;
+        unsigned int channel; /* channel and pan */
 } part_state[MAX_PARTS];
 
 static void
-part_init(struct part_state *state)
+part_init(struct part_state *state, const struct part *part)
 {
         memset(state, 0, sizeof(*state));
         state->volume = DEFAULT_VOLUME;
+        state->channel = part->channel;
 }
 
 static void
@@ -51,6 +53,11 @@ next:
                 }
                 if (cur->type == NOTE_TYPE_DYN) {
                         state->volume = NOTE_VALUE(cur);
+                        state->curnote_idx++;
+                        goto next;
+                }
+                if (cur->type == NOTE_TYPE_CHANNEL) {
+                        state->channel = NOTE_VALUE(cur);
                         state->curnote_idx++;
                         goto next;
                 }
@@ -93,7 +100,7 @@ next:
                         ASSERT(volume_sustain < 100);
                         tone(num, TONE_DURATION(a, d, s, r),
                              TONE_VOLUME(volume_peak, volume_sustain),
-                             part->channel | TONE_NOTE_MODE);
+                             state->channel | TONE_NOTE_MODE);
                 }
         }
 
@@ -108,8 +115,8 @@ static void
 start_next_score(void)
 {
         unsigned int i;
-        for (i = 0; i < MAX_PARTS; i++) {
-                part_init(&part_state[i]);
+        for (i = 0; i < nextscore->nparts; i++) {
+                part_init(&part_state[i], &nextscore->parts[i]);
         }
         master_volume = 255;
         curscore = nextscore;

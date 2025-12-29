@@ -22,17 +22,23 @@ const struct score score1 = {
                         NOTE(G3, 4),
                         NOTE(-1, 4),
 
+                        SET_CHANNEL(TONE_PULSE1|TONE_PAN_LEFT),
                         NOTE(C4, 4),
                         NOTE(C4, 4),
+                        SET_CHANNEL(TONE_PULSE1|TONE_PAN_RIGHT),
                         NOTE(G3, 8),
                         NOTE(G3, 8),
                         NOTE(G3, 4),
 
+                        SET_CHANNEL(TONE_PULSE1|TONE_PAN_LEFT),
                         NOTE(C4, 4),
+                        SET_CHANNEL(TONE_PULSE1|TONE_PAN_RIGHT),
                         NOTE(C4, 8),
                         NOTE(C4, 8),
                         NOTE(G3, 4),
                         NOTE(-1, 4),
+
+                        SET_CHANNEL(TONE_PULSE1),
 
                         GOTO_NTIMES(0, 1),
 
@@ -99,17 +105,23 @@ const struct score score1 = {
 
                         NOTE(-1, 1),
 
+                        SET_CHANNEL(TONE_PULSE2|TONE_PAN_LEFT),
                         NOTE(A3, 4),
                         NOTE(A3, 4),
+                        SET_CHANNEL(TONE_PULSE2|TONE_PAN_RIGHT),
                         NOTE(E3, 8),
                         NOTE(E3, 8),
                         NOTE(E3, 4),
 
+                        SET_CHANNEL(TONE_PULSE2|TONE_PAN_LEFT),
                         NOTE(A3, 4),
+                        SET_CHANNEL(TONE_PULSE2|TONE_PAN_RIGHT),
                         NOTE(A3, 8),
                         NOTE(A3, 8),
                         NOTE(E3, 4),
                         NOTE(-1, 4),
+
+                        SET_CHANNEL(TONE_PULSE2),
 
                         GOTO_NTIMES(0, 1),
 

@@ -22,6 +22,7 @@ struct score {
 #define NOTE_TYPE_GOTO 0x01
 #define NOTE_TYPE_DYN 0x02
 #define NOTE_TYPE_NTIMES 0x03
+#define NOTE_TYPE_CHANNEL 0x04
 
 /* get a 13-bit value (0-8191) */
 #define NOTE_VALUE(n) (((uint32_t)(n)->length << 8) | (n)->num)
@@ -44,6 +45,7 @@ struct score {
 #define NTIMES(n) NOTE_SPECIAL(NOTE_TYPE_NTIMES, n)
 #define GOTO_NTIMES(n, count) NTIMES(count), GOTO(n)
 #define DYN(n) NOTE_SPECIAL(NOTE_TYPE_DYN, n)
+#define SET_CHANNEL(n) NOTE_SPECIAL(NOTE_TYPE_CHANNEL, n)
 
 #define PART(part_no, channel_no, ...)                                        \
         [part_no] = {.channel = channel_no,                                   \
