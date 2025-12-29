@@ -15,12 +15,12 @@ static bool fading;
 
 struct part_state {
         unsigned int curnote_idx;
-        unsigned int curframe;
-        uint16_t channel; /* channel, mode, pan */
+        uint8_t curframe;
         uint8_t curnote_nframes;
-        uint8_t ntimes_count;
+        uint8_t channel; /* channel, mode, pan */
         uint8_t volume;
         uint8_t tone;
+        uint8_t ntimes_count;
 } part_state[MAX_PARTS];
 
 static void
@@ -53,7 +53,7 @@ scale(unsigned int a, uint8_t b)
 }
 
 static void
-play_note(uint8_t num, uint8_t len, uint8_t volume, uint16_t channel,
+play_note(uint8_t num, uint8_t len, uint8_t volume, uint8_t channel,
           const struct tone *t)
 {
         ASSERT(volume <= 100);
