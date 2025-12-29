@@ -10,15 +10,15 @@
 
 static const struct score *curscore;
 static const struct score *nextscore;
-static unsigned int master_volume; /* 0-255 */
+static uint8_t master_volume; /* 0-255 */
 static bool fading;
 
 struct part_state {
         unsigned int curnote_idx;
         unsigned int curframe;
-        unsigned int curnote_nframes;
-        uint16_t ntimes_count;
         uint16_t channel; /* channel, mode, pan */
+        uint8_t curnote_nframes;
+        uint8_t ntimes_count;
         uint8_t volume;
         uint8_t tone;
 } part_state[MAX_PARTS];
@@ -46,10 +46,45 @@ static const struct tone {
         {128, 255, 128, 0, 255, 128},
 };
 
-unsigned int
+static unsigned int
 scale(unsigned int a, uint8_t b)
 {
         return (a * (unsigned int)b) >> 8;
+}
+
+static void
+play_note(uint8_t num, uint8_t len, uint8_t volume, uint16_t channel,
+          const struct tone *t)
+{
+        ASSERT(volume <= 100);
+
+        unsigned int a = scale(len, t->a);
+        unsigned int d = scale(len, t->d);
+        unsigned int s = scale(len, t->s);
+        unsigned int r = scale(len, t->r);
+        unsigned int volume_peak = scale(volume, t->peak);
+        unsigned int volume_sustain = scale(volume, t->sustain);
+
+        if (volume_peak == 0) {
+                /*
+                 * wasm4 tone() api takes peak=0 as peak=100,
+                 * which is not our intention.
+                 */
+                volume_peak = 1;
+        }
+
+        tracef("num %d len %d (a %d d %d s %d r %d) volume %d "
+               "(peak %d sustain %d)",
+               num, len, a, d, s, r, volume, volume_peak, volume_sustain);
+        ASSERT(a < 256);
+        ASSERT(d < 256);
+        ASSERT(s < 256);
+        ASSERT(r < 256);
+        ASSERT(volume_peak < 100);
+        ASSERT(volume_sustain < 100);
+        tone(num, TONE_DURATION(a, d, s, r),
+             TONE_VOLUME(volume_peak, volume_sustain),
+             channel | TONE_NOTE_MODE);
 }
 
 static void
@@ -93,43 +128,11 @@ next:
                 if (!NOTE_IS_REST(cur) && master_volume > 0) {
                         uint8_t num = NOTE_NUM(cur);
                         ASSERT(num <= 127);
-                        unsigned int volume = state->volume;
-                        if (master_volume < 256) {
-                                volume = (volume * master_volume) >> 8;
-                        }
-                        ASSERT(state->curnote_nframes <= 65535);
-                        uint16_t len = (uint8_t)state->curnote_nframes;
-
+                        uint8_t volume =
+                                (uint8_t)scale(state->volume, master_volume);
                         const struct tone *t = &tones[state->tone];
-                        unsigned int a = scale(len, t->a);
-                        unsigned int d = scale(len, t->d);
-                        unsigned int s = scale(len, t->s);
-                        unsigned int r = scale(len, t->r);
-                        unsigned int volume_peak = scale(volume, t->peak);
-                        unsigned int volume_sustain =
-                                scale(volume, t->sustain);
-
-                        if (volume_peak == 0) {
-                                /*
-                                 * wasm4 tone() api takes peak=0 as peak=100,
-                                 * which is not our intention.
-                                 */
-                                volume_peak = 1;
-                        }
-
-                        tracef("num %d len %d (a %d d %d s %d r %d) volume %d "
-                               "(peak %d sustain %d)",
-                               num, len, a, d, s, r, volume, volume_peak,
-                               volume_sustain);
-                        ASSERT(a < 256);
-                        ASSERT(d < 256);
-                        ASSERT(s < 256);
-                        ASSERT(r < 256);
-                        ASSERT(volume_peak < 100);
-                        ASSERT(volume_sustain < 100);
-                        tone(num, TONE_DURATION(a, d, s, r),
-                             TONE_VOLUME(volume_peak, volume_sustain),
-                             state->channel | TONE_NOTE_MODE);
+                        play_note(num, state->curnote_nframes, volume,
+                                  state->channel, t);
                 }
         }
 
