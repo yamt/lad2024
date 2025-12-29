@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "util.h"
 #include "wasm4.h"
 #include "wasm4util.h"
 
@@ -9,7 +10,7 @@
 
 static const struct score *curscore;
 static const struct score *nextscore;
-static unsigned int master_volume;
+static unsigned int master_volume; /* 0-255 */
 static bool fading;
 
 struct part_state {
@@ -55,19 +56,45 @@ next:
                 }
                 state->curnote_nframes =
                         score->frames_per_measure / cur->length;
-                if (cur->num != -1) {
+                if (cur->num != -1 && master_volume > 0) {
                         unsigned int volume = state->volume;
-                        if (master_volume != 256) {
+                        if (master_volume < 256) {
                                 volume = (volume * master_volume) >> 8;
                         }
-                        // tracef("tone %d %d", cur->num,
-                        // state->curnote_nframes);
+                        ASSERT(state->curnote_nframes <= 65535);
+                        ASSERT(cur->num >= 0);
+                        ASSERT(cur->num <= 127);
+                        uint16_t len = (uint8_t)state->curnote_nframes;
+                        uint8_t num = (uint8_t)cur->num;
+
                         unsigned int a = 0;
-                        unsigned int d = 0;
-                        unsigned int s = state->curnote_nframes << 8;
+                        unsigned int d = len;
+                        unsigned int s = 0;
                         unsigned int r = 0;
-                        tone((uint8_t)cur->num, TONE_DURATION(a, d, s, r),
-                             volume, part->channel | TONE_NOTE_MODE);
+                        unsigned int volume_peak = volume;
+                        unsigned int volume_sustain = 0;
+
+                        if (volume_peak == 0) {
+                                /*
+                                 * wasm4 tone() api takes peak=0 as peak=100,
+                                 * which is not our intention.
+                                 */
+                                volume_peak = 1;
+                        }
+
+                        tracef("num %d len %d (a %d d %d s %d r %d) volume %d "
+                               "(peak %d sustain %d)",
+                               num, len, a, d, s, r, volume, volume_peak,
+                               volume_sustain);
+                        ASSERT(a < 256);
+                        ASSERT(d < 256);
+                        ASSERT(s < 256);
+                        ASSERT(r < 256);
+                        ASSERT(volume_peak < 100);
+                        ASSERT(volume_sustain < 100);
+                        tone(num, TONE_DURATION(a, d, s, r),
+                             TONE_VOLUME(volume_peak, volume_sustain),
+                             part->channel | TONE_NOTE_MODE);
                 }
         }
 
@@ -103,12 +130,11 @@ music_change(const struct score *score)
         }
         nextscore = score;
         if (curscore == NULL) {
-                // start_next_score();
+                start_fading();
                 /*
                  * short delay to avoid the audio hiccup seen
                  * on startup of wasm4 native runtime
                  */
-                start_fading();
                 master_volume = 8;
         } else {
                 start_fading();
