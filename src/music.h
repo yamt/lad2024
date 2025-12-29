@@ -4,7 +4,7 @@ struct score;
  * change the score to play.
  *
  * if another score is being played right now, fade it out first
- * (which takes 100 frames) and then start the new score.
+ * (which takes 255 frames) and then start the new score.
  *
  * specify NULL to stop playing.
  */
