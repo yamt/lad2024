@@ -12,7 +12,7 @@ const struct score score4 = {
         .frames_per_measure = 72,
         .nparts = 2,
         .parts = {
-                PART(0, TONE_PULSE1, 0,
+                PART(0, TONE_PULSE1, 1,
 
                         /* 1 */
 
@@ -103,7 +103,7 @@ const struct score score4 = {
 
                         GOTO(20), /* jump to 7 */
                 ),
-                PART(1, TONE_PULSE2, 0,
+                PART(1, TONE_PULSE2, 1,
 
                         /* 1 */
 
@@ -134,6 +134,7 @@ const struct score score4 = {
                         /* 10 */
 
                         DYN(DEFAULT_VOLUME / 3 * 2),
+                        SET_TONE(0),
 
                         NOTE(A3, 4),
                         NOTE(C4, 4),
@@ -177,6 +178,7 @@ const struct score score4 = {
                         NOTE(E3, 4),
                         NOTE(G3, 4),
 
+                        SET_TONE(1),
                         GOTO_NTIMES(12, 7), /* jump to 10, repeat 8 times */
 
                         /* 18 */
