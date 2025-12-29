@@ -697,8 +697,8 @@ load_stage()
 static void
 validate_state(void)
 {
-        ASSERT(state.cur_stage < nstages);
-        ASSERT(state.cleared_stages <= nstages);
+        CHECK(state.cur_stage < nstages);
+        CHECK(state.cleared_stages <= nstages);
         unsigned int n = 0;
         unsigned int i;
         for (i = 0; i < max_stages; i++) {
@@ -706,7 +706,7 @@ validate_state(void)
                         n++;
                 }
         }
-        ASSERT(state.cleared_stages == n);
+        CHECK(state.cleared_stages == n);
 }
 
 void
@@ -723,11 +723,11 @@ load_state()
                  */
                 unsigned int i;
                 for (i = 0; i < sizeof(state); i++) {
-                        ASSERT(((const uint8_t *)&state)[i] == 0);
+                        CHECK(((const uint8_t *)&state)[i] == 0);
                 }
                 return;
         }
-        ASSERT(state.version > 0 && state.version <= save_data_version);
+        CHECK(state.version > 0 && state.version <= save_data_version);
         validate_state();
         if (state.version != save_data_version) {
                 memset(&state, 0, sizeof(state));
