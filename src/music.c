@@ -29,6 +29,7 @@ part_init(struct part_state *state, const struct part *part)
         memset(state, 0, sizeof(*state));
         state->volume = DEFAULT_VOLUME;
         state->channel = part->channel;
+        state->tone = part->tone;
 }
 
 static const struct tone {

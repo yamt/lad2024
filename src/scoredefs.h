@@ -6,6 +6,7 @@ struct note {
 
 struct part {
         uint8_t channel;
+        uint8_t tone;
         const struct note *notes;
 };
 
@@ -49,8 +50,9 @@ struct score {
 #define SET_CHANNEL(n) NOTE_SPECIAL(NOTE_TYPE_CHANNEL, n)
 #define SET_TONE(n) NOTE_SPECIAL(NOTE_TYPE_TONE, n)
 
-#define PART(part_no, channel_no, ...)                                        \
+#define PART(part_no, channel_no, toneidx, ...)                               \
         [part_no] = {.channel = channel_no,                                   \
+                     .tone = toneidx,                                         \
                      .notes = (const struct note[]){__VA_ARGS__}}
 
 enum note_number {

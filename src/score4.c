@@ -12,7 +12,7 @@ const struct score score4 = {
         .frames_per_measure = 72,
         .nparts = 2,
         .parts = {
-                PART(0, TONE_PULSE1,
+                PART(0, TONE_PULSE1, 0,
 
                         /* 1 */
 
@@ -103,7 +103,7 @@ const struct score score4 = {
 
                         GOTO(20), /* jump to 7 */
                 ),
-                PART(1, TONE_PULSE2,
+                PART(1, TONE_PULSE2, 0,
 
                         /* 1 */
 

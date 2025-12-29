@@ -13,7 +13,7 @@ const struct score score2 = {
         .nparts = 2,
         /* clang-format off */
         .parts = {
-                PART(0, TONE_PULSE1,
+                PART(0, TONE_PULSE1, 0,
                         NOTE(-1, 1),
 
                         NOTE(-1, 1),
@@ -83,7 +83,7 @@ const struct score score2 = {
                         NOTE(F4, 4),
                         GOTO(2),
                 ),
-                PART(1, TONE_PULSE2,
+                PART(1, TONE_PULSE2, 0,
                         DYN(DEFAULT_VOLUME / 3 * 2),
 
                         NOTE(C3, 4),
