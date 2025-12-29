@@ -34,7 +34,7 @@ struct score {
 
 #define NOTE(n, s)                                                            \
         {                                                                     \
-                (uint8_t) n, s, 0                                             \
+                (uint8_t) n, s, 0,                                            \
         }
 #define NOTE_SPECIAL(t, n)                                                    \
         {                                                                     \
