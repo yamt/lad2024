@@ -18,7 +18,7 @@ struct part_state {
         unsigned int curframe;
         unsigned int curnote_nframes;
         uint16_t ntimes_count;
-        uint16_t channel; /* channel and pan */
+        uint16_t channel; /* channel, mode, pan */
         uint8_t volume;
         uint8_t tone;
 } part_state[MAX_PARTS];
