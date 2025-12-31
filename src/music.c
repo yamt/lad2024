@@ -78,9 +78,11 @@ play_note(uint8_t num, uint8_t len, uint8_t volume, uint8_t channel,
                 volume_peak = 1;
         }
 
+#if 0
         tracef("num %d len %d (a %d d %d s %d r %d) volume %d "
                "(peak %d sustain %d)",
                num, len, a, d, s, r, volume, volume_peak, volume_sustain);
+#endif
         ASSERT(a < 256);
         ASSERT(d < 256);
         ASSERT(s < 256);
