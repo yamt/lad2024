@@ -56,6 +56,7 @@ static void
 play_note(uint8_t num, uint8_t len, uint8_t volume, uint8_t channel,
           const struct tone *t)
 {
+        ASSERT(0 <= num && num <= 127);
         ASSERT(volume <= 100);
 
         /*
