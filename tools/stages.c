@@ -19,8 +19,9 @@ const struct stage stages[] = {
             END,
         },
         .message =
-        "  " C_COPYRIGHT "1994,2024,2025\n"
-        "  YAMAMOTO Takashi\n"
+        C_COPYRIGHT "1994,2024,2025,2026\n"
+        " YAMAMOTO Takashi\n"
+        " All rights reserved.\n"
         "\n"
         "Move "C_A" with \x84\x85\x86\x87 and\n"
         "collect all the "C_X" to\n"
