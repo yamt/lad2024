@@ -52,17 +52,17 @@ The game progress is automatically saved and restored.
 In 1994, I've written [the original version] of this game.
 It was in x86 assembler for the NEC PC-9800 series.
 
-In 2024, I found it in one of the unlabelled MO disks that
+In 2024, I found it in one of the unlabelled MO disks [^1] that
 came out from the back of the shelf and ported it to
 the [WASM-4] fantasy console.
 
-BTW, these MO disks were perfectly readable after thirty years.
+[^1]: These MO disks were perfectly readable after thirty years.
 I only had to purchase an used MO drive with USB interface
 because I no longer had a working SCSI setup. Thirty years ago,
 I never imagined 50-pin SCSI would disappear. Luckily, as MO drives
 were somehow popular here in Japan, a lot of used MO drives in a good
-condition are still available. Note: For some reason, MO were far more
-popular than ZIP in Japan.
+condition are still available. For some reason, MO drives were
+far more popular than ZIP in Japan.
 
 [the original version]: https://github.com/yamt/lad1994
 
