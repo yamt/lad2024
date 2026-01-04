@@ -11,7 +11,7 @@
 static bool
 is_leaf(const struct hufftree *tree, const struct hnode *n)
 {
-        return n - tree->nodes < 256;
+        return n - tree->nodes < HUFF_NSYMS;
 }
 
 static uint8_t
@@ -55,12 +55,12 @@ cmp_node(const void *a, const void *b)
 static void
 build_tree(struct hufftree *tree)
 {
-        struct hnode *nodes[256];
+        struct hnode *nodes[HUFF_NSYMS];
         unsigned int i;
-        for (i = 0; i < 256; i++) {
+        for (i = 0; i < HUFF_NSYMS; i++) {
                 nodes[i] = &tree->nodes[i];
         }
-        for (i = 0; i < 256 - 1; i++) {
+        for (i = 0; i < HUFF_NSYMS - 1; i++) {
                 /*
                  * REVISIT: it would be more efficient to use a priority queue.
                  */
@@ -68,12 +68,12 @@ build_tree(struct hufftree *tree)
                 /*
                  * the number of valid elements in 'nodes'.
                  */
-                const unsigned int n = 256 - i;
+                const unsigned int n = HUFF_NSYMS - i;
                 /*
                  * pick the two nodes with the smallest count.
                  */
                 qsort(nodes, n, sizeof(*nodes), cmp_node);
-                struct hnode *inner = &tree->nodes[256 + i];
+                struct hnode *inner = &tree->nodes[HUFF_NSYMS + i];
                 struct hnode *na = nodes[n - 2];
                 struct hnode *nb = nodes[n - 1];
                 /*
@@ -94,7 +94,7 @@ static void
 finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
             uint8_t *bits)
 {
-        assert(nbits <= 256);
+        assert(nbits <= HUFF_NSYMS);
         if (n->count == 0) {
                 return;
         }
@@ -118,7 +118,7 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
 }
 
 /* this is a macro because it's used for both of const/non-const trees */
-#define root_node(tree) (&(tree)->nodes[256 * 2 - 2])
+#define root_node(tree) (&(tree)->nodes[HUFF_NSYMS * 2 - 2])
 
 static void
 finish_tree(struct hufftree *tree)
@@ -129,7 +129,7 @@ finish_tree(struct hufftree *tree)
          * note: leaf nodes with count==0 are left uninitialized.
          * (thus u.leaf.encoded_bits==0)
          */
-        uint8_t bits[256 / 8];
+        uint8_t bits[HOWMANY(HUFF_NSYMS, 8)];
         memset(bits, 0, sizeof(bits));
         finish_node(tree, root_node(tree), 0, bits);
 }
@@ -157,7 +157,7 @@ huff_encode_byte(const struct hufftree *tree, uint8_t c, uint16_t *nbitsp)
         const uint8_t *bits = n->u.leaf.encoded_bits;
         uint16_t nbits = n->u.leaf.encoded_nbits;
         assert(nbits > 0);
-        assert(nbits <= 256);
+        assert(nbits <= HUFF_NSYMS);
         *nbitsp = nbits;
         return bits;
 }
@@ -193,7 +193,7 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
  *
  * a table is an array of 3-byte entries.
  * an entry describes an inner or root node.
- * (thus a table has up to 255 nodes)
+ * (thus a table has up to HUFF_NSYMS-1 nodes)
  * the entry for the root node is of the index 0. (the first one)
  *
  * an entry is:
@@ -218,7 +218,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
         if (n->count == 0) {
                 goto done;
         }
-        const struct hnode *nodes[255];
+        const struct hnode *nodes[HUFF_NSYMS - 1];
         unsigned int prod = 0;
         unsigned int cons = 0;
         nodes[prod++] = n;
@@ -241,7 +241,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                                 entry_size = 2;
                         } else {
                                 v[i + 1] = prod;
-                                assert(prod < 255);
+                                assert(prod < HUFF_NSYMS - 1);
                                 nodes[prod++] = cn;
                         }
                 }

@@ -16,16 +16,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define HUFF_NSYMS 256
+#define HOWMANY(a, b) (((a) + (b)-1) / (b))
+
 struct hnode {
         size_t count;
         union {
                 struct leaf {
                         /*
-                         * theoretical limit of nbits is 256.
+                         * theoretical limit of nbits is HUFF_NSYMS.
                          * consider a degenerated tree.
                          */
                         uint16_t encoded_nbits;
-                        uint8_t encoded_bits[256 / 8];
+                        uint8_t encoded_bits[HOWMANY(HUFF_NSYMS, 8)];
                 } leaf;
                 struct inner {
                         struct hnode *children[2];
@@ -35,15 +38,15 @@ struct hnode {
 
 struct hufftree {
         /*
-         * 256 leaf nodes
-         * 255 inner nodes
+         * HUFF_NSYMS leaf nodes
+         * HUFF_NSYMS-1 inner nodes
          * the last inner node is the root node
          *
-         * [0]..[255]           - leaf nodes
-         * [256]..[256 * 2 - 3] - inner nodes
-         * [256 * 2 - 2]        - root node
+         * [0]..[HUFF_NSYMS-1]                 - leaf nodes
+         * [HUFF_NSYMS]..[HUFF_NSYMS * 2 - 3]  - inner nodes
+         * [HUFF_NSYMS * 2 - 2]                - root node
          */
-        struct hnode nodes[256 * 2 - 1];
+        struct hnode nodes[HUFF_NSYMS * 2 - 1];
 };
 
 /*
@@ -71,5 +74,5 @@ const uint8_t *huff_encode_byte(const struct hufftree *tree, uint8_t c,
 /*
  * serialize the tree for the decoder. (huff_decode.c)
  */
-#define HUFF_TABLE_SIZE_MAX (255 * 3)
+#define HUFF_TABLE_SIZE_MAX ((HUFF_NSYMS - 1) * 3)
 void huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp);
