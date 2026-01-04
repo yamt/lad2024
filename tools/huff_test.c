@@ -86,7 +86,7 @@ main(void)
         huff_decode_init(&dec, encbuf);
         size_t i;
         for (i = 0; i < inputsize; i++) {
-                uint8_t actual = huff_decode_byte(&dec, htable);
+                uint8_t actual = huff_decode_sym(&dec, htable);
                 uint8_t expected = input[i];
                 if (actual != expected) {
                         printf("unexpected data at offset %zu, expected %02x, "

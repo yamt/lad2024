@@ -122,7 +122,7 @@ main(int argc, char **argv)
                 uint8_t decoded[data_size];
                 uint8_t chuff_ctx = 0;
                 for (j = 0; j < data_size; j++) {
-                        decoded[j] = chuff_ctx = huff_decode_byte(
+                        decoded[j] = chuff_ctx = huff_decode_sym(
                                 &dctx, ctx.hufftables[chuff_ctx]);
                 }
                 assert(!memcmp(data, decoded, data_size));

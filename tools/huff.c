@@ -165,7 +165,7 @@ huff_build(struct hufftree *tree)
 }
 
 const uint8_t *
-huff_encode_byte(const struct hufftree *tree, uint8_t c, uint16_t *nbitsp)
+huff_encode_sym(const struct hufftree *tree, huff_sym_t c, uint16_t *nbitsp)
 {
         const struct hnode *n = &tree->nodes[c];
         assert(n->count > 0); /* "c" hasn't fed into huff_update? */
@@ -196,7 +196,7 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         bitbuf_init(&os);
         while (cp < ep) {
                 uint16_t nbits;
-                const uint8_t *bits = huff_encode_byte(tree, *cp++, &nbits);
+                const uint8_t *bits = huff_encode_sym(tree, *cp++, &nbits);
                 bitbuf_write(&os, &outp, bits, nbits);
         }
         bitbuf_flush(&os, &outp);

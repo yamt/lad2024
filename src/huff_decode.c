@@ -23,8 +23,8 @@ huff_get_raw_bit(struct huff_decode_context *ctx)
         return bit;
 }
 
-uint8_t
-huff_decode_byte(struct huff_decode_context *ctx, const uint8_t *table)
+huff_sym_t
+huff_decode_sym(struct huff_decode_context *ctx, const uint8_t *table)
 {
         const uint8_t *entry = table;
         while (true) {
