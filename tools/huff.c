@@ -15,7 +15,7 @@ is_leaf(const struct hufftree *tree, const struct hnode *n)
         return n - tree->nodes < HUFF_NSYMS;
 }
 
-static uint8_t
+static huff_sym_t
 leaf_value(const struct hufftree *tree, const struct hnode *n)
 {
         assert(is_leaf(tree, n));
@@ -220,12 +220,13 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
  *
  * an entry is:
  *   byte 0:
- *     bit 0    if 1, byte 1 of this entry is a leaf value.
+ *     bit 0    if 1, the first child of this entry is a leaf value.
  *              otherwise, it's a child node index.
- *     bit 1    ditto for byte 2.
- *     bit 2-7  unused. must be zero.
- *   byte 1: child node index or leaf value (for encoded bit 0)
- *   byte 2: child node index or leaf value (for encoded bit 1)
+ *     bit 1-3  upper 3 bits for the first child
+ *     bit 4    ditto for the second child
+ *     bit 5-7  ditto for the second child
+ *   byte 1: the first child node index or leaf value (for encoded bit 0)
+ *   byte 2: the second child node index or leaf value (for encoded bit 1)
  *
  * note: byte 2 of the last entry is omitted if the count of the
  * corresponding node is 0. it's safe because the decoder logic
@@ -255,8 +256,14 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                 for (i = 0; i < 2; i++) {
                         struct hnode *cn = n->u.inner.children[i];
                         if (is_leaf(tree, cn)) {
-                                flags |= 1 << i;
-                                v[i + 1] = leaf_value(tree, cn);
+                                huff_sym_t sym = leaf_value(tree, cn);
+#if HUFF_SYM_BITS > 8
+                                uint8_t sym_upper = sym >> 8;
+#else
+                                uint8_t sym_upper = 0;
+#endif
+                                flags |= ((sym_upper << 1) | 1) << (i * 4);
+                                v[i + 1] = sym;
                         } else if (cn->count == 0) {
                                 assert(i == 1);
                                 assert(cons == prod);
