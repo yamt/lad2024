@@ -44,13 +44,28 @@ cmp_node(const void *a, const void *b)
 {
         struct hnode *na = *(struct hnode **)a;
         struct hnode *nb = *(struct hnode **)b;
+        assert(na != nb);
         if (na->count < nb->count) {
                 return 1;
         }
         if (na->count > nb->count) {
                 return -1;
         }
-        return 0;
+        /*
+         * tie-breaking rule
+         *
+         * consider leaf nodes smaller than inner nodes to minimize
+         * the length of the longest code.
+         *
+         * note: leaf nodes have smaller pointer values than inner nodes.
+         * see the comment in struct hufftree.
+         *
+         * this also makes the encoding stable.
+         */
+        if (na < nb) {
+                return 1;
+        }
+        return -1;
 }
 
 static void
