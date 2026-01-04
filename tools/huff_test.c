@@ -49,7 +49,7 @@ main(void)
         {
                 printf("encoded bits for each values:\n");
                 unsigned int i;
-                for (i = 0; i < 256; i++) {
+                for (i = 0; i < HUFF_NSYMS; i++) {
                         const struct hnode *n = &t.nodes[i];
                         uint16_t nbits = n->u.leaf.encoded_nbits;
                         if (nbits == 0) {
