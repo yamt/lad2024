@@ -57,6 +57,7 @@ struct hufftree {
  * 3. call huff_build to finalize the tree
  */
 void huff_init(struct hufftree *tree);
+void huff_update_sym(struct hufftree *tree, huff_sym_t sym);
 void huff_update(struct hufftree *tree, const uint8_t *p, size_t len);
 void huff_build(struct hufftree *tree);
 

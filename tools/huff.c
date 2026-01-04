@@ -28,14 +28,20 @@ init_leaf_nodes(struct hufftree *tree)
 }
 
 void
+huff_update_sym(struct hufftree *tree, huff_sym_t sym)
+{
+        struct hnode *n = &tree->nodes[sym];
+        n->count++;
+}
+
+void
 huff_update(struct hufftree *tree, const uint8_t *p, size_t len)
 {
         const uint8_t *cp = p;
         const uint8_t *ep = cp + len;
         while (cp < ep) {
                 uint8_t u = *cp++;
-                struct hnode *n = &tree->nodes[u];
-                n->count++;
+                huff_update_sym(tree, u);
         }
 }
 
