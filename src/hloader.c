@@ -1,9 +1,9 @@
 #include <string.h>
 
+#include "chuff_decode.h"
 #include "defs.h"
 #include "hloader.h"
 #include "hstages.h"
-#include "chuff_decode.h"
 #include "rule.h"
 
 void
@@ -17,7 +17,7 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         const bool has_message = (offset & HSTAGE_HAS_MESSAGE) != 0;
         offset &= ~HSTAGE_HAS_MESSAGE;
 
-        huff_decode_init(&ctx.hctx, &stages_huff_data[offset]);
+        bitin_init(&ctx.in, &stages_huff_data[offset]);
         ctx.chuff_ctx = 0;
         memset(map, 0, map_height * map_width);
         int x;

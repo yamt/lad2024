@@ -1,7 +1,7 @@
-#include "huff_decode.h"
+#include "bitin.h"
 
 struct chuff_decode_context {
-        struct huff_decode_context hctx;
+        struct bitin in;
         uint8_t chuff_ctx;
 };
 

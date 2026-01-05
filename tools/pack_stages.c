@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "bitbuf.h"
+#include "bitin.h"
 #include "chuff.h"
 #include "defs.h"
 #include "dump.h"
@@ -117,13 +118,13 @@ main(int argc, char **argv)
                 }
                 printf("\n");
 #if 1 /* debug */
-                struct huff_decode_context dctx;
-                huff_decode_init(&dctx, encoded);
+                struct bitin in;
+                bitin_init(&in, encoded);
                 uint8_t decoded[data_size];
                 uint8_t chuff_ctx = 0;
                 for (j = 0; j < data_size; j++) {
                         decoded[j] = chuff_ctx = huff_decode_sym(
-                                &dctx, ctx.hufftables[chuff_ctx]);
+                                &in, ctx.hufftables[chuff_ctx]);
                 }
                 assert(!memcmp(data, decoded, data_size));
 #endif

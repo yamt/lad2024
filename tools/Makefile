@@ -66,6 +66,7 @@ OBJS += dump.o
 OBJS += draw.o
 OBJS += bitbuf.o
 OBJS += chuff.o
+OBJS += bitin.o
 OBJS += huff.o
 OBJS += huff_decode.o
 OBJS += node.o

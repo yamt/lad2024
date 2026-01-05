@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "bitin.h"
 #include "huff.h"
 #include "huff_decode.h"
 
@@ -82,8 +83,8 @@ main(void)
                (double)(encsize + htablesize) / inputsize);
 
         printf("test decoding...\n");
-        struct huff_decode_context dec;
-        huff_decode_init(&dec, encbuf);
+        struct bitin dec;
+        bitin_init(&dec, encbuf);
         size_t i;
         for (i = 0; i < inputsize; i++) {
                 uint8_t actual = huff_decode_sym(&dec, htable);

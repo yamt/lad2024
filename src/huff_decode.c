@@ -1,34 +1,15 @@
 #include <stdbool.h>
 
+#include "bitin.h"
 #include "huff_decode.h"
 #include "util.h"
 
-void
-huff_decode_init(struct huff_decode_context *ctx, const uint8_t *p)
-{
-        ctx->p = p;
-        ctx->bitoff = 0;
-}
-
-static uint8_t
-huff_get_raw_bit(struct huff_decode_context *ctx)
-{
-        uint8_t u8 = *ctx->p;
-        uint8_t bit = (u8 >> (7 - ctx->bitoff)) & 1;
-        ctx->bitoff++;
-        if (ctx->bitoff == 8) {
-                ctx->bitoff = 0;
-                ctx->p++;
-        }
-        return bit;
-}
-
 huff_sym_t
-huff_decode_sym(struct huff_decode_context *ctx, const uint8_t *table)
+huff_decode_sym(struct bitin *in, const uint8_t *table)
 {
         const uint8_t *entry = table;
         while (true) {
-                uint8_t bit = huff_get_raw_bit(ctx);
+                uint8_t bit = bitin_get_bit(in);
                 ASSERT(bit == 0 || bit == 1);
                 // printf("decode bit %u\n", bit);
                 uint8_t flags = *entry;
