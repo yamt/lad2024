@@ -48,6 +48,8 @@ bitbuf_write1(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 void
 bitbuf_write(struct bitbuf *s, const uint8_t *bits, uint16_t nbits)
 {
+        assert(bits != NULL);
+        assert(nbits != 0);
         while (nbits > 8) {
                 bitbuf_write1(s, *bits++, 8);
                 nbits -= 8;
