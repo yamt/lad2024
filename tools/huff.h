@@ -12,6 +12,9 @@
  * - encoding is done offline. thus its speed is not important.
  */
 
+#if !defined(_LAD_HUFF_H_)
+#define _LAD_HUFF_H_
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -78,3 +81,5 @@ const uint8_t *huff_encode_sym(const struct hufftree *tree, huff_sym_t c,
  */
 #define HUFF_TABLE_SIZE_MAX ((HUFF_NSYMS - 1) * 3)
 void huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp);
+
+#endif /* !defined(_LAD_HUFF_H_) */
