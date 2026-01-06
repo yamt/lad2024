@@ -38,8 +38,7 @@ chuff_build(struct chuff *ch)
 }
 
 void
-chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, struct bitbuf *os,
-             uint8_t **outp)
+chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, struct bitbuf *os)
 {
         const uint8_t *cp = p;
         const uint8_t *ep = cp + len;
@@ -49,7 +48,7 @@ chuff_encode(struct chuff *ch, const uint8_t *p, size_t len, struct bitbuf *os,
                 assert(c < ch->ntables);
                 uint16_t nbits;
                 const uint8_t *bits = huff_encode_sym(tree, c, &nbits);
-                bitbuf_write(os, outp, bits, nbits);
+                bitbuf_write(os, bits, nbits);
                 ch->context = c;
         }
 }

@@ -17,7 +17,7 @@ void chuff_init(struct chuff *ch);
 void chuff_update(struct chuff *ch, const uint8_t *p, size_t len);
 void chuff_build(struct chuff *ch);
 void chuff_encode(struct chuff *ch, const uint8_t *p, size_t len,
-                  struct bitbuf *os, uint8_t **outp);
+                  struct bitbuf *os);
 
 #define CHUFF_TABLE_SIZE_MAX (CHUFF_NTABLES * HUFF_TABLE_SIZE_MAX)
 void chuff_table(const struct chuff *ch, uint8_t *out,

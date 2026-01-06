@@ -90,9 +90,8 @@ main(int argc, char **argv)
                 uint8_t encoded[data_size + MSG_SIZE_MAX];
                 ctx.ch.context = 0;
                 struct bitbuf os;
-                bitbuf_init(&os);
-                uint8_t *out = encoded;
-                chuff_encode(&ctx.ch, data, data_size, &os, &out);
+                bitbuf_init(&os, encoded);
+                chuff_encode(&ctx.ch, data, data_size, &os);
 
                 size_t msg_size = 0;
                 if (stage->message != NULL) {
@@ -101,11 +100,11 @@ main(int argc, char **argv)
 
                         mctx.ch.context = 0;
                         chuff_encode(&mctx.ch, (const void *)stage->message,
-                                     msg_size, &os, &out);
+                                     msg_size, &os);
                 }
-                bitbuf_flush(&os, &out);
+                bitbuf_flush(&os);
 
-                size_t encoded_len = out - encoded;
+                size_t encoded_len = os.p - encoded;
 
                 printf("// stage %04u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
                        data_size, msg_size, encoded_len,
