@@ -198,15 +198,16 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         const uint8_t *cp = p;
         const uint8_t *ep = cp + len;
         struct bitbuf os;
-        bitbuf_init(&os, out);
+        bitbuf_init(&os);
         while (cp < ep) {
                 uint16_t nbits;
                 const uint8_t *bits = huff_encode_sym(tree, *cp++, &nbits);
                 bitbuf_write(&os, bits, nbits);
         }
         bitbuf_flush(&os);
-        assert(os.p - out <= len);
-        *lenp = os.p - out;
+        memcpy(out, os.p, os.datalen);
+        *lenp = os.datalen;
+        bitbuf_clear(&os);
 }
 
 /*

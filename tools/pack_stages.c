@@ -87,10 +87,9 @@ main(int argc, char **argv)
                 offset[i] = curoff;
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
-                uint8_t encoded[data_size + MSG_SIZE_MAX];
                 ctx.ch.context = 0;
                 struct bitbuf os;
-                bitbuf_init(&os, encoded);
+                bitbuf_init(&os);
                 chuff_encode(&ctx.ch, data, data_size, &os);
 
                 size_t msg_size = 0;
@@ -103,13 +102,12 @@ main(int argc, char **argv)
                                      msg_size, &os);
                 }
                 bitbuf_flush(&os);
-
-                size_t encoded_len = os.p - encoded;
+                const uint8_t *encoded = os.p;
+                size_t encoded_len = os.datalen;
 
                 printf("// stage %04u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
                        data_size, msg_size, encoded_len,
                        (float)encoded_len / (data_size + msg_size) * 100);
-                assert(encoded_len <= sizeof(encoded));
                 curoff += encoded_len;
                 unsigned int j;
                 for (j = 0; j < encoded_len; j++) {
@@ -127,6 +125,7 @@ main(int argc, char **argv)
                 }
                 assert(!memcmp(data, decoded, data_size));
 #endif
+                bitbuf_clear(&os);
         }
         printf("};\n");
 
