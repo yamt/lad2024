@@ -51,6 +51,7 @@ lzhuff_init(struct lzhuff *lzh, huff_sym_t match_base)
         lzh->lz.out_match = out_match;
         lzh->lz.out_ctx = lzh;
         lzh->match_base = match_base;
+        lzh->os = NULL;
 }
 
 void
