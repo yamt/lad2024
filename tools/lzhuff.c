@@ -1,12 +1,13 @@
-#include "lzhuff.h"
+#include <assert.h>
+
 #include "bitbuf.h"
+#include "lzhuff.h"
 
 static void
 encode_sym(const struct hufftree *h, huff_sym_t ch, struct bitbuf *os)
 {
-        const uint8_t *sym;
         uint16_t nbits;
-        huff_encode_sym(h, ch, &nbits);
+        const uint8_t *sym = huff_encode_sym(h, ch, &nbits);
         bitbuf_write(os, sym, nbits);
 }
 
@@ -25,6 +26,12 @@ static void
 out_match(void *ctx, woff_t dist, woff_t len)
 {
         struct lzhuff *lzh = ctx;
+        assert(len >= MATCH_LEN_MIN);
+        assert(len <= MATCH_LEN_MAX);
+        assert(dist >= MATCH_DISTANCE_MIN);
+        assert(dist <= MATCH_DISTANCE_MAX);
+        len -= MATCH_LEN_MIN + lzh->match_base;
+        dist -= MATCH_DISTANCE_MIN;
         if (lzh->os == NULL) {
                 huff_update_sym(&lzh->huff_lit, len);
                 huff_update_sym(&lzh->huff_dist, dist);
@@ -35,7 +42,7 @@ out_match(void *ctx, woff_t dist, woff_t len)
 }
 
 void
-lzhuff_init(struct lzhuff *lzh)
+lzhuff_init(struct lzhuff *lzh, huff_sym_t match_base)
 {
         huff_init(&lzh->huff_lit);
         huff_init(&lzh->huff_dist);
@@ -43,6 +50,7 @@ lzhuff_init(struct lzhuff *lzh)
         lzh->lz.out_literal = out_literal;
         lzh->lz.out_match = out_match;
         lzh->lz.out_ctx = lzh;
+        lzh->match_base = match_base;
 }
 
 void
@@ -63,6 +71,9 @@ void
 lzhuff_encode_init(struct lzhuff *lzh, struct bitbuf *os)
 {
         lz_encode_init(&lzh->lz);
+        lzh->lz.out_literal = out_literal;
+        lzh->lz.out_match = out_match;
+        lzh->lz.out_ctx = lzh;
         lzh->os = os;
 }
 

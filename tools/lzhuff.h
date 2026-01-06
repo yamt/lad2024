@@ -12,9 +12,10 @@ struct lzhuff {
         struct hufftree huff_dist; /* distance */
         struct lz_encode_state lz;
         struct bitbuf *os;
+        huff_sym_t match_base;
 };
 
-void lzhuff_init(struct lzhuff *lzh);
+void lzhuff_init(struct lzhuff *lzh, huff_sym_t match_base);
 void lzhuff_update(struct lzhuff *lzh, const void *p, size_t len);
 void lzhuff_build(struct lzhuff *lzh);
 
