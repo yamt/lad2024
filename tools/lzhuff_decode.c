@@ -15,7 +15,9 @@ lzhuff_decode_step(struct lz_decode_state *s, struct bitin *in,
         huff_sym_t sym = huff_decode_sym(in, huff_lit);
         if (sym >= match_base) {
                 woff_t len = sym - match_base + MATCH_LEN_MIN;
+                assert(len <= MATCH_LEN_MAX);
                 woff_t dist = huff_decode_sym(in, huff_dist);
+                assert(dist <= MATCH_DISTANCE_MAX - MATCH_DISTANCE_MIN);
                 dist += MATCH_DISTANCE_MIN;
                 assert(dist <= s->endidx);
                 lz_apply_match(out, len, dist);
