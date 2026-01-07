@@ -89,6 +89,9 @@ main(void)
         for (i = 0; i < inputsize; i++) {
                 uint8_t actual = lzhuff_decode_sym(&dec, &in, lhtable, dhtable,
                                                    match_base);
+                assert(in.p >= os.p);
+                assert(in.p < os.p + encsize ||
+                       (in.p == os.p + encsize && in.bitoff == 0));
                 uint8_t expected = input[i];
                 if (actual != expected) {
                         printf("unexpected data at offset %zu, expected %02x, "
