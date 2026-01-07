@@ -33,16 +33,20 @@ readall(int fd, void *buf, size_t sz)
         return rsz;
 }
 
+static unsigned int offset;
+
 static void
 out_literal(void *ctx, uint8_t ch)
 {
-        printf("%s: ch 0x%02x\n", __func__, ch);
+        printf("[%u] literal 0x%02x\n", offset, ch);
+        offset++;
 }
 
 static void
 out_match(void *ctx, woff_t dist, woff_t len)
 {
-        printf("%s: dist %u len %u\n", __func__, dist, len);
+        printf("[%u] match dist %u len %u\n", offset, dist, len);
+        offset += len;
 }
 
 int
