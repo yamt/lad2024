@@ -45,6 +45,8 @@ bitbuf_flush1(struct bitbuf *s, unsigned int thresh)
 static void
 bitbuf_write1(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 {
+        assert(nbits > 0);
+        assert(nbits <= 8);
         unsigned int shift = 32 - s->bufoff - nbits;
         s->buf |= (uint32_t)bits << shift;
         s->bufoff += nbits;
