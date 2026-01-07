@@ -1,13 +1,13 @@
+#if !defined(_LAD_LZ_H_)
+#define _LAD_LZ_H_
+
 #include <stdint.h>
 
-typedef unsigned int woff_t;
+#include "lz_param.h"
+
 typedef void (*output_literal_t)(void *ctx, uint8_t ch);
 typedef void (*output_match_t)(void *ctx, woff_t dist, woff_t len);
 
-#define MATCH_LEN_MIN 3
-#define MATCH_LEN_MAX 6
-#define MATCH_DISTANCE_MIN 1
-#define MATCH_DISTANCE_MAX 64
 #define LZ_ENCODE_BUF_SIZE (MATCH_DISTANCE_MAX + MATCH_LEN_MAX)
 
 struct lz_encode_state {
@@ -26,3 +26,5 @@ struct lz_encode_state {
 void lz_encode_init(struct lz_encode_state *state);
 void lz_encode(struct lz_encode_state *state, const void *p, size_t len);
 void lz_encode_flush(struct lz_encode_state *state);
+
+#endif /* !defined(_LAD_LZ_H_) */
