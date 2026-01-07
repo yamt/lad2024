@@ -3,8 +3,14 @@
 
 #include <stdint.h>
 
-typedef uint8_t huff_sym_t;
-#define HUFF_SYM_BITS 8
+#if !defined(HUFF_NSYMS)
 #define HUFF_NSYMS 256
+#endif
+
+#if HUFF_NSYMS <= 256
+typedef uint8_t huff_sym_t;
+#elif HUFF_NSYMS <= 65536
+typedef uint16_t huff_sym_t;
+#endif
 
 #endif /* !defined(_LAD_HUFF_TYPES_H_) */

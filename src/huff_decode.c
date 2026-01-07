@@ -14,7 +14,7 @@ huff_decode_sym(struct bitin *in, const uint8_t *table)
                 // printf("decode bit %u\n", bit);
                 uint8_t flags = *entry;
                 uint8_t child_flags = (flags >> (4 * bit)) & 0x0f;
-#if HUFF_SYM_BITS > 8
+#if HUFF_NSYMS >= 256
                 uint8_t upper = child_flags >> 1;
 #else
                 ASSERT((child_flags & 0xee) == 0);
