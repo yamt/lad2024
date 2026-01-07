@@ -49,8 +49,7 @@ main(int argc, char **argv)
 
         struct ctx ctx;
         struct ctx mctx;
-        woff_t match_base = 256;
-        lzhuff_init(&ctx.lzh, match_base);
+        lzhuff_init(&ctx.lzh, 20);
         chuff_init(&mctx.ch);
         unsigned int i;
         for (i = 0; i < nstages; i++) {
@@ -58,7 +57,6 @@ main(int argc, char **argv)
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
                 lzhuff_update(&ctx.lzh, data, data_size);
-                lzhuff_flush(&ctx.lzh);
                 if (stage->message != NULL) {
                         size_t len = strlen(stage->message) + 1;
                         if (len > maxmlen) {
@@ -91,11 +89,12 @@ main(int argc, char **argv)
                 offset[i] = curoff;
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
+                ctx.ch.context = 0;
                 struct bitbuf os;
                 bitbuf_init(&os);
                 lzhuff_encode_init(&ctx.lzh, &os);
                 lzhuff_encode(&ctx.lzh, data, data_size);
-                lzhuff_flush(&ctx.lzh);
+                lzhuff_encode_flush(&ctx.lzh);
 
                 size_t msg_size = 0;
                 if (stage->message != NULL) {
