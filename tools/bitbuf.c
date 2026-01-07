@@ -11,22 +11,28 @@ bitbuf_init(struct bitbuf *s)
 }
 
 static void
+bitbuf_output_byte(struct bitbuf *s, uint8_t data)
+{
+        if (s->datalen == s->allocated) {
+                size_t newsize = s->allocated * 2;
+                if (newsize < 64) {
+                        newsize = 64;
+                }
+                uint8_t *np = realloc(s->p, newsize);
+                if (np == NULL) {
+                        abort(); /* XXX */
+                }
+                s->p = np;
+                s->allocated = newsize;
+        }
+        s->p[s->datalen++] = s->buf >> 24;
+}
+
+static void
 bitbuf_flush1(struct bitbuf *s, unsigned int thresh)
 {
         while (s->bufoff >= thresh) {
-                if (s->datalen == s->allocated) {
-                        size_t newsize = s->allocated * 2;
-                        if (newsize < 64) {
-                                newsize = 64;
-                        }
-                        uint8_t *np = realloc(s->p, newsize);
-                        if (np == NULL) {
-                                abort();
-                        }
-                        s->p = np;
-                        s->allocated = newsize;
-                }
-                s->p[s->datalen++] = s->buf >> 24;
+                bitbuf_output_byte(s, s->buf >> 24);
                 s->buf <<= 8;
                 if (s->bufoff > 8) {
                         s->bufoff -= 8;

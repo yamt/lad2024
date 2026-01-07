@@ -7,9 +7,12 @@
 #include <stdint.h>
 
 struct bitbuf {
-        uint8_t *p;
+        /* small buffer to concat bits together */
         uint32_t buf;
         unsigned int bufoff;
+
+        /* byte output */
+        uint8_t *p;
         size_t datalen;
         size_t allocated;
 };
