@@ -52,7 +52,8 @@ find_match(struct lz_encode_state *s, woff_t *posp)
                        data_at(s, s->curoff + mlen) == data_at(s, i + mlen)) {
                         mlen++;
                 }
-                if (mlen >= MATCH_LEN_MIN && mlen > matchlen) {
+                /* note: prefer smaller distance */
+                if (mlen >= MATCH_LEN_MIN && mlen >= matchlen) {
                         matchlen = mlen;
                         matchpos = i;
                 }
