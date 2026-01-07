@@ -30,7 +30,8 @@ out_match(void *ctx, woff_t dist, woff_t len)
         assert(len <= MATCH_LEN_MAX);
         assert(dist >= MATCH_DISTANCE_MIN);
         assert(dist <= MATCH_DISTANCE_MAX);
-        len -= MATCH_LEN_MIN + lzh->match_base;
+        len -= MATCH_LEN_MIN;
+        len += lzh->match_base;
         dist -= MATCH_DISTANCE_MIN;
         if (lzh->os == NULL) {
                 huff_update_sym(&lzh->huff_lit, len);
