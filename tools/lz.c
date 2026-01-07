@@ -17,10 +17,16 @@ win_start(const struct lz_encode_state *s)
 
 /* include the curoff */
 static woff_t
-lookahead_size(const struct lz_encode_state *s)
+valid_forward_data(const struct lz_encode_state *s)
 {
         assert(s->valid_size >= s->curoff);
-        woff_t sz = s->valid_size - s->curoff;
+        return s->valid_size - s->curoff;
+}
+
+static woff_t
+lookahead_size(const struct lz_encode_state *s)
+{
+        woff_t sz = valid_forward_data(s);
         if (sz > MATCH_LEN_MAX) {
                 return MATCH_LEN_MAX;
         }
@@ -36,6 +42,7 @@ bufidx(const struct lz_encode_state *s, woff_t off)
 static uint8_t
 data_at(const struct lz_encode_state *s, woff_t off)
 {
+        assert(off < LZ_ENCODE_BUF_SIZE);
         return s->buf[bufidx(s, off)];
 }
 
@@ -107,21 +114,34 @@ static void
 lz_encode_impl(struct lz_encode_state *s, const void *p, size_t len,
                bool flushing)
 {
+        /* "lazy matching" described in RFC 1951 */
+        bool lazy_matching = true;
+
         while (true) {
                 if (flushing) {
-                        if (lookahead_size(s) == 0) {
+                        if (valid_forward_data(s) == 0) {
                                 break;
                         }
                 } else {
-                        if (lookahead_size(s) < MATCH_LEN_MAX) {
+                        woff_t needed = MATCH_LEN_MAX + lazy_matching;
+                        if (valid_forward_data(s) < needed) {
                                 fill_buffer(s, &p, &len);
                         }
-                        if (lookahead_size(s) < MATCH_LEN_MAX) {
+                        if (valid_forward_data(s) < needed) {
                                 break;
                         }
                 }
                 woff_t mpos;
                 woff_t mlen = find_match(s, &mpos);
+                if (lazy_matching && mlen != 0) {
+                        s->curoff++;
+                        woff_t mpos2;
+                        woff_t mlen2 = find_match(s, &mpos2);
+                        s->curoff--;
+                        if (mlen2 > mlen) {
+                                mlen = 0;
+                        }
+                }
                 if (mlen == 0) {
                         s->out_literal(s->out_ctx, data_at(s, s->curoff));
                         s->curoff++;

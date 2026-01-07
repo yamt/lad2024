@@ -8,7 +8,8 @@
 typedef void (*output_literal_t)(void *ctx, uint8_t ch);
 typedef void (*output_match_t)(void *ctx, woff_t dist, woff_t len);
 
-#define LZ_ENCODE_BUF_SIZE (MATCH_DISTANCE_MAX + MATCH_LEN_MAX)
+/* +1 for lazy matching */
+#define LZ_ENCODE_BUF_SIZE (MATCH_DISTANCE_MAX + MATCH_LEN_MAX + 1)
 
 struct lz_encode_state {
         /* output callbacks */
