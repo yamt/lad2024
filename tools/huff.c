@@ -30,6 +30,7 @@ init_leaf_nodes(struct hufftree *tree)
 void
 huff_update_sym(struct hufftree *tree, huff_sym_t sym)
 {
+        assert((unsigned int)sym < HUFF_NSYMS);
         struct hnode *n = &tree->nodes[sym];
         n->count++;
 }
