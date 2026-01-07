@@ -71,6 +71,8 @@ main(void)
         size_t dhtablesize;
         huff_table(&lzh.huff_lit, lhtable, &lhtablesize);
         huff_table(&lzh.huff_dist, dhtable, &dhtablesize);
+        assert(lhtablesize <= sizeof(lhtable));
+        assert(dhtablesize <= sizeof(dhtable));
         printf("table size: %zu + %zu bytes\n", lhtablesize, dhtablesize);
         size_t htablesize = lhtablesize + dhtablesize;
 
