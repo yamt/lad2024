@@ -12,6 +12,7 @@
 #include "dump.h"
 #include "huff_decode.h"
 #include "loader.h"
+#include "lzhuff.h"
 #include "maputil.h"
 #include "stages.h"
 
@@ -32,6 +33,7 @@ stage_data_size(const uint8_t *p)
 }
 
 struct ctx {
+        struct lzhuff lzh;
         struct chuff ch;
         uint8_t chtable[CHUFF_TABLE_SIZE_MAX];
         uint8_t *hufftables[CHUFF_NTABLES];
@@ -47,15 +49,14 @@ main(int argc, char **argv)
 
         struct ctx ctx;
         struct ctx mctx;
-        chuff_init(&ctx.ch);
+        lzhuff_init(&ctx.lzh, 20);
         chuff_init(&mctx.ch);
         unsigned int i;
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
-                ctx.ch.context = 0;
-                chuff_update(&ctx.ch, data, data_size);
+                lzhuff_update(&ctx.lzh, data, data_size);
                 if (stage->message != NULL) {
                         size_t len = strlen(stage->message) + 1;
                         if (len > maxmlen) {
@@ -66,10 +67,11 @@ main(int argc, char **argv)
                                      len);
                 }
         }
-        chuff_build(&ctx.ch);
+        lzhuff_build(&ctx.lzh);
         chuff_build(&mctx.ch);
 
-        chuff_table(&ctx.ch, ctx.chtable, ctx.hufftables, ctx.hufftablesizes);
+        // chuff_table(&ctx.ch, ctx.chtable, ctx.hufftables,
+        // ctx.hufftablesizes);
         chuff_table(&mctx.ch, mctx.chtable, mctx.hufftables,
                     mctx.hufftablesizes);
 
@@ -90,7 +92,9 @@ main(int argc, char **argv)
                 ctx.ch.context = 0;
                 struct bitbuf os;
                 bitbuf_init(&os);
-                chuff_encode(&ctx.ch, data, data_size, &os);
+                lzhuff_encode_init(&ctx.lzh, &os);
+                lzhuff_encode(&ctx.lzh, data, data_size);
+                lzhuff_encode_flush(&ctx.lzh);
 
                 size_t msg_size = 0;
                 if (stage->message != NULL) {
@@ -114,7 +118,7 @@ main(int argc, char **argv)
                         printf("%#02x,", (unsigned int)encoded[j]);
                 }
                 printf("\n");
-#if 1 /* debug */
+#if 0 /* debug */
                 struct bitin in;
                 bitin_init(&in, encoded);
                 uint8_t decoded[data_size];
@@ -154,6 +158,7 @@ main(int argc, char **argv)
          * 64KB linear memory anyway.
          */
 
+#if 0
         {
                 printf("const uint16_t stages_huff_table_idx[] = {\n");
                 uint16_t idx = 0;
@@ -172,6 +177,7 @@ main(int argc, char **argv)
                 }
                 printf("};\n");
         }
+#endif
 
         {
                 printf("const uint16_t stages_msg_huff_table_idx[] = {\n");
