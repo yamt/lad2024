@@ -65,6 +65,8 @@ find_match(struct lz_encode_state *s, woff_t *posp)
                         matchpos = i;
                 }
         }
+        assert(matchlen == 0 || matchlen >= MATCH_LEN_MIN);
+        assert(matchlen <= MATCH_LEN_MAX);
         *posp = matchpos;
         return matchlen;
 }
@@ -146,6 +148,8 @@ lz_encode_impl(struct lz_encode_state *s, const void *p, size_t len,
                         s->out_literal(s->out_ctx, data_at(s, s->curoff));
                         s->curoff++;
                 } else {
+                        assert(s->curoff > mpos);
+                        assert(s->curoff - mpos <= MATCH_DISTANCE_MAX);
                         s->out_match(s->out_ctx, s->curoff - mpos, mlen);
                         s->curoff += mlen;
                 }
