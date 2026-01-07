@@ -60,7 +60,7 @@ lzhuff_update(struct lzhuff *lzh, const void *p, size_t len)
 void
 lzhuff_build(struct lzhuff *lzh)
 {
-        lz_encode_flush(&lzh->lz);
+        lzhuff_flush(lzh);
         huff_build(&lzh->huff_lit);
         huff_build(&lzh->huff_dist);
 }
@@ -82,7 +82,7 @@ lzhuff_encode(struct lzhuff *lzh, const void *p, size_t len)
 }
 
 void
-lzhuff_encode_flush(struct lzhuff *lzh)
+lzhuff_flush(struct lzhuff *lzh)
 {
         lz_encode_flush(&lzh->lz);
 }

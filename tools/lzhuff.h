@@ -21,4 +21,6 @@ void lzhuff_build(struct lzhuff *lzh);
 
 void lzhuff_encode_init(struct lzhuff *lzh, struct bitbuf *os);
 void lzhuff_encode(struct lzhuff *lzh, const void *p, size_t len);
-void lzhuff_encode_flush(struct lzhuff *lzh);
+
+/* flush update/encode */
+void lzhuff_flush(struct lzhuff *lzh);

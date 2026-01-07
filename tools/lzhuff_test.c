@@ -60,7 +60,7 @@ main(void)
         bitbuf_init(&os);
         lzhuff_encode_init(&lzh, &os);
         lzhuff_encode(&lzh, input, inputsize);
-        lzhuff_encode_flush(&lzh);
+        lzhuff_flush(&lzh);
         bitbuf_flush(&os);
         size_t encsize = os.datalen;
         printf("encoded size: %zu bytes\n", encsize);
