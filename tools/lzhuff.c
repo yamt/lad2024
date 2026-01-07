@@ -47,12 +47,8 @@ lzhuff_init(struct lzhuff *lzh, huff_sym_t match_base)
 {
         huff_init(&lzh->huff_lit);
         huff_init(&lzh->huff_dist);
-        lz_encode_init(&lzh->lz);
-        lzh->lz.out_literal = out_literal;
-        lzh->lz.out_match = out_match;
-        lzh->lz.out_ctx = lzh;
         lzh->match_base = match_base;
-        lzh->os = NULL;
+        lzhuff_encode_init(lzh, NULL);
 }
 
 void
