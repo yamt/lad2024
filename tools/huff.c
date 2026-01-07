@@ -258,6 +258,7 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                         struct hnode *cn = n->u.inner.children[i];
                         if (is_leaf(tree, cn)) {
                                 huff_sym_t sym = leaf_value(tree, cn);
+                                assert(((uint16_t)sym >> (8+3)) == 0);
 #if HUFF_NSYMS >= 256
                                 uint8_t sym_upper = sym >> 8;
 #else
