@@ -110,6 +110,8 @@ fill_buffer(struct lz_encode_state *s, const void **pp, size_t *lenp)
         } else {
                 fill_part(s, off, s->bufstart - off, pp, lenp);
         }
+        assert(s->valid_size <= LZ_ENCODE_BUF_SIZE);
+        assert(s->valid_size == LZ_ENCODE_BUF_SIZE || *lenp == 0);
 }
 
 static void
