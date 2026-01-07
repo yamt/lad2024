@@ -149,4 +149,5 @@ void
 lz_encode_flush(struct lz_encode_state *s)
 {
         lz_encode_impl(s, NULL, 0, true);
+        s->curoff = s->valid_size = 0;
 }
