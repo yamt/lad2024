@@ -19,6 +19,7 @@ CFLAGS += -flto=full -O3 -Wno-unused-variable
 CFLAGS += -DMEMLIMIT_GB=8
 CFLAGS += -DSMALL_NODE
 CFLAGS += -DNODE_KEEP_HASH
+CFLAGS += -DHUFF_NSYMS=512
 
 # XXX a bit difficult to tune manually.
 # maybe we should somehow make it automatic.
@@ -74,7 +75,10 @@ OBJS += bitin.o
 OBJS += lz.o
 OBJS += lzhuff.o
 OBJS += huff.o
+OBJS += lz_decode.o
+OBJS += lzhuff_decode.o
 OBJS += huff_decode.o
+OBJS += chuff_decode.o
 OBJS += node.o
 OBJS += pool.o
 OBJS += info.o

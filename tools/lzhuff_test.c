@@ -10,6 +10,10 @@
 #include "bitbuf.h"
 #include "lzhuff.h"
 
+#include "bitin.h"
+#include "lz_decode.h"
+#include "lzhuff_decode.h"
+
 int
 main(void)
 {
@@ -41,41 +45,48 @@ main(void)
         printf("buffer size: %zu bytes\n", bufsz);
         printf("input size: %zu bytes\n", inputsize);
 
+#if HUFF_NSYMS < 256 + MATCH_LEN_MAX
+#warning HUFF_NSYMS seems too small
+        huff_sym_t match_base = 0xb0; /* XXX */
+#else
+        huff_sym_t match_base = 256;
+#endif
         struct lzhuff lzh;
-        lzhuff_init(&lzh, 128); /* XXX */
+        lzhuff_init(&lzh, match_base);
         lzhuff_update(&lzh, input, inputsize);
         lzhuff_build(&lzh);
 
-		struct bitbuf os;
+        struct bitbuf os;
         bitbuf_init(&os);
-		lzhuff_encode_init(&lzh, &os);
+        lzhuff_encode_init(&lzh, &os);
         lzhuff_encode(&lzh, input, inputsize);
         lzhuff_encode_flush(&lzh);
         bitbuf_flush(&os);
         size_t encsize = os.datalen;
         printf("encoded size: %zu bytes\n", encsize);
 
-#if 0
-        uint8_t htable[HUFF_TABLE_SIZE_MAX];
-        size_t htablesize;
-        huff_table(&t, htable, &htablesize);
-        printf("table size: %zu bytes\n", htablesize);
-        assert(htablesize <= sizeof(htable));
-#else
-        size_t htablesize = 0; /* XXX */
-#endif
+        uint8_t lhtable[HUFF_TABLE_SIZE_MAX];
+        size_t lhtablesize;
+        uint8_t dhtable[HUFF_TABLE_SIZE_MAX];
+        size_t dhtablesize;
+        huff_table(&lzh.huff_lit, lhtable, &lhtablesize);
+        huff_table(&lzh.huff_dist, dhtable, &dhtablesize);
+        printf("table size: %zu + %zu bytes\n", lhtablesize, dhtablesize);
+        size_t htablesize = lhtablesize + dhtablesize;
 
         printf("total compression ratio: (%zu + %zu) / %zu = %.4f\n", encsize,
                htablesize, inputsize,
                (double)(encsize + htablesize) / inputsize);
 
-#if 0
         printf("test decoding...\n");
-        struct bitin dec;
-        bitin_init(&dec, encbuf);
+        struct lz_decode_state dec;
+        lz_decode_init(&dec);
+        struct bitin in;
+        bitin_init(&in, os.p);
         size_t i;
         for (i = 0; i < inputsize; i++) {
-                uint8_t actual = huff_decode_sym(&dec, htable);
+                uint8_t actual = lzhuff_decode_sym(&dec, &in, lhtable, dhtable,
+                                                   match_base);
                 uint8_t expected = input[i];
                 if (actual != expected) {
                         printf("unexpected data at offset %zu, expected %02x, "
@@ -85,5 +96,5 @@ main(void)
                 }
         }
         printf("successfully decoded\n");
-#endif
+        bitbuf_clear(&os);
 }

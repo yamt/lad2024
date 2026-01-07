@@ -9,7 +9,8 @@
 
 #include "bitbuf.h"
 #include "chuff.h"
-//#include "huff_decode.h"
+
+#include "chuff_decode.h"
 
 int
 main(void)
@@ -48,7 +49,7 @@ main(void)
         chuff_update(&t, input, inputsize);
         chuff_build(&t);
 
-		struct bitbuf os;
+        struct bitbuf os;
         bitbuf_init(&os);
         t.context = 0;
         chuff_encode(&t, input, inputsize, &os);
@@ -58,13 +59,15 @@ main(void)
         assert(encsize <= inputsize);
 
         uint8_t htable[CHUFF_TABLE_SIZE_MAX];
-		uint8_t *outs[CHUFF_NTABLES];
+        uint8_t *outs[CHUFF_NTABLES];
         size_t lens[CHUFF_NTABLES];
+        uint16_t indexes[CHUFF_NTABLES];
         chuff_table(&t, htable, outs, lens);
         size_t htablesize = 0;
-        unsigned int i;
+        size_t i;
         for (i = 0; i < t.ntables; i++) {
-            htablesize += lens[i];
+                indexes[i] = htablesize;
+                htablesize += lens[i];
         }
         printf("table size: %zu bytes\n", htablesize);
         assert(htablesize <= sizeof(htable));
@@ -73,13 +76,12 @@ main(void)
                htablesize, inputsize,
                (double)(encsize + htablesize) / inputsize);
 
-#if 0
         printf("test decoding...\n");
-        struct bitin dec;
-        bitin_init(&dec, encbuf);
-        size_t i;
+        struct chuff_decode_context dec;
+        bitin_init(&dec.in, os.p);
+        dec.chuff_ctx = 0;
         for (i = 0; i < inputsize; i++) {
-                uint8_t actual = huff_decode_sym(&dec, htable);
+                uint8_t actual = chuff_decode_byte(&dec, htable, indexes);
                 uint8_t expected = input[i];
                 if (actual != expected) {
                         printf("unexpected data at offset %zu, expected %02x, "
@@ -89,5 +91,5 @@ main(void)
                 }
         }
         printf("successfully decoded\n");
-#endif
+        bitbuf_clear(&os);
 }
