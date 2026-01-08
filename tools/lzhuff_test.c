@@ -14,6 +14,8 @@
 #include "lz_decode.h"
 #include "lzhuff_decode.h"
 
+#include "huff_debug.h"
+
 int
 main(void)
 {
@@ -77,6 +79,18 @@ main(void)
         assert(dhtablesize <= sizeof(dhtable));
         printf("table size: %zu + %zu bytes\n", lhtablesize, dhtablesize);
         size_t htablesize = lhtablesize + dhtablesize;
+
+#if 0
+        printf("lit tree:\n");
+        huff_dump_tree(&lzh.huff_lit);
+        printf("lit table:\n");
+        huff_dump_table(lhtable, lhtablesize);
+
+        printf("dist tree:\n");
+        huff_dump_tree(&lzh.huff_dist);
+        printf("dist table:\n");
+        huff_dump_table(dhtable, dhtablesize);
+#endif
 
         printf("total compression ratio: (%zu + %zu) / %zu = %.4f\n", encsize,
                htablesize, inputsize,

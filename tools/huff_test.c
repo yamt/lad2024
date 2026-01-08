@@ -9,6 +9,7 @@
 
 #include "bitin.h"
 #include "huff.h"
+#include "huff_debug.h"
 #include "huff_decode.h"
 
 int
@@ -77,6 +78,13 @@ main(void)
         huff_table(&t, htable, &htablesize);
         printf("table size: %zu bytes\n", htablesize);
         assert(htablesize <= sizeof(htable));
+
+#if 0
+        printf("tree dump:\n");
+        huff_dump_tree(&t);
+        printf("table dump:\n");
+        huff_dump_table(htable, htablesize);
+#endif
 
         printf("total compression ratio: (%zu + %zu) / %zu = %.4f\n", encsize,
                htablesize, inputsize,
