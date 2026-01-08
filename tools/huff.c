@@ -130,6 +130,10 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
                 memcpy(n->u.leaf.encoded_bits, bits, (nbits + 7) / 8);
                 return;
         }
+        /*
+         * note: the last partial byte is used from lsbs.
+         * this should match bitbuf_write().
+         */
         unsigned int idx = nbits / 8;
         nbits++;
         bits[idx] <<= 1;
