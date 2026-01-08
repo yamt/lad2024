@@ -19,6 +19,8 @@ CFLAGS += -flto=full -O3 -Wno-unused-variable
 CFLAGS += -DMEMLIMIT_GB=8
 CFLAGS += -DSMALL_NODE
 CFLAGS += -DNODE_KEEP_HASH
+
+# bump HUFF_NSYMS for lzhuff
 CFLAGS += -DHUFF_NSYMS=512
 
 # XXX a bit difficult to tune manually.
