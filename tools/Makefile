@@ -77,6 +77,7 @@ OBJS += bitin.o
 OBJS += lz.o
 OBJS += lzhuff.o
 OBJS += huff.o
+OBJS += huff_debug.o
 OBJS += lz_decode.o
 OBJS += lzhuff_decode.o
 OBJS += huff_decode.o
