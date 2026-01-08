@@ -45,12 +45,14 @@ main(void)
         printf("buffer size: %zu bytes\n", bufsz);
         printf("input size: %zu bytes\n", inputsize);
 
-#if HUFF_NSYMS < 256 + MATCH_LEN_MAX
+#if HUFF_NSYMS < 256 + 1 + (MATCH_LEN_MAX - MATCH_LEN_MIN)
 #warning HUFF_NSYMS seems too small
         huff_sym_t match_base = 0xb0; /* XXX */
 #else
         huff_sym_t match_base = 256;
 #endif
+        assert(match_base + 1 + MATCH_LEN_MAX - MATCH_LEN_MIN <= HUFF_NSYMS);
+        assert(1 + MATCH_DISTANCE_MAX - MATCH_DISTANCE_MIN <= HUFF_NSYMS);
         struct lzhuff lzh;
         lzhuff_init(&lzh, match_base);
         lzhuff_update(&lzh, input, inputsize);
