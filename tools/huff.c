@@ -246,11 +246,27 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
  * note: byte 2 of the last entry is omitted if the count of the
  * corresponding node is 0. it's safe because the decoder logic
  * should never access it.
+ *
+ * note: this representation is a bit redundant.
+ * alternatively, we can just dump nbits for each leaves as deflate does.
+ * but it would cost some extra logic in the decoder.
  */
 
 void
 huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
 {
+        /*
+         * the max possible leaf value is HUFF_NSYMS-1.
+         *
+         * the max number of inner nodes including the root,
+         * which equals to the max entry index value in the table,
+         * is also HUFF_NSYMS-1.
+         *
+         * this serialization format can represent child values
+         * (either leaf or inner) up to 0x7ff. (3+8 bit)
+         */
+        assert(HUFF_NSYMS - 1 <= 0x7ff);
+
         uint8_t *outp = out;
         const struct hnode *n = root_node(tree);
         if (n->count == 0) {
