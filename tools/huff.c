@@ -270,25 +270,30 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                 size_t entry_size = 3;
                 for (i = 0; i < 2; i++) {
                         struct hnode *cn = n->u.inner.children[i];
-                        if (is_leaf(tree, cn)) {
-                                huff_sym_t sym = leaf_value(tree, cn);
-                                assert(((uint16_t)sym >> (8+3)) == 0);
-#if HUFF_NSYMS >= 256
-                                uint8_t sym_upper = sym >> 8;
-#else
-                                uint8_t sym_upper = 0;
-#endif
-                                flags |= ((sym_upper << 1) | 1) << (i * 4);
-                                v[i + 1] = sym;
-                        } else if (cn->count == 0) {
+                        huff_sym_t value;
+                        uint8_t type;
+                        if (cn->count == 0) {
                                 assert(i == 1);
                                 assert(cons == prod);
                                 entry_size = 2;
+                                break;
+                        } else if (is_leaf(tree, cn)) {
+                                value = leaf_value(tree, cn);
+                                type = 1;
                         } else {
-                                v[i + 1] = prod;
+                                value = prod;
+                                type = 0;
                                 assert(prod < HUFF_NSYMS - 1);
                                 nodes[prod++] = cn;
                         }
+                        assert(((uint16_t)value >> (8 + 3)) == 0);
+#if HUFF_NSYMS >= 256
+                        uint8_t upper = value >> 8;
+#else
+                        uint8_t upper = 0;
+#endif
+                        flags |= ((upper << 1) | type) << (i * 4);
+                        v[i + 1] = value;
                 }
                 v[0] = flags;
 #if 0
