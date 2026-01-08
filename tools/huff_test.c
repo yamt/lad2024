@@ -48,6 +48,7 @@ main(void)
         huff_update(&t, input, inputsize);
         huff_build(&t);
 
+#if 0
         {
                 printf("encoded bits for each values:\n");
                 unsigned int i;
@@ -62,6 +63,7 @@ main(void)
                                (double)count / inputsize * 100);
                 }
         }
+#endif
 
         uint8_t *encbuf = malloc(inputsize);
         if (encbuf == NULL) {
