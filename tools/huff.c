@@ -9,6 +9,9 @@
 #include "bitbuf.h"
 #include "huff.h"
 
+/* this is a macro because it's used for both of const/non-const trees */
+#define root_node(tree) (&(tree)->nodes[HUFF_NSYMS * 2 - 2])
+
 static bool
 is_leaf(const struct hufftree *tree, const struct hnode *n)
 {
@@ -96,15 +99,25 @@ build_tree(struct hufftree *tree)
                  * pick the two nodes with the smallest count.
                  */
                 qsort(nodes, n, sizeof(*nodes), cmp_node);
-                struct hnode *inner = &tree->nodes[HUFF_NSYMS + i];
-                struct hnode *na = nodes[n - 2];
-                struct hnode *nb = nodes[n - 1];
+                struct hnode *na = nodes[n - 2]; /* second smallest */
+                struct hnode *nb = nodes[n - 1]; /* smallest */
+                assert(na->count >= nb->count);
                 /*
-                 * build a new inner node to represent the picked two nodes.
+                 * build a new inner node to represent the picked two nodes
+                 * if necessary.
+                 * otherwise, just use one of the nodes to represent them.
                  */
-                inner->count = na->count + nb->count;
-                inner->u.inner.children[0] = na;
-                inner->u.inner.children[1] = nb;
+                struct hnode *inner;
+                if (nb->count != 0 || i == HUFF_NSYMS - 2) {
+                        inner = &tree->nodes[HUFF_NSYMS + i];
+                        assert((root_node(tree) == inner) ==
+                               (i == HUFF_NSYMS - 2));
+                        inner->count = na->count + nb->count;
+                        inner->u.inner.children[0] = na;
+                        inner->u.inner.children[1] = nb;
+                } else {
+                        inner = na;
+                }
                 /*
                  * replace the two nodes with the inner node.
                  */
@@ -143,9 +156,6 @@ finish_node(const struct hufftree *tree, struct hnode *n, unsigned int nbits,
         bits[idx] >>= 1;
         nbits--;
 }
-
-/* this is a macro because it's used for both of const/non-const trees */
-#define root_node(tree) (&(tree)->nodes[HUFF_NSYMS * 2 - 2])
 
 static void
 finish_tree(struct hufftree *tree)
