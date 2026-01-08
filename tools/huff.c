@@ -291,6 +291,16 @@ huff_table(const struct hufftree *tree, uint8_t *out, size_t *lenp)
                         if (cn->count == 0) {
                                 assert(i == 1);
                                 assert(cons == prod);
+                                /*
+                                 * note: this can happen on only the
+                                 * root node, that is, the first entry.
+                                 *
+                                 * revisit: it would be more efficient
+                                 * if we assign a nbits=0 code to the
+                                 * only symbol in that case. such a tree
+                                 * is not too uncommon for chuff.c.
+                                 */
+                                assert(outp == out);
                                 entry_size = 2;
                                 break;
                         } else if (is_leaf(tree, cn)) {
