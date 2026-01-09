@@ -11,4 +11,6 @@ struct lz_decode_state {
 };
 
 void lz_decode_init(struct lz_decode_state *s);
-void lz_apply_match(uint8_t *cur, woff_t len, woff_t dist);
+void lz_decode_clean_window(struct lz_decode_state *s);
+
+void lz_decode_apply_match(uint8_t *cur, woff_t len, woff_t dist);
