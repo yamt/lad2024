@@ -96,6 +96,7 @@ OBJS += simplify.o
 OBJS += evaluater.o
 OBJS += refine.o
 OBJS += validate.o
+OBJS += test_util.o
 
 ALL_OBJS += ${OBJS}
 ALL_OBJS += ${SOLVER_OBJS}
