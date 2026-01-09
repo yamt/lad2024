@@ -10,6 +10,15 @@ lz_decode_init(struct lz_decode_state *s)
 }
 
 void
+lz_decode_prefill_dict(struct lz_decode_state *s, const void *p, size_t len)
+{
+        assert(s->readidx == 0);
+        assert(s->endidx == 0);
+        memcpy(s->buf, p, len);
+        s->readidx = s->endidx = len;
+}
+
+void
 lz_decode_apply_match(uint8_t *cur, woff_t len, woff_t dist)
 {
         assert(MATCH_LEN_MIN <= len);
