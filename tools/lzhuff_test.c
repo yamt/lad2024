@@ -49,6 +49,9 @@ read_fd(int fd, size_t *szp)
 int
 main(void)
 {
+        const char *prefill_dict = NULL;
+        size_t prefill_dict_len = 0;
+
         size_t inputsize = 0;
         uint8_t *input = read_fd(STDIN_FILENO, &inputsize);
         printf("input size: %zu bytes\n", inputsize);
@@ -63,12 +66,20 @@ main(void)
         assert(1 + MATCH_DISTANCE_MAX - MATCH_DISTANCE_MIN <= HUFF_NSYMS);
         struct lzhuff lzh;
         lzhuff_init(&lzh, match_base);
+        if (prefill_dict != NULL) {
+                lz_encode_prefill_dict(&lzh.lz, prefill_dict,
+                                       prefill_dict_len);
+        }
         lzhuff_update(&lzh, input, inputsize);
         lzhuff_build(&lzh);
 
         struct bitbuf os;
         bitbuf_init(&os);
         lzhuff_encode_init(&lzh, &os);
+        if (prefill_dict != NULL) {
+                lz_encode_prefill_dict(&lzh.lz, prefill_dict,
+                                       prefill_dict_len);
+        }
         lzhuff_encode(&lzh, input, inputsize);
         lzhuff_flush(&lzh);
         bitbuf_flush(&os);
@@ -105,6 +116,9 @@ main(void)
         printf("test decoding...\n");
         struct lz_decode_state dec;
         lz_decode_init(&dec);
+        if (prefill_dict != NULL) {
+                lz_decode_prefill_dict(&dec, prefill_dict, prefill_dict_len);
+        }
         struct bitin in;
         bitin_init(&in, os.p);
         size_t i;
