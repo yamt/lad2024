@@ -16,8 +16,8 @@
 
 #include "huff_debug.h"
 
-int
-main(void)
+static void *
+read_fd(int fd, size_t *szp)
 {
         uint8_t *input = NULL;
         size_t inputsize = 0;
@@ -28,8 +28,7 @@ main(void)
                         fprintf(stderr, "realloc failed\n");
                         exit(1);
                 }
-                ssize_t nread = read(STDIN_FILENO, &input[inputsize],
-                                     bufsz - inputsize);
+                ssize_t nread = read(fd, &input[inputsize], bufsz - inputsize);
                 if (nread == 0) {
                         break;
                 }
@@ -43,8 +42,15 @@ main(void)
                         bufsz *= 2;
                 }
         }
+        *szp = inputsize;
+        return input;
+}
 
-        printf("buffer size: %zu bytes\n", bufsz);
+int
+main(void)
+{
+        size_t inputsize = 0;
+        uint8_t *input = read_fd(STDIN_FILENO, &inputsize);
         printf("input size: %zu bytes\n", inputsize);
 
 #if HUFF_NSYMS < 256 + 1 + (MATCH_LEN_MAX - MATCH_LEN_MIN)
