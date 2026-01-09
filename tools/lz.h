@@ -28,4 +28,7 @@ void lz_encode_init(struct lz_encode_state *state);
 void lz_encode(struct lz_encode_state *state, const void *p, size_t len);
 void lz_encode_flush(struct lz_encode_state *state);
 
+void lz_encode_prefill_dict(struct lz_encode_state *state, const void *p,
+                            size_t len);
+
 #endif /* !defined(_LAD_LZ_H_) */

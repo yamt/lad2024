@@ -177,3 +177,12 @@ lz_encode_flush(struct lz_encode_state *s)
         lz_encode_impl(s, NULL, 0, true);
         s->curoff = s->valid_size = 0;
 }
+
+void
+lz_encode_prefill_dict(struct lz_encode_state *s, const void *p, size_t len)
+{
+        size_t olen = len;
+        fill_buffer(s, &p, &len);
+        s->curoff += olen - len;
+        assert(valid_forward_data(s) == 0);
+}
