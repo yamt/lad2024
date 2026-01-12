@@ -41,7 +41,7 @@ stage_data_size(const uint8_t *p)
 
 struct ctx {
 #if defined(USE_CRANS)
-		struct crans ch;
+        struct crans ch;
         rans_prob_t table[CRANS_TABLE_MAX_NELEMS];
         rans_prob_t *tables[CRANS_NTABLES];
         size_t tablesizes[CRANS_NTABLES];
@@ -63,8 +63,8 @@ main(int argc, char **argv)
         struct ctx ctx;
         struct ctx mctx;
 #if defined(USE_CRANS)
-		crans_init(&ctx.ch);
-		crans_init(&mctx.ch);
+        crans_init(&ctx.ch);
+        crans_init(&mctx.ch);
 #else
         chuff_init(&ctx.ch);
         chuff_init(&mctx.ch);
@@ -125,9 +125,9 @@ main(int argc, char **argv)
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
 #if defined(USE_CRANS)
-        struct rans_encode_state enc;
-        rans_encode_init(&enc);
-				struct byteout bo;
+                struct rans_encode_state enc;
+                rans_encode_init(&enc);
+                struct byteout bo;
                 byteout_init(&bo);
                 crans_encode(&ctx.ch, data, data_size, &enc, &bo);
 #else
@@ -152,7 +152,7 @@ main(int argc, char **argv)
 #endif
                 }
 #if defined(USE_CRANS)
-				rans_encode_flush(&enc, &bo);
+                rans_encode_flush(&enc, &bo);
                 const uint8_t *encoded = rev_byteout_ptr(&bo);
                 size_t encoded_len = bo.actual;
 #else
