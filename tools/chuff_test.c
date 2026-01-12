@@ -57,7 +57,7 @@ main(void)
         printf("test decoding...\n");
         struct chuff_decode_context dec;
         bitin_init(&dec.in, os.p);
-        dec.chuff_ctx = 0;
+        dec.ctx = 0;
         for (i = 0; i < inputsize; i++) {
                 uint8_t actual = chuff_decode_byte(&dec, htable, indexes);
                 uint8_t expected = input[i];

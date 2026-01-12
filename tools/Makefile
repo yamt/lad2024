@@ -23,6 +23,8 @@ CFLAGS += -DNODE_KEEP_HASH
 # bump HUFF_NSYMS for lzhuff
 CFLAGS += -DHUFF_NSYMS=512
 
+#CFLAGS += -DUSE_CRANS
+
 # XXX a bit difficult to tune manually.
 # maybe we should somehow make it automatic.
 CFLAGS += -DUSE_BLOOM_FILTER
