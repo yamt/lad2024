@@ -30,8 +30,8 @@ test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
         while (1) {
                 i--;
                 uint8_t sym = ((const uint8_t *)input)[i];
-                prob_t b_s = rans_b(ps->ls, sym);
-                prob_t l_s = ps->ls[sym];
+                rans_prob_t b_s = rans_b(ps->ls, sym);
+                rans_prob_t l_s = ps->ls[sym];
                 rans_encode_sym(st, sym, b_s, l_s, bo);
                 if (i == 0) {
                         break;
@@ -42,7 +42,7 @@ test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
 
 static void
 test_decode(const void *input, size_t inputsize, size_t origsize,
-            const prob_t *ps, struct byteout *bo)
+            const rans_prob_t *ps, struct byteout *bo)
 {
         printf("decoding...\n");
         struct rans_decode_state st0;
@@ -53,7 +53,7 @@ test_decode(const void *input, size_t inputsize, size_t origsize,
 
         rans_decode_init(st);
         while (bo->actual < origsize) {
-                sym_t sym = rans_decode_sym(st, ps, &cp);
+                rans_sym_t sym = rans_decode_sym(st, ps, &cp);
                 byteout_write(bo, sym);
         }
 }
@@ -69,7 +69,7 @@ test(void)
                 exit(0);
         }
 
-        size_t counts[NSYMS];
+        size_t counts[RANS_NSYMS];
         memset(counts, 0, sizeof(counts));
         count_syms(counts, input, inputsize);
 
@@ -80,7 +80,7 @@ test(void)
         byteout_init(&bo);
         test_encode(input, inputsize, &ps, &bo);
 
-        prob_t table[RANS_TABLE_MAX_NELEMS];
+        rans_prob_t table[RANS_TABLE_MAX_NELEMS];
         size_t tablesize;
         rans_probs_table(&ps, table, &tablesize);
 
@@ -96,7 +96,7 @@ test(void)
 
         printf("decoded correctly\n");
         printf("compression %zu -> %zu + %zu\n", inputsize, bo.actual,
-               tablesize * sizeof(prob_t));
+               tablesize * sizeof(rans_prob_t));
 }
 
 int
