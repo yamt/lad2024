@@ -1,4 +1,4 @@
-#include <assert.h>
+#include "util.h"
 #if defined(RANS_DEBUG)
 #include <stdio.h>
 #endif
@@ -21,7 +21,7 @@ rans_decode_init(struct rans_decode_state *st)
 static rans_sym_t
 find_sym_and_b(const rans_prob_t ls[RANS_NSYMS], rans_I r, rans_prob_t *bp)
 {
-        assert(r < RANS_M);
+        ASSERT(r < RANS_M);
         rans_prob_t b = 0;
         unsigned int i;
         for (i = 0; i < RANS_NSYMS - 1; i++) {
@@ -31,9 +31,9 @@ find_sym_and_b(const rans_prob_t ls[RANS_NSYMS], rans_I r, rans_prob_t *bp)
                 }
                 b += p;
         }
-        assert(i < RANS_NSYMS);
+        ASSERT(i < RANS_NSYMS);
 #if defined(RANS_DEBUG)
-        assert(b == rans_b(ls, i));
+        ASSERT(b == rans_b(ls, i));
 #endif
         *bp = b;
         return (rans_sym_t)i;
@@ -51,8 +51,8 @@ decode_normalize(struct rans_decode_state *st, const uint8_t **inpp)
 #endif
                 st->x = newx;
         }
-        assert(st->x >= RANS_I_MIN);
-        assert(st->x <= RANS_I_MAX);
+        ASSERT(st->x >= RANS_I_MIN);
+        ASSERT(st->x <= RANS_I_MAX);
 }
 
 rans_sym_t
@@ -60,8 +60,8 @@ rans_decode_sym(struct rans_decode_state *st, const rans_prob_t ls[RANS_NSYMS],
                 const uint8_t **inpp)
 {
         decode_normalize(st, inpp);
-        assert(st->x >= RANS_I_MIN);
-        assert(st->x <= RANS_I_MAX);
+        ASSERT(st->x >= RANS_I_MIN);
+        ASSERT(st->x <= RANS_I_MAX);
         rans_I q_x_m = st->x / RANS_M;
         rans_I mod_x_m = st->x % RANS_M;
         rans_prob_t b_s;
