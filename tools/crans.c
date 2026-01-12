@@ -75,10 +75,10 @@ crans_table(const struct crans *ch, rans_prob_t *out,
 }
 
 void
-crans_table_with_trans(const struct crans *ch, rans_prob_t *out,
-                       rans_prob_t *outsp[CRANS_NTABLES],
-                       size_t lensp[CRANS_NTABLES], rans_sym_t *trans,
-                       size_t *nsymsp)
+crans_table_with_shared_trans(const struct crans *ch, rans_prob_t *out,
+                              rans_prob_t *outsp[CRANS_NTABLES],
+                              size_t lensp[CRANS_NTABLES], rans_sym_t *trans,
+                              size_t *nsymsp)
 {
         /*
          * note: we can't simply use rans_probs_table_with_trans
