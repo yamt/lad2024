@@ -1,4 +1,4 @@
-#if !defined(USE_CRANS)
+#if !defined(USE_CRANS) || !defined(__wasm__)
 #include "chuff_decode.h"
 #include "huff_decode.h"
 
