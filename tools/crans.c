@@ -8,7 +8,7 @@
 void
 crans_init(struct crans *ch)
 {
-	ch->context = 0;
+        ch->context = 0;
         memset(ch->counts, 0, sizeof(ch->counts));
 }
 
@@ -33,16 +33,17 @@ crans_build(struct crans *ch)
 }
 
 void
-crans_encode(struct crans *ch, const uint8_t *p, size_t len, struct rans_encode_state *enc, struct byteout *bo)
+crans_encode(struct crans *ch, const uint8_t *p, size_t len,
+             struct rans_encode_state *enc, struct byteout *bo)
 {
         size_t i = len;
         while (1) {
                 i--;
                 uint8_t prev;
                 if (i == 0) {
-                    prev = 0;
+                        prev = 0;
                 } else {
-                    prev = p[i-1];
+                        prev = p[i - 1];
                 }
                 const struct rans_probs *ps = &ch->ps[prev];
                 uint8_t sym = p[i];
@@ -50,7 +51,7 @@ crans_encode(struct crans *ch, const uint8_t *p, size_t len, struct rans_encode_
                 rans_prob_t l_s = ps->ls[sym];
                 rans_encode_sym(enc, sym, b_s, l_s, bo);
                 if (i == 0) {
-                    break;
+                        break;
                 }
         }
 }
