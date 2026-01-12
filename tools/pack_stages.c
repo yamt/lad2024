@@ -104,8 +104,8 @@ main(int argc, char **argv)
 
         crans_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
         rans_sym_t msg_trans[RANS_NSYMS];
-        crans_table_with_trans(&mctx.ch, mctx.table, mctx.tables,
-                               mctx.tablesizes, msg_trans, &msg_nsyms);
+        crans_table_with_shared_trans(&mctx.ch, mctx.table, mctx.tables,
+                                      mctx.tablesizes, msg_trans, &msg_nsyms);
 #else
         chuff_build(&ctx.ch);
         chuff_build(&mctx.ch);
