@@ -95,7 +95,6 @@ main(int argc, char **argv)
                 }
         }
 
-        size_t msg_nsyms;
 #if defined(USE_CRANS)
         crans_build(&ctx.ch);
         crans_build(&mctx.ch);
@@ -104,14 +103,12 @@ main(int argc, char **argv)
         static rans_sym_t msg_trans[CRANS_TABLE_MAX_NELEMS];
         crans_table_with_trans(&mctx.ch, mctx.table, msg_trans, mctx.tables,
                                       mctx.tablesizes);
-        msg_nsyms = mctx.ch.ntables;
 #else
         chuff_build(&ctx.ch);
         chuff_build(&mctx.ch);
 
         chuff_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
         chuff_table(&mctx.ch, mctx.table, mctx.tables, mctx.tablesizes);
-        msg_nsyms = mctx.ch.ntables;
 #endif
 
         printf("#include \"hstages.h\"\n");
@@ -282,7 +279,7 @@ main(int argc, char **argv)
         {
                 printf("const uint16_t stages_msg_huff_table_idx[] = {\n");
                 uint16_t idx = 0;
-                for (i = 0; i < msg_nsyms; i++) {
+                for (i = 0; i < mctx.ch.ntables; i++) {
                         printf("%u,", idx);
                         size_t sz = mctx.tablesizes[i];
                         assert(sz <= UINT16_MAX - idx);
