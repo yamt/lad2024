@@ -1,3 +1,6 @@
+#if !defined(_RANS_PROBS_H_)
+#define _RANS_PROBS_H_
+
 #include <stddef.h>
 
 #include "rans_param.h"
@@ -15,3 +18,5 @@ void rans_probs_table(const struct rans_probs *ps, rans_prob_t *out,
                       size_t *nelemp);
 void rans_probs_table_with_trans(const struct rans_probs *ps, rans_prob_t *out,
                                  rans_sym_t *trans, size_t *nelemp);
+
+#endif /* defined(_RANS_PROBS_H_) */

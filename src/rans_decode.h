@@ -1,4 +1,4 @@
-#if defined(_RANS_DECODE_H_)
+#if !defined(_RANS_DECODE_H_)
 #define _RANS_DECODE_H_
 
 #include <stdbool.h>
