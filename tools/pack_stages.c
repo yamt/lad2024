@@ -100,7 +100,7 @@ main(int argc, char **argv)
         crans_build(&mctx.ch);
 
         crans_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
-        static rans_sym_t msg_trans[CRANS_TABLE_MAX_NELEMS];
+        rans_sym_t msg_trans[CRANS_TABLE_MAX_NELEMS];
         crans_table_with_trans(&mctx.ch, mctx.table, msg_trans, mctx.tables,
                                       mctx.tablesizes);
 #else
