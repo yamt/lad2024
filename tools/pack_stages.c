@@ -103,9 +103,10 @@ main(int argc, char **argv)
         crans_build(&mctx.ch);
 
         crans_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
-        rans_sym_t msg_trans[RANS_NSYMS];
-        crans_table_with_shared_trans(&mctx.ch, mctx.table, mctx.tables,
-                                      mctx.tablesizes, msg_trans, &msg_nsyms);
+        static rans_sym_t msg_trans[CRANS_TABLE_MAX_NELEMS];
+        crans_table_with_trans(&mctx.ch, mctx.table, msg_trans, mctx.tables,
+                                      mctx.tablesizes);
+        msg_nsyms = mctx.ch.ntables;
 #else
         chuff_build(&ctx.ch);
         chuff_build(&mctx.ch);
@@ -196,10 +197,13 @@ main(int argc, char **argv)
                         uint8_t mdecoded[msg_size];
                         uint8_t ch = 0;
                         for (j = 0; j < msg_size; j++) {
+                                unsigned int off = mctx.tables[ch] - mctx.table;
+                                size_t sz = mctx.tablesizes[ch];
+                                assert(sz > 0);
                                 ch = rans_decode_sym(&dec, mctx.tables[ch],
                                                      &inp);
-                                assert(ch < msg_nsyms);
-                                mdecoded[j] = msg_trans[ch];
+                                assert(ch < sz);
+                                mdecoded[j] = ch = msg_trans[off + ch];
                         }
                         assert(!memcmp(stage->message, mdecoded, msg_size));
                 }
