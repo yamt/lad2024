@@ -21,8 +21,8 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         offset &= ~HSTAGE_HAS_MESSAGE;
 
 #if defined(USE_CRANS)
-		struct crans_decode_context ctx;
-		ctx.inp = &stages_huff_data[offset];
+        struct crans_decode_context ctx;
+        ctx.inp = &stages_huff_data[offset];
 #else
         struct chuff_decode_context ctx;
         bitin_init(&ctx.in, &stages_huff_data[offset]);
@@ -37,25 +37,29 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         uint8_t ch;
         while ((ch =
 #if defined(USE_CRANS)
-        crans_decode_byte(&ctx, stages_huff_table, NULL, stages_huff_table_idx)
+                        crans_decode_byte(&ctx, stages_huff_table, NULL,
+                                          stages_huff_table_idx)
 #else
-        chuff_decode_byte(&ctx, stages_huff_table, stages_huff_table_idx)
+                        chuff_decode_byte(&ctx, stages_huff_table,
+                                          stages_huff_table_idx)
 #endif
-                                       ) != END) {
+                        ) != END) {
                 do {
                         map[genloc(x, y)] = ch;
                         x++;
                         if (xmax < x) {
                                 xmax = x;
                         }
-                } while ((ch =
+                } while (
+                        (ch =
 #if defined(USE_CRANS)
-        crans_decode_byte(&ctx, stages_huff_table, NULL, stages_huff_table_idx)
+                                 crans_decode_byte(&ctx, stages_huff_table,
+                                                   NULL, stages_huff_table_idx)
 #else
-        chuff_decode_byte(&ctx, stages_huff_table, stages_huff_table_idx)
+                                 chuff_decode_byte(&ctx, stages_huff_table,
+                                                   stages_huff_table_idx)
 #endif
-                ) !=
-                         END);
+                                 ) != END);
                 x = 0;
                 y++;
         }
@@ -69,9 +73,12 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
                 do {
                         *p++ = ch = (char)
 #if defined(USE_CRANS)
-    crans_decode_byte(&ctx, stages_msg_huff_table, stages_msg_trans, stages_msg_huff_table_idx);
+                                crans_decode_byte(&ctx, stages_msg_huff_table,
+                                                  stages_msg_trans,
+                                                  stages_msg_huff_table_idx);
 #else
-    chuff_decode_byte(&ctx, stages_msg_huff_table, stages_msg_huff_table_idx);
+                                chuff_decode_byte(&ctx, stages_msg_huff_table,
+                                                  stages_msg_huff_table_idx);
 #endif
                 } while (ch != 0);
                 info->message = msgbuf;
