@@ -10,6 +10,7 @@ struct crans {
         uint8_t context;
         size_t counts[CRANS_NTABLES][RANS_NSYMS];
         struct rans_probs ps[CRANS_NTABLES];
+        unsigned int ntables;
 };
 
 struct byteout;

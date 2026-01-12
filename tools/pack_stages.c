@@ -47,9 +47,9 @@ struct ctx {
         size_t tablesizes[CRANS_NTABLES];
 #else
         struct chuff ch;
-        uint8_t chtable[CHUFF_TABLE_SIZE_MAX];
-        uint8_t *hufftables[CHUFF_NTABLES];
-        size_t hufftablesizes[CHUFF_NTABLES];
+        uint8_t table[CHUFF_TABLE_SIZE_MAX];
+        uint8_t *tables[CHUFF_NTABLES];
+        size_t tablesizes[CHUFF_NTABLES];
 #endif
 };
 
@@ -100,14 +100,13 @@ main(int argc, char **argv)
         crans_build(&mctx.ch);
 
         crans_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
-        crans_table(&mctx.ch, ctx.table, mctx.tables, mctx.tablesizes);
+        crans_table(&mctx.ch, mctx.table, mctx.tables, mctx.tablesizes);
 #else
         chuff_build(&ctx.ch);
         chuff_build(&mctx.ch);
 
-        chuff_table(&ctx.ch, ctx.chtable, ctx.hufftables, ctx.hufftablesizes);
-        chuff_table(&mctx.ch, mctx.chtable, mctx.hufftables,
-                    mctx.hufftablesizes);
+        chuff_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
+        chuff_table(&mctx.ch, mctx.table, mctx.tables, mctx.tablesizes);
 #endif
 
         printf("#include \"hstages.h\"\n");
@@ -177,8 +176,8 @@ main(int argc, char **argv)
                 uint8_t decoded[data_size];
                 uint8_t chuff_ctx = 0;
                 for (j = 0; j < data_size; j++) {
-                        decoded[j] = chuff_ctx = huff_decode_sym(
-                                &in, ctx.hufftables[chuff_ctx]);
+                        decoded[j] = chuff_ctx =
+                                huff_decode_sym(&in, ctx.tables[chuff_ctx]);
                 }
                 assert(!memcmp(data, decoded, data_size));
 #endif
@@ -191,7 +190,6 @@ main(int argc, char **argv)
         }
         printf("};\n");
 
-#if !defined(USE_CRANS)
         printf("const struct hstage packed_stages[] = {\n");
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
@@ -221,17 +219,27 @@ main(int argc, char **argv)
                 printf("const uint16_t stages_huff_table_idx[] = {\n");
                 uint16_t idx = 0;
                 for (i = 0; i < ctx.ch.ntables; i++) {
-                        printf("%#04x,", idx);
-                        size_t sz = ctx.hufftablesizes[i];
+                        printf("%u,", idx);
+                        size_t sz = ctx.tablesizes[i];
                         assert(sz <= UINT16_MAX - idx);
                         idx += sz;
                 }
                 printf("};\n");
                 size_t htablesize = idx;
+#if defined(USE_CRANS)
+                printf("// table size %zu bytes\n",
+                       htablesize * sizeof(rans_prob_t));
+                printf("const rans_prob_t stages_huff_table[] = {\n");
+#else
                 printf("// table size %zu bytes\n", htablesize);
                 printf("const uint8_t stages_huff_table[] = {\n");
+#endif
                 for (i = 0; i < htablesize; i++) {
-                        printf("%#02x,", (unsigned int)ctx.chtable[i]);
+#if defined(USE_CRANS)
+                        printf("%#04x,", (unsigned int)ctx.table[i]);
+#else
+                        printf("%#02x,", (unsigned int)ctx.table[i]);
+#endif
                 }
                 printf("};\n");
         }
@@ -240,21 +248,30 @@ main(int argc, char **argv)
                 printf("const uint16_t stages_msg_huff_table_idx[] = {\n");
                 uint16_t idx = 0;
                 for (i = 0; i < mctx.ch.ntables; i++) {
-                        printf("%#04x,", idx);
-                        size_t sz = mctx.hufftablesizes[i];
+                        printf("%u,", idx);
+                        size_t sz = mctx.tablesizes[i];
                         assert(sz <= UINT16_MAX - idx);
                         idx += sz;
                 }
                 printf("};\n");
                 size_t htablesize = idx;
+#if defined(USE_CRANS)
+                printf("// table size %zu bytes\n",
+                       htablesize * sizeof(rans_prob_t));
+                printf("const rans_prob_t stages_msg_huff_table[] = {\n");
+#else
                 printf("// table size %zu bytes\n", htablesize);
                 printf("const uint8_t stages_msg_huff_table[] = {\n");
+#endif
                 for (i = 0; i < htablesize; i++) {
-                        printf("%#02x,", (unsigned int)mctx.chtable[i]);
+#if defined(USE_CRANS)
+                        printf("%#04x,", (unsigned int)mctx.table[i]);
+#else
+                        printf("%#02x,", (unsigned int)mctx.table[i]);
+#endif
                 }
                 printf("};\n");
         }
-#endif
 
         printf("const unsigned int nstages = %u;\n", nstages);
         // printf("const unsigned int maxmlen = %zu;\n", maxmlen);
