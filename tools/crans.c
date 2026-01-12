@@ -9,17 +9,20 @@ void
 crans_init(struct crans *ch)
 {
         ch->context = 0;
+        ch->ntables = 0;
         memset(ch->counts, 0, sizeof(ch->counts));
 }
 
 void
 crans_update(struct crans *ch, const uint8_t *p, size_t len)
 {
-
         const uint8_t *ep = p + len;
         while (p < ep) {
                 count_syms(ch->counts[ch->context], p, 1);
                 ch->context = *p++;
+                if (ch->ntables <= ch->context) {
+                        ch->ntables = ch->context + 1;
+                }
         }
 }
 
