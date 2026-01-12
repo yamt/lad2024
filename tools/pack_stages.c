@@ -52,7 +52,6 @@ struct ctx {
         uint8_t *tables[CHUFF_NTABLES];
         size_t tablesizes[CHUFF_NTABLES];
 #endif
-        uint16_t idxes[256];
 };
 
 int
@@ -115,22 +114,6 @@ main(int argc, char **argv)
         chuff_table(&mctx.ch, mctx.table, mctx.tables, mctx.tablesizes);
         msg_nsyms = mctx.ch.ntables;
 #endif
-        { /* debug */
-                size_t idx = 0;
-                for (i = 0; i < 256; i++) {
-                        size_t sz = ctx.tablesizes[i];
-                        assert(sz <= UINT16_MAX - idx);
-                        ctx.idxes[i] = idx;
-                        idx += sz;
-                }
-                idx = 0;
-                for (i = 0; i < 256; i++) {
-                        size_t sz = mctx.tablesizes[i];
-                        assert(sz <= UINT16_MAX - idx);
-                        mctx.idxes[i] = idx;
-                        idx += sz;
-                }
-        }
 
         printf("#include \"hstages.h\"\n");
 
