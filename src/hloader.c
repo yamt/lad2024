@@ -22,6 +22,7 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
 
 #if defined(USE_CRANS)
         struct crans_decode_context ctx;
+        rans_decode_init(&ctx.dec);
         ctx.inp = &stages_huff_data[offset];
 #else
         struct chuff_decode_context ctx;
