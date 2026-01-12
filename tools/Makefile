@@ -102,6 +102,7 @@ OBJS += byteout.o
 OBJS += rans_probs.o
 OBJS += rans_common.o
 OBJS += rans_encode.o
+OBJS += rans_decode.o
 OBJS += crans.o
 
 ALL_OBJS += ${OBJS}

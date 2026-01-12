@@ -10,6 +10,7 @@
 #if defined(USE_CRANS)
 #include "byteout.h"
 #include "crans.h"
+#include "rans_decode.h"
 #else
 #include "bitbuf.h"
 #include "bitin.h"
@@ -51,6 +52,7 @@ struct ctx {
         uint8_t *tables[CHUFF_NTABLES];
         size_t tablesizes[CHUFF_NTABLES];
 #endif
+        uint16_t idxes[256];
 };
 
 int
@@ -95,19 +97,40 @@ main(int argc, char **argv)
 #endif
                 }
         }
+
+        size_t msg_nsyms;
 #if defined(USE_CRANS)
         crans_build(&ctx.ch);
         crans_build(&mctx.ch);
 
         crans_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
-        crans_table(&mctx.ch, mctx.table, mctx.tables, mctx.tablesizes);
+        rans_sym_t msg_trans[RANS_NSYMS];
+        crans_table_with_trans(&mctx.ch, mctx.table, mctx.tables,
+                               mctx.tablesizes, msg_trans, &msg_nsyms);
 #else
         chuff_build(&ctx.ch);
         chuff_build(&mctx.ch);
 
         chuff_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
         chuff_table(&mctx.ch, mctx.table, mctx.tables, mctx.tablesizes);
+        msg_nsyms = mctx.ch.ntables;
 #endif
+        { /* debug */
+                size_t idx = 0;
+                for (i = 0; i < 256; i++) {
+                        size_t sz = ctx.tablesizes[i];
+                        assert(sz <= UINT16_MAX - idx);
+                        ctx.idxes[i] = idx;
+                        idx += sz;
+                }
+                idx = 0;
+                for (i = 0; i < 256; i++) {
+                        size_t sz = mctx.tablesizes[i];
+                        assert(sz <= UINT16_MAX - idx);
+                        mctx.idxes[i] = idx;
+                        idx += sz;
+                }
+        }
 
         printf("#include \"hstages.h\"\n");
 
@@ -128,7 +151,6 @@ main(int argc, char **argv)
                 rans_encode_init(&enc);
                 struct byteout bo;
                 byteout_init(&bo);
-                crans_encode(&ctx.ch, data, data_size, &enc, &bo);
 #else
                 ctx.ch.context = 0;
                 struct bitbuf os;
@@ -151,6 +173,11 @@ main(int argc, char **argv)
 #endif
                 }
 #if defined(USE_CRANS)
+                /*
+                 * note: encode in the reversed order for rANS
+                 * (message and then data)
+                 */
+                crans_encode(&ctx.ch, data, data_size, &enc, &bo);
                 rans_encode_flush(&enc, &bo);
                 const uint8_t *encoded = rev_byteout_ptr(&bo);
                 size_t encoded_len = bo.actual;
@@ -169,8 +196,31 @@ main(int argc, char **argv)
                         printf("%#02x,", (unsigned int)encoded[j]);
                 }
                 printf("\n");
-#if !defined(USE_CRANS)
 #if 1 /* debug */
+#if defined(USE_CRANS)
+                uint8_t decoded[data_size];
+                struct rans_decode_state dec;
+                rans_decode_init(&dec);
+                const uint8_t *inp = encoded;
+                uint8_t ch = 0;
+                for (j = 0; j < data_size; j++) {
+                        ch = rans_decode_sym(&dec, ctx.tables[ch], &inp);
+                        decoded[j] = ch;
+                }
+                assert(!memcmp(data, decoded, data_size));
+
+                if (stage->message != NULL) {
+                        uint8_t mdecoded[msg_size];
+                        uint8_t ch = 0;
+                        for (j = 0; j < msg_size; j++) {
+                                ch = rans_decode_sym(&dec, mctx.tables[ch],
+                                                     &inp);
+                                assert(ch < msg_nsyms);
+                                mdecoded[j] = msg_trans[ch];
+                        }
+                        assert(!memcmp(stage->message, mdecoded, msg_size));
+                }
+#else
                 struct bitin in;
                 bitin_init(&in, encoded);
                 uint8_t decoded[data_size];
@@ -247,7 +297,7 @@ main(int argc, char **argv)
         {
                 printf("const uint16_t stages_msg_huff_table_idx[] = {\n");
                 uint16_t idx = 0;
-                for (i = 0; i < mctx.ch.ntables; i++) {
+                for (i = 0; i < msg_nsyms; i++) {
                         printf("%u,", idx);
                         size_t sz = mctx.tablesizes[i];
                         assert(sz <= UINT16_MAX - idx);
