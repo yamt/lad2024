@@ -107,6 +107,22 @@ count_syms(size_t counts[RANS_NSYMS], const void *input, size_t inputsize)
 }
 
 void
+rans_probs_table_with_trans(const struct rans_probs *ps, rans_prob_t *out,
+                            rans_sym_t *trans, size_t *nelemp)
+{
+        unsigned int nsyms = 0;
+        unsigned int i;
+        for (i = 0; i < RANS_NSYMS; i++) {
+                if (ps->ls[i] > 0) {
+                        trans[nsyms] = i;
+                        out[nsyms] = ps->ls[i];
+                        nsyms++;
+                }
+        }
+        *nelemp = nsyms;
+}
+
+void
 rans_probs_table(const struct rans_probs *ps, rans_prob_t *out, size_t *nelemp)
 {
         unsigned int n = RANS_NSYMS;
