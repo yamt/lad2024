@@ -98,6 +98,11 @@ OBJS += refine.o
 OBJS += validate.o
 OBJS += test_util.o
 
+OBJS += byteout.o
+OBJS += rans_probs.o
+OBJS += rans_common.o
+OBJS += rans_encode.o
+
 ALL_OBJS += ${OBJS}
 ALL_OBJS += ${SOLVER_OBJS}
 ALL_OBJS += ${GENERATOR_OBJS}
