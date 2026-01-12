@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "byteout.h"
@@ -71,6 +72,31 @@ crans_table(const struct crans *ch, rans_prob_t *out,
                 outsp[i] = out;
                 lensp[i] = outlen;
                 out += outlen;
+        }
+}
+
+void
+crans_table_with_trans(const struct crans *ch, rans_prob_t *out,
+                       rans_sym_t trans[CRANS_NTABLES],
+                       rans_prob_t *outsp[CRANS_NTABLES],
+                       size_t lensp[CRANS_NTABLES])
+{
+        unsigned int i;
+        for (i = 0; i < CRANS_NTABLES; i++) {
+                size_t outlen;
+                rans_probs_table_with_trans(&ch->ps[i], out, trans, &outlen);
+#if 0
+                printf("crans_table_with_trans [0x%02x] %zu\n", i, outlen);
+                unsigned int j;
+                for (j = 0; j < outlen; j++) {
+                        printf("\t0x%02x\t%u (%.2f%%)\n", trans[j], out[j],
+                               (double)100 * out[j] / RANS_M);
+                }
+#endif
+                outsp[i] = out;
+                lensp[i] = outlen;
+                out += outlen;
+                trans += outlen;
         }
 }
 

@@ -25,6 +25,10 @@ void crans_encode(struct crans *c, const uint8_t *p, size_t len,
 void crans_table(const struct crans *c, rans_prob_t *out,
                  rans_prob_t *outsp[CRANS_NTABLES],
                  size_t lensp[CRANS_NTABLES]);
+void crans_table_with_trans(const struct crans *c, rans_prob_t *out,
+                            rans_sym_t trans[CRANS_NTABLES],
+                            rans_prob_t *outsp[CRANS_NTABLES],
+                            size_t lensp[CRANS_NTABLES]);
 void crans_table_with_shared_trans(const struct crans *ch, rans_prob_t *out,
                                    rans_prob_t *outsp[CRANS_NTABLES],
                                    size_t lensp[CRANS_NTABLES],
