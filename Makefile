@@ -14,6 +14,7 @@ DEBUG = 0
 
 # Compilation flags
 CFLAGS = -W -Wall -Wextra -Werror -Wno-unused -Wconversion -Wsign-conversion -MMD -MP -fno-exceptions -mbulk-memory -fshort-enums
+#CFLAGS += -DUSE_CRANS
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -O0 -g
 else

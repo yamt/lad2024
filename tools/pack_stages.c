@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USE_CRANS
-
 #if defined(USE_CRANS)
 #include "byteout.h"
 #include "crans.h"
