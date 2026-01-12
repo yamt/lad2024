@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "byteout.h"
@@ -71,4 +72,53 @@ crans_table(const struct crans *ch, rans_prob_t *out,
                 lensp[i] = outlen;
                 out += outlen;
         }
+}
+
+void
+crans_table_with_trans(const struct crans *ch, rans_prob_t *out,
+                       rans_prob_t *outsp[CRANS_NTABLES],
+                       size_t lensp[CRANS_NTABLES], rans_sym_t *trans,
+                       size_t *nsymsp)
+{
+        /*
+         * note: we can't simply use rans_probs_table_with_trans
+         * because we want to have a single shared trans table,
+         * not per rans_sym_t.
+         */
+
+        bool used[RANS_NSYMS];
+        memset(used, 0, sizeof(used));
+        unsigned int nsyms = 0;
+        unsigned int i;
+        for (i = 0; i < CRANS_NTABLES; i++) {
+                unsigned int j;
+                for (j = 0; j < RANS_NSYMS; j++) {
+                        if (ch->ps[j].ls[i] > 0) {
+                                used[i] = true;
+                                nsyms++;
+                                break;
+                        }
+                }
+        }
+        unsigned int cur = 0;
+        for (i = 0; i < CRANS_NTABLES; i++) {
+                if (!used[i]) {
+                        continue;
+                }
+                trans[cur] = i;
+                outsp[cur] = out;
+                lensp[cur] = nsyms;
+                unsigned int j;
+                for (j = 0; j < RANS_NSYMS; j++) {
+                        rans_prob_t l_s = ch->ps[i].ls[j];
+                        if (used[j]) {
+                                *out++ = l_s;
+                        } else {
+                                assert(l_s == 0);
+                        }
+                }
+                cur++;
+        }
+        assert(cur == nsyms);
+        *nsymsp = nsyms;
 }
