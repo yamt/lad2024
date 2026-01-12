@@ -5,12 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define USE_CRANS
+
+#if defined(USE_CRANS)
+#include "byteout.h"
+#include "crans.h"
+#else
 #include "bitbuf.h"
 #include "bitin.h"
 #include "chuff.h"
+#include "huff_decode.h"
+#endif
+
 #include "defs.h"
 #include "dump.h"
-#include "huff_decode.h"
 #include "loader.h"
 #include "maputil.h"
 #include "stages.h"
@@ -32,10 +40,17 @@ stage_data_size(const uint8_t *p)
 }
 
 struct ctx {
+#if defined(USE_CRANS)
+		struct crans ch;
+        rans_prob_t table[CRANS_TABLE_MAX_NELEMS];
+        rans_prob_t *tables[CRANS_NTABLES];
+        size_t tablesizes[CRANS_NTABLES];
+#else
         struct chuff ch;
         uint8_t chtable[CHUFF_TABLE_SIZE_MAX];
         uint8_t *hufftables[CHUFF_NTABLES];
         size_t hufftablesizes[CHUFF_NTABLES];
+#endif
 };
 
 int
@@ -47,31 +62,53 @@ main(int argc, char **argv)
 
         struct ctx ctx;
         struct ctx mctx;
+#if defined(USE_CRANS)
+		crans_init(&ctx.ch);
+		crans_init(&mctx.ch);
+#else
         chuff_init(&ctx.ch);
         chuff_init(&mctx.ch);
+#endif
         unsigned int i;
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
+#if defined(USE_CRANS)
+                crans_update(&ctx.ch, data, data_size);
+#else
                 ctx.ch.context = 0;
                 chuff_update(&ctx.ch, data, data_size);
+#endif
                 if (stage->message != NULL) {
                         size_t len = strlen(stage->message) + 1;
                         if (len > maxmlen) {
                                 maxmlen = len;
                         }
+#if defined(USE_CRANS)
+                        crans_update(&mctx.ch, (const void *)stage->message,
+                                     len);
+#else
                         mctx.ch.context = 0;
                         chuff_update(&mctx.ch, (const void *)stage->message,
                                      len);
+#endif
                 }
         }
+#if defined(USE_CRANS)
+        crans_build(&ctx.ch);
+        crans_build(&mctx.ch);
+
+        crans_table(&ctx.ch, ctx.table, ctx.tables, ctx.tablesizes);
+        crans_table(&mctx.ch, ctx.table, mctx.tables, mctx.tablesizes);
+#else
         chuff_build(&ctx.ch);
         chuff_build(&mctx.ch);
 
         chuff_table(&ctx.ch, ctx.chtable, ctx.hufftables, ctx.hufftablesizes);
         chuff_table(&mctx.ch, mctx.chtable, mctx.hufftables,
                     mctx.hufftablesizes);
+#endif
 
         printf("#include \"hstages.h\"\n");
 
@@ -87,23 +124,42 @@ main(int argc, char **argv)
                 offset[i] = curoff;
                 const uint8_t *data = stage->data;
                 size_t data_size = stage_data_size(data);
+#if defined(USE_CRANS)
+        struct rans_encode_state enc;
+        rans_encode_init(&enc);
+				struct byteout bo;
+                byteout_init(&bo);
+                crans_encode(&ctx.ch, data, data_size, &enc, &bo);
+#else
                 ctx.ch.context = 0;
                 struct bitbuf os;
                 bitbuf_init(&os);
                 chuff_encode(&ctx.ch, data, data_size, &os);
+#endif
 
                 size_t msg_size = 0;
                 if (stage->message != NULL) {
                         msg_size = strlen(stage->message) + 1;
                         assert(msg_size <= MSG_SIZE_MAX);
 
+#if defined(USE_CRANS)
+                        crans_encode(&mctx.ch, (const void *)stage->message,
+                                     msg_size, &enc, &bo);
+#else
                         mctx.ch.context = 0;
                         chuff_encode(&mctx.ch, (const void *)stage->message,
                                      msg_size, &os);
+#endif
                 }
+#if defined(USE_CRANS)
+				rans_encode_flush(&enc, &bo);
+                const uint8_t *encoded = rev_byteout_ptr(&bo);
+                size_t encoded_len = bo.actual;
+#else
                 bitbuf_flush(&os);
                 const uint8_t *encoded = os.p;
                 size_t encoded_len = os.datalen;
+#endif
 
                 printf("// stage %04u %zu+%zu -> %zu bytes (%.1f %%)\n", i + 1,
                        data_size, msg_size, encoded_len,
@@ -114,6 +170,7 @@ main(int argc, char **argv)
                         printf("%#02x,", (unsigned int)encoded[j]);
                 }
                 printf("\n");
+#if !defined(USE_CRANS)
 #if 1 /* debug */
                 struct bitin in;
                 bitin_init(&in, encoded);
@@ -125,10 +182,16 @@ main(int argc, char **argv)
                 }
                 assert(!memcmp(data, decoded, data_size));
 #endif
+#endif
+#if defined(USE_CRANS)
+                byteout_clear(&bo);
+#else
                 bitbuf_clear(&os);
+#endif
         }
         printf("};\n");
 
+#if !defined(USE_CRANS)
         printf("const struct hstage packed_stages[] = {\n");
         for (i = 0; i < nstages; i++) {
                 const struct stage *stage = &stages[i];
@@ -191,6 +254,7 @@ main(int argc, char **argv)
                 }
                 printf("};\n");
         }
+#endif
 
         printf("const unsigned int nstages = %u;\n", nstages);
         // printf("const unsigned int maxmlen = %zu;\n", maxmlen);
