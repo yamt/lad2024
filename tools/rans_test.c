@@ -42,7 +42,7 @@ test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
 
 static void
 test_decode(const void *input, size_t inputsize, size_t origsize,
-            const rans_prob_t *ps, struct byteout *bo)
+            const rans_prob_t *ps, const rans_sym_t *trans, struct byteout *bo)
 {
         printf("decoding...\n");
         struct rans_decode_state st0;
@@ -54,6 +54,9 @@ test_decode(const void *input, size_t inputsize, size_t origsize,
         rans_decode_init(st);
         while (bo->actual < origsize) {
                 rans_sym_t sym = rans_decode_sym(st, ps, &cp);
+                if (trans != NULL) {
+                        sym = trans[sym];
+                }
                 byteout_write(bo, sym);
         }
 }
@@ -84,19 +87,34 @@ test(void)
         size_t tablesize;
         rans_probs_table(&ps, table, &tablesize);
 
+        size_t ctablesize;
+        rans_prob_t ctable[RANS_TABLE_MAX_NELEMS];
+        rans_sym_t ctrans[RANS_NSYMS];
+        rans_probs_table_with_trans(&ps, ctable, ctrans, &ctablesize);
+
         struct byteout bo_dec;
         byteout_init(&bo_dec);
-        test_decode(rev_byteout_ptr(&bo), bo.actual, inputsize, table,
+        test_decode(rev_byteout_ptr(&bo), bo.actual, inputsize, table, NULL,
                     &bo_dec);
         assert(bo_dec.actual == inputsize);
         assert(!memcmp(bo_dec.p, input, inputsize));
+        byteout_clear(&bo_dec);
+
+        byteout_init(&bo_dec);
+        test_decode(rev_byteout_ptr(&bo), bo.actual, inputsize, ctable, ctrans,
+                    &bo_dec);
+        assert(bo_dec.actual == inputsize);
+        assert(!memcmp(bo_dec.p, input, inputsize));
+        byteout_clear(&bo_dec);
 
         byteout_clear(&bo);
-        byteout_clear(&bo_dec);
 
         printf("decoded correctly\n");
         printf("compression %zu -> %zu + %zu\n", inputsize, bo.actual,
                tablesize * sizeof(rans_prob_t));
+        printf("compression %zu -> %zu + %zu + %zu (w/ trans)\n", inputsize,
+               bo.actual, ctablesize * sizeof(rans_prob_t),
+               ctablesize * sizeof(rans_sym_t));
 }
 
 int
