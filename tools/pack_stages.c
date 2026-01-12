@@ -321,6 +321,15 @@ main(int argc, char **argv)
 #endif
                 }
                 printf("};\n");
+
+#if defined(USE_CRANS)
+                printf("// msg trans table size %zu bytes\n", msg_nsyms);
+                printf("const rans_sym_t stages_msg_trans[] = {\n");
+                for (i = 0; i < msg_nsyms; i++) {
+                        printf("%#02x,", (unsigned int)msg_trans[i]);
+                }
+                printf("};\n");
+#endif
         }
 
         printf("const unsigned int nstages = %u;\n", nstages);
