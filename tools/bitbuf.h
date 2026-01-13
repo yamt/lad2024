@@ -1,7 +1,7 @@
 /*
  * bit-stream output buffer
  *
- * the format of the output bit stream: within a byte, MSB are first.
+ * the format of the bit stream: within a byte, the MSB is first.
  */
 
 #include <stdbool.h>
