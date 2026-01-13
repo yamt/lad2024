@@ -1,3 +1,9 @@
+/*
+ * bit-stream input
+ *
+ * the format of the bit stream: within a byte, the MSB is first.
+ */
+
 #if !defined(_LAD_BITIN_H_)
 #define _LAD_BITIN_H_
 
