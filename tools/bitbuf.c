@@ -45,8 +45,17 @@ bitbuf_flush1(struct bitbuf *s, unsigned int thresh)
 static void
 bitbuf_write1(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 {
+        /*
+         * input: the least significant "nbits" of "bits".
+         * output: s->buf is filled from MSBs.
+         */
         assert(nbits > 0);
         assert(nbits <= 8);
+
+        /* assert that unused bits are zero */
+        assert((bits & (0xffff << nbits)) == 0);
+        assert((s->buf & (0xffffffff >> s->bufoff)) == 0);
+
         unsigned int shift = 32 - s->bufoff - nbits;
         s->buf |= (uint32_t)bits << shift;
         s->bufoff += nbits;
