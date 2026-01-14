@@ -6,16 +6,15 @@
 #include <string.h>
 
 #if defined(USE_CRANS)
-#include "byteout.h"
 #include "crans.h"
 #include "rans_decode.h"
 #else
-#include "bitbuf.h"
 #include "bitin.h"
 #include "chuff.h"
 #include "huff_decode.h"
 #endif
 
+#include "bitbuf.h"
 #include "defs.h"
 #include "dump.h"
 #include "loader.h"
@@ -128,8 +127,8 @@ main(int argc, char **argv)
 #if defined(USE_CRANS)
                 struct rans_encode_state enc;
                 rans_encode_init(&enc);
-                struct byteout bo;
-                byteout_init(&bo);
+                struct bitbuf bo;
+                bitbuf_init(&bo);
 #else
                 ctx.ch.context = 0;
                 struct bitbuf os;
@@ -158,8 +157,9 @@ main(int argc, char **argv)
                  */
                 crans_encode(&ctx.ch, data, data_size, &enc, &bo);
                 rans_encode_flush(&enc, &bo);
-                const uint8_t *encoded = rev_byteout_ptr(&bo);
-                size_t encoded_len = bo.actual;
+                bitbuf_rev_flush(&bo);
+                const uint8_t *encoded = bo.p;
+                size_t encoded_len = bo.datalen;
 #else
                 bitbuf_flush(&os);
                 const uint8_t *encoded = os.p;
@@ -215,7 +215,7 @@ main(int argc, char **argv)
 #endif
 #endif
 #if defined(USE_CRANS)
-                byteout_clear(&bo);
+                bitbuf_clear(&bo);
 #else
                 bitbuf_clear(&os);
 #endif
