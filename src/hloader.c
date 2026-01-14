@@ -1,6 +1,7 @@
 #include <string.h>
 
 #if defined(USE_CRANS)
+#include "bitin.h"
 #include "crans_decode.h"
 #else
 #include "chuff_decode.h"
@@ -23,7 +24,11 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
 #if defined(USE_CRANS)
         struct crans_decode_context ctx;
         rans_decode_init(&ctx.dec);
+#if defined(RANS_DECODE_BITS)
+        bitin_init(&ctx.inp, &stages_huff_data[offset]);
+#else
         ctx.inp = &stages_huff_data[offset];
+#endif
 #else
         struct chuff_decode_context ctx;
         bitin_init(&ctx.in, &stages_huff_data[offset]);
