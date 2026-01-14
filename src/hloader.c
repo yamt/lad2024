@@ -91,4 +91,7 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         } else {
                 info->message = NULL;
         }
+#if defined(USE_CRANS)
+        ASSERT(rans_decode_get_extra(&ctx.dec, &ctx.inp) == 0);
+#endif
 }
