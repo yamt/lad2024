@@ -50,8 +50,10 @@ typedef RANS_I_TYPE rans_I;
 
 #define RANS_NSYMS 256
 
+#if !defined(RANS_ASSERT)
 #include <assert.h>
 #define RANS_ASSERT(a) assert(a)
+#endif
 
 #if RANS_B_BITS > 16
 #error B > 65536 is not implemented
