@@ -208,6 +208,7 @@ main(int argc, char **argv)
                         }
                         assert(!memcmp(stage->message, mdecoded, msg_size));
                 }
+                assert(rans_decode_get_extra(&dec, &inp) == 0);
 #else
                 struct bitin in;
                 bitin_init(&in, encoded);
