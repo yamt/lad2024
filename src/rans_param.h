@@ -13,14 +13,14 @@
 #include <stdint.h>
 
 typedef uint8_t rans_sym_t;
-typedef uint16_t rans_prob_t;
+typedef uint8_t rans_prob_t;
 typedef uint32_t rans_I;
 
 #define RANS_B_BITS 8
 /* #define RANS_DECODE_BITS */
 #define RANS_B (1 << RANS_B_BITS) /* b in the paper */
-#define RANS_L (128 * RANS_M)     /* l in the paper */
-#define RANS_M 65536              /* m in the paper */
+#define RANS_L (1 * RANS_M)     /* l in the paper */
+#define RANS_M 256              /* m in the paper */
 
 #define RANS_I_SYM_MIN(l_s) ((rans_I)RANS_L / RANS_M * l_s)
 #define RANS_I_SYM_MAX(l_s) ((rans_I)RANS_B * RANS_L / RANS_M * l_s - 1)
