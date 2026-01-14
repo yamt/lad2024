@@ -8,7 +8,7 @@ encode_sym(const struct hufftree *h, huff_sym_t ch, struct bitbuf *os)
 {
         uint16_t nbits;
         const uint8_t *sym = huff_encode_sym(h, ch, &nbits);
-        bitbuf_write(os, sym, nbits);
+        bitbuf_write_multi(os, sym, nbits);
 }
 
 static void

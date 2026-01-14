@@ -217,7 +217,7 @@ huff_encode(const struct hufftree *tree, const uint8_t *p, size_t len,
         while (cp < ep) {
                 uint16_t nbits;
                 const uint8_t *bits = huff_encode_sym(tree, *cp++, &nbits);
-                bitbuf_write(&os, bits, nbits);
+                bitbuf_write_multi(&os, bits, nbits);
         }
         bitbuf_flush(&os);
         memcpy(out, os.p, os.datalen);
