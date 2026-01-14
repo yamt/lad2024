@@ -1,5 +1,5 @@
-#include "rans_param.h"
 #include "bitin.h"
+#include "rans_param.h"
 
 void
 bitin_init(struct bitin *in, const uint8_t *p)
