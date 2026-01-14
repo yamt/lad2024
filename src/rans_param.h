@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
+#include "rans_override.h"
+
 #if !defined(RANS_SYM_TYPE)
 #define RANS_SYM_TYPE uint8_t
 #endif
