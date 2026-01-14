@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "bitin.h"
 
 void
@@ -19,4 +21,17 @@ bitin_get_bit(struct bitin *in)
                 in->p++;
         }
         return bit;
+}
+
+uint16_t
+bitin_get_bits(struct bitin *in, unsigned int nbits)
+{
+        assert(nbits <= 16);
+        uint16_t bits = 0;
+        unsigned int i;
+        for (i = 0; i < nbits; i++) {
+                bits <<= 1;
+                bits |= bitin_get_bit(in);
+        }
+        return bits;
 }

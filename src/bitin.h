@@ -16,5 +16,6 @@ struct bitin {
 
 void bitin_init(struct bitin *in, const uint8_t *p);
 uint8_t bitin_get_bit(struct bitin *in);
+uint16_t bitin_get_bits(struct bitin *in, unsigned int nbits);
 
 #endif /* !defined(_LAD_BITIN_H_) */
