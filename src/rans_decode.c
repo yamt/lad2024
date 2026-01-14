@@ -93,7 +93,7 @@ rans_decode_get_extra(struct rans_decode_state *st,
                       rans_decode_input_type inpp)
 {
         decode_normalize(st, inpp);
-        assert(st->x >= RANS_I_MIN);
-        assert(st->x <= RANS_I_MAX);
+        RANS_ASSERT(st->x >= RANS_I_MIN);
+        RANS_ASSERT(st->x <= RANS_I_MAX);
         return st->x - RANS_I_MIN;
 }

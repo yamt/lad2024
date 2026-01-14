@@ -12,15 +12,33 @@
 
 #include <stdint.h>
 
-typedef uint8_t rans_sym_t;
-typedef uint8_t rans_prob_t;
-typedef uint32_t rans_I;
+#if !defined(RANS_SYM_TYPE)
+#define RANS_SYM_TYPE uint8_t
+#endif
+#if !defined(RANS_PROB_TYPE)
+#define RANS_PROB_TYPE uint16_t
+#endif
+#if !defined(RANS_I_TYPE)
+#define RANS_I_TYPE uint32_t
+#endif
 
+typedef RANS_SYM_TYPE rans_sym_t;
+typedef RANS_PROB_TYPE rans_prob_t;
+typedef RANS_I_TYPE rans_I;
+
+#if !defined(RANS_B_BITS)
 #define RANS_B_BITS 8
+#endif
 /* #define RANS_DECODE_BITS */
+#if !defined(RANS_B)
 #define RANS_B (1 << RANS_B_BITS) /* b in the paper */
-#define RANS_L (1 * RANS_M)     /* l in the paper */
-#define RANS_M 256              /* m in the paper */
+#endif
+#if !defined(RANS_L)
+#define RANS_L (128 * RANS_M)     /* l in the paper */
+#endif
+#if !defined(RANS_M)
+#define RANS_M 65536              /* m in the paper */
+#endif
 
 #define RANS_I_SYM_MIN(l_s) ((rans_I)RANS_L / RANS_M * l_s)
 #define RANS_I_SYM_MAX(l_s) ((rans_I)RANS_B * RANS_L / RANS_M * l_s - 1)
