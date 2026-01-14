@@ -54,7 +54,11 @@ rans_probs_init(struct rans_probs *ps, size_t ops[RANS_NSYMS])
                 int diff = RANS_M - psum;
                 i = 0;
                 while (diff > 0) {
-                        if (ops[i] == 0 && ops[i] < RANS_M - 1) {
+                        if (ops[i] == psum) {
+                                ops[i] = RANS_M - 1;
+                                break;
+                        }
+                        if (ops[i] != 0 && ops[i] < RANS_M - 1) {
                                 ops[i]++;
                                 diff--;
                         }
@@ -68,7 +72,7 @@ rans_probs_init(struct rans_probs *ps, size_t ops[RANS_NSYMS])
                         i = (i + 1) % RANS_NSYMS;
                 }
         }
-        assert(calc_psum(ops) == RANS_M);
+        assert(calc_psum(ops) == RANS_M || calc_psum(ops) == RANS_M - 1);
 
         /*
          * copy to ps->ls

@@ -36,10 +36,10 @@ typedef RANS_I_TYPE rans_I;
 #define RANS_B (1 << RANS_B_BITS) /* b in the paper */
 #endif
 #if !defined(RANS_L)
-#define RANS_L (128 * RANS_M)     /* l in the paper */
+#define RANS_L (128 * RANS_M) /* l in the paper */
 #endif
 #if !defined(RANS_M)
-#define RANS_M 65536              /* m in the paper */
+#define RANS_M 65536 /* m in the paper */
 #endif
 
 #define RANS_I_SYM_MIN(l_s) ((rans_I)RANS_L / RANS_M * l_s)
@@ -66,5 +66,16 @@ typedef RANS_I_TYPE rans_I;
 #if (RANS_L % RANS_M) != 0
 #error L should be a multiple of M
 #endif
+
+#if !defined(ctassert)
+#if __STDC_VERSION__ >= 201112L || __has_extension(c_static_assert)
+#define ctassert(e) _Static_assert(e, #e)
+#else
+#define ctassert(e)
+#endif
+#endif
+
+ctassert((rans_prob_t)(RANS_M - 1) == RANS_M - 1);
+ctassert((rans_I)RANS_I_MAX == RANS_I_MAX);
 
 #endif /* !defined(_RANS_PARAM_H_) */
