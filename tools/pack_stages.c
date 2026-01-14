@@ -9,12 +9,12 @@
 #include "crans.h"
 #include "rans_decode.h"
 #else
-#include "bitin.h"
 #include "chuff.h"
 #include "huff_decode.h"
 #endif
 
 #include "bitbuf.h"
+#include "bitin.h"
 #include "defs.h"
 #include "dump.h"
 #include "loader.h"
@@ -180,7 +180,12 @@ main(int argc, char **argv)
                 uint8_t decoded[data_size];
                 struct rans_decode_state dec;
                 rans_decode_init(&dec);
+#if defined(RANS_DECODE_BITS)
+                struct bitin inp;
+                bitin_init(&inp, encoded);
+#else
                 const uint8_t *inp = encoded;
+#endif
                 uint8_t ch = 0;
                 for (j = 0; j < data_size; j++) {
                         ch = rans_decode_sym(&dec, ctx.tables[ch], &inp);
