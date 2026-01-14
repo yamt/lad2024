@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "byteout.h"
+#include "bitbuf.h"
 #include "crans.h"
 #include "rans_common.h"
 
@@ -39,7 +39,7 @@ crans_build(struct crans *ch)
 
 void
 crans_encode(struct crans *ch, const uint8_t *p, size_t len,
-             struct rans_encode_state *enc, struct byteout *bo)
+             struct rans_encode_state *enc, struct bitbuf *bo)
 {
         size_t i = len;
         while (1) {
