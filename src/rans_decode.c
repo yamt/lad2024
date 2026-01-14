@@ -1,4 +1,3 @@
-#include "util.h"
 #if defined(RANS_DEBUG)
 #include <stdio.h>
 #endif
@@ -7,6 +6,14 @@
 #include "rans_common.h"
 #endif
 #include "rans_decode.h"
+
+#if defined(RANS_DECODE_BITS)
+#include "bitin.h"
+#endif
+
+#if !defined(RANS_DECODE_BITS) && RANS_B_BITS != 8
+#error RANS_B_BITS != 8 requires RANS_DECODE_BITS
+#endif
 
 void
 rans_decode_init(struct rans_decode_state *st)
@@ -21,7 +28,7 @@ rans_decode_init(struct rans_decode_state *st)
 static rans_sym_t
 find_sym_and_b(const rans_prob_t ls[RANS_NSYMS], rans_I r, rans_prob_t *bp)
 {
-        ASSERT(r < RANS_M);
+        RANS_ASSERT(r < RANS_M);
         rans_prob_t b = 0;
         unsigned int i;
         for (i = 0; i < RANS_NSYMS - 1; i++) {
@@ -31,19 +38,23 @@ find_sym_and_b(const rans_prob_t ls[RANS_NSYMS], rans_I r, rans_prob_t *bp)
                 }
                 b += p;
         }
-        ASSERT(i < RANS_NSYMS);
+        RANS_ASSERT(i < RANS_NSYMS);
 #if defined(RANS_DEBUG)
-        ASSERT(b == rans_b(ls, i));
+        RANS_ASSERT(b == rans_b(ls, i));
 #endif
         *bp = b;
         return (rans_sym_t)i;
 }
 
 static void
-decode_normalize(struct rans_decode_state *st, const uint8_t **inpp)
+decode_normalize(struct rans_decode_state *st, rans_decode_input_type inpp)
 {
         while (st->x < RANS_I_MIN) {
+#if defined(RANS_DECODE_BITS)
+                uint16_t in = bitin_get_bits(inpp, RANS_B_BITS);
+#else
                 uint8_t in = *(*inpp)++;
+#endif
                 rans_I newx = st->x * RANS_B + in;
 #if defined(RANS_DEBUG)
                 printf("dec normalize in=%02x, %08x -> %08x\n", in, st->x,
@@ -51,17 +62,17 @@ decode_normalize(struct rans_decode_state *st, const uint8_t **inpp)
 #endif
                 st->x = newx;
         }
-        ASSERT(st->x >= RANS_I_MIN);
-        ASSERT(st->x <= RANS_I_MAX);
+        RANS_ASSERT(st->x >= RANS_I_MIN);
+        RANS_ASSERT(st->x <= RANS_I_MAX);
 }
 
 rans_sym_t
 rans_decode_sym(struct rans_decode_state *st, const rans_prob_t ls[RANS_NSYMS],
-                const uint8_t **inpp)
+                rans_decode_input_type inpp)
 {
         decode_normalize(st, inpp);
-        ASSERT(st->x >= RANS_I_MIN);
-        ASSERT(st->x <= RANS_I_MAX);
+        RANS_ASSERT(st->x >= RANS_I_MIN);
+        RANS_ASSERT(st->x <= RANS_I_MAX);
         rans_I q_x_m = st->x / RANS_M;
         rans_I mod_x_m = st->x % RANS_M;
         rans_prob_t b_s;
@@ -75,4 +86,14 @@ rans_decode_sym(struct rans_decode_state *st, const rans_prob_t ls[RANS_NSYMS],
 #endif
         st->x = newx;
         return s;
+}
+
+rans_I
+rans_decode_get_extra(struct rans_decode_state *st,
+                      rans_decode_input_type inpp)
+{
+        decode_normalize(st, inpp);
+        assert(st->x >= RANS_I_MIN);
+        assert(st->x <= RANS_I_MAX);
+        return st->x - RANS_I_MIN;
 }

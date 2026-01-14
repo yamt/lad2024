@@ -11,6 +11,8 @@
 #include "rans_encode.h"
 #include "rans_probs.h"
 
+#include "bitbuf.h"
+#include "bitin.h"
 #include "byteout.h"
 
 #include "test_util.h"
@@ -18,14 +20,15 @@
 /* --- test */
 
 static void
-test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
-            struct byteout *bo)
+test_encode(rans_I extra, const void *input, size_t inputsize,
+            const struct rans_probs *ps, struct bitbuf *bo)
 {
         printf("encoding...\n");
         struct rans_encode_state st0;
         struct rans_encode_state *st = &st0;
 
         rans_encode_init(st);
+        rans_encode_set_extra(st, extra);
         size_t i = inputsize;
         while (1) {
                 i--;
@@ -40,7 +43,7 @@ test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
         rans_encode_flush(st, bo);
 }
 
-static void
+static rans_I
 test_decode(const void *input, size_t inputsize, size_t origsize,
             const rans_prob_t *ps, const rans_sym_t *trans, struct byteout *bo)
 {
@@ -48,17 +51,30 @@ test_decode(const void *input, size_t inputsize, size_t origsize,
         struct rans_decode_state st0;
         struct rans_decode_state *st = &st0;
 
+#if defined(RANS_DECODE_BITS)
+        struct bitin in;
+        bitin_init(&in, input);
+#else
         const uint8_t *cp = input;
-        const uint8_t *ep = cp + inputsize;
+#endif
 
         rans_decode_init(st);
         while (bo->actual < origsize) {
+#if defined(RANS_DECODE_BITS)
+                rans_sym_t sym = rans_decode_sym(st, ps, &in);
+#else
                 rans_sym_t sym = rans_decode_sym(st, ps, &cp);
+#endif
                 if (trans != NULL) {
                         sym = trans[sym];
                 }
                 byteout_write(bo, sym);
         }
+#if defined(RANS_DECODE_BITS)
+        return rans_decode_get_extra(st, &in);
+#else
+        return rans_decode_get_extra(st, &cp);
+#endif
 }
 
 static void
@@ -79,9 +95,12 @@ test(void)
         struct rans_probs ps;
         rans_probs_init(&ps, counts);
 
-        struct byteout bo;
-        byteout_init(&bo);
-        test_encode(input, inputsize, &ps, &bo);
+        rans_I extra = 0;
+
+        struct bitbuf bo;
+        bitbuf_init(&bo);
+        test_encode(extra, input, inputsize, &ps, &bo);
+        bitbuf_rev_flush(&bo);
 
         rans_prob_t table[RANS_TABLE_MAX_NELEMS];
         size_t tablesize;
@@ -92,29 +111,34 @@ test(void)
         rans_sym_t ctrans[RANS_NSYMS];
         rans_probs_table_with_trans(&ps, ctable, ctrans, &ctablesize);
 
+        rans_I dextra;
+
         struct byteout bo_dec;
         byteout_init(&bo_dec);
-        test_decode(rev_byteout_ptr(&bo), bo.actual, inputsize, table, NULL,
-                    &bo_dec);
+        dextra =
+                test_decode(bo.p, bo.datalen, inputsize, table, NULL, &bo_dec);
+        assert(extra == dextra);
         assert(bo_dec.actual == inputsize);
         assert(!memcmp(bo_dec.p, input, inputsize));
         byteout_clear(&bo_dec);
 
         byteout_init(&bo_dec);
-        test_decode(rev_byteout_ptr(&bo), bo.actual, inputsize, ctable, ctrans,
-                    &bo_dec);
+        dextra = test_decode(bo.p, bo.datalen, inputsize, ctable, ctrans,
+                             &bo_dec);
+        assert(extra == dextra);
         assert(bo_dec.actual == inputsize);
         assert(!memcmp(bo_dec.p, input, inputsize));
         byteout_clear(&bo_dec);
 
-        byteout_clear(&bo);
-
         printf("decoded correctly\n");
-        printf("compression %zu -> %zu + %zu\n", inputsize, bo.actual,
-               tablesize * sizeof(rans_prob_t));
-        printf("compression %zu -> %zu + %zu + %zu (w/ trans)\n", inputsize,
-               bo.actual, ctablesize * sizeof(rans_prob_t),
+        printf("compression %zu -> %zu (%zu bits) + %zu\n", inputsize,
+               bo.datalen, bo.datalen_bits, tablesize * sizeof(rans_prob_t));
+        printf("compression %zu -> %zu (%zu bits) + %zu + %zu (w/ trans)\n",
+               inputsize, bo.datalen, bo.datalen_bits,
+               ctablesize * sizeof(rans_prob_t),
                ctablesize * sizeof(rans_sym_t));
+
+        bitbuf_clear(&bo);
 }
 
 int
