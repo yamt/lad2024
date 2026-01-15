@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
@@ -9,8 +10,24 @@
 #include "rans_common.h"
 #include "rans_probs.h"
 
-static size_t
-calc_psum(size_t ps[RANS_NSYMS])
+double
+calc_bits(const size_t dist[RANS_NSYMS], size_t dist_sum,
+          const size_t real_ps[RANS_NSYMS])
+{
+        double bits_sum = 0;
+        unsigned int i;
+        for (i = 0; i < RANS_NSYMS; i++) {
+                if (real_ps[i] > 0) {
+                        assert(dist[i] <= dist_sum);
+                        bits_sum +=
+                                log2((double)dist_sum / dist[i]) * real_ps[i];
+                }
+        }
+        return bits_sum;
+}
+
+size_t
+calc_sum(const size_t ps[RANS_NSYMS])
 {
         size_t psum = 0;
         unsigned int i;
@@ -21,7 +38,7 @@ calc_psum(size_t ps[RANS_NSYMS])
 }
 
 void
-rans_probs_init(struct rans_probs *ps, size_t ops[RANS_NSYMS])
+rans_probs_init(struct rans_probs *ps, const size_t ops[RANS_NSYMS])
 {
         /*
          * scale probabilities in ops[] so that:
@@ -30,12 +47,14 @@ rans_probs_init(struct rans_probs *ps, size_t ops[RANS_NSYMS])
          * - each p fits prob_t
          * - the distinction between zero and non-zero is preserved
          */
-        size_t psum = calc_psum(ops);
+        size_t opsum;
+        size_t psum = opsum = calc_sum(ops);
         if (psum == 0) {
                 memset(ps->ls, 0, sizeof(ps->ls));
                 return;
         }
 
+        size_t ls[RANS_NSYMS];
         unsigned int i;
         for (i = 0; i < RANS_NSYMS; i++) {
                 size_t n = (ops[i] * RANS_M + psum - 1) / psum;
@@ -44,58 +63,65 @@ rans_probs_init(struct rans_probs *ps, size_t ops[RANS_NSYMS])
                         n = RANS_M - 1;
                 }
                 assert(n < RANS_M);
-                ops[i] = n;
-                assert(ops[i] < RANS_M);
+                ls[i] = n;
+                assert(ls[i] < RANS_M);
         }
 
-        psum = calc_psum(ops);
+        psum = calc_sum(ls);
         assert(psum > 0);
         if (psum != RANS_M) {
                 int diff = RANS_M - psum;
                 i = 0;
                 while (diff > 0) {
-                        if (ops[i] == psum) {
-                                ops[i] = RANS_M - 1;
+                        if (ls[i] == psum) {
+                                ls[i] = RANS_M - 1;
                                 break;
                         }
-                        if (ops[i] != 0 && ops[i] < RANS_M - 1) {
-                                ops[i]++;
+                        if (ls[i] != 0 && ls[i] < RANS_M - 1) {
+                                ls[i]++;
                                 diff--;
                         }
                         i = (i + 1) % RANS_NSYMS;
                 }
                 while (diff < 0) {
-                        if (ops[i] != 0 && ops[i] > 1) {
-                                ops[i]--;
+                        if (ls[i] != 0 && ls[i] > 1) {
+                                ls[i]--;
                                 diff++;
                         }
                         i = (i + 1) % RANS_NSYMS;
                 }
         }
-        assert(calc_psum(ops) == RANS_M || calc_psum(ops) == RANS_M - 1);
+        assert(calc_sum(ls) == RANS_M || calc_sum(ls) == RANS_M - 1);
 
         /*
          * copy to ps->ls
          */
         for (i = 0; i < RANS_NSYMS; i++) {
-                assert(ops[i] < RANS_M);
-                ps->ls[i] = ops[i];
+                assert(ls[i] < RANS_M);
+                ps->ls[i] = ls[i];
         }
+
+#if defined(RANS_DEBUG)
+        double bits = calc_bits(ops, opsum, ops);
+        double bits_with_our_dist = calc_bits(ls, RANS_M, ops);
+        printf("scaling increased the entropy by %f\n",
+               bits_with_our_dist - bits);
 
         for (i = 0; i < RANS_NSYMS; i++) {
                 rans_prob_t l_s = ps->ls[i];
                 if (l_s == 0) {
                         continue;
                 }
-#if defined(RANS_DEBUG)
                 rans_prob_t b_s = rans_b(ps->ls, i);
-                printf("[%02x] l_s=%u, %u-%u Is={%08x,...,%08x}\n", i, l_s,
-                       b_s, b_s + l_s - 1, RANS_I_SYM_MIN(l_s),
-                       RANS_I_SYM_MAX(l_s));
-#endif
+                double ent = log2((double)RANS_M / l_s);
+                double oent = log2((double)opsum / ops[i]);
+                printf("[%3x] l_s=%5u, %5u-%5u Is={%08x,...,%08x} ent %.3f "
+                       "(%+.8f)\n",
+                       i, l_s, b_s, b_s + l_s - 1, RANS_I_SYM_MIN(l_s),
+                       RANS_I_SYM_MAX(l_s), ent, ent - oent);
         }
-#if defined(RANS_DEBUG)
-        printf("I={%08x,...,%08x}\n", RANS_I_MIN, RANS_I_MAX);
+        printf("                             I ={%08x,...,%08x}\n", RANS_I_MIN,
+               RANS_I_MAX);
 #endif
 }
 

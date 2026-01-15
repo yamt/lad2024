@@ -91,6 +91,8 @@ test(void)
         size_t counts[RANS_NSYMS];
         memset(counts, 0, sizeof(counts));
         count_syms(counts, input, inputsize);
+        double bits = calc_bits(counts, calc_sum(counts), counts);
+        printf("input entropy %.6f bits\n", bits);
 
         struct rans_probs ps;
         rans_probs_init(&ps, counts);
@@ -131,10 +133,12 @@ test(void)
         byteout_clear(&bo_dec);
 
         printf("decoded correctly\n");
-        printf("compression %zu -> %zu (%zu bits) + %zu\n", inputsize,
-               bo.datalen, bo.datalen_bits, tablesize * sizeof(rans_prob_t));
-        printf("compression %zu -> %zu (%zu bits) + %zu + %zu (w/ trans)\n",
-               inputsize, bo.datalen, bo.datalen_bits,
+        printf("compression %zu -> %zu (%zu bits, %+.3f) + %zu\n", inputsize,
+               bo.datalen, bo.datalen_bits, bo.datalen_bits - bits,
+               tablesize * sizeof(rans_prob_t));
+        printf("compression %zu -> %zu (%zu bits, %+.3f) + %zu + %zu (w/ "
+               "trans)\n",
+               inputsize, bo.datalen, bo.datalen_bits, bo.datalen_bits - bits,
                ctablesize * sizeof(rans_prob_t),
                ctablesize * sizeof(rans_sym_t));
 
