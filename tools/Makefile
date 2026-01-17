@@ -2,8 +2,6 @@ CFLAGS = -std=c99 -Wall -Werror
 CFLAGS += -MMD -MP
 CFLAGS += -fshort-enums
 #CFLAGS += -flto=full -O3 -DNDEBUG -Wno-unused-variable
-CFLAGS += -flto=full -O3 -Wno-unused-variable
-#CFLAGS += -O0 -g -DLIST_DISABLE_HEAVY_CHECK
 # CFLAGS += -Dmap_height=16 -Dmap_width=16
 # CFLAGS += -Dmap_height=10 -Dmap_width=10
 #CFLAGS += -Dmap_height=20 -Dmap_width=6
@@ -32,8 +30,13 @@ CFLAGS += -DUSE_BLOOM_FILTER
 CFLAGS += -DBLOOM_FILTER_SIZE=1600000000
 CFLAGS += -DBLOOM_FILTER_K=4
 
+ifeq ($(DEBUG), 1)
+CFLAGS += -O0 -g -DLIST_DISABLE_HEAVY_CHECK
+CLINKFLAGS += -g
+else
+CFLAGS += -flto=full -O3 -Wno-unused-variable
 CLINKFLAGS = -flto=full
-#CLINKFLAGS += -g
+endif
 
 CFLAGS += -I../src
 VPATH = ../src
