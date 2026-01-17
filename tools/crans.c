@@ -42,7 +42,8 @@ crans_build(struct crans *ch)
 
 void
 crans_encode(struct crans *ch, const uint8_t *p, size_t len,
-             struct rans_encode_state *enc, struct bitbuf *bo)
+             struct rans_encode_state *enc, bool need_rans_init,
+             struct bitbuf *bo)
 {
         if (len == 0) {
                 return;
@@ -60,6 +61,10 @@ crans_encode(struct crans *ch, const uint8_t *p, size_t len,
                 uint8_t sym = p[i];
                 rans_prob_t b_s = rans_b(ps->ls, sym);
                 rans_prob_t l_s = ps->ls[sym];
+                if (need_rans_init) {
+                        enc->x = RANS_I_SYM_MIN(l_s);
+                        need_rans_init = false;
+                }
                 rans_encode_sym(enc, sym, b_s, l_s, bo);
                 if (i == 0) {
                         break;
