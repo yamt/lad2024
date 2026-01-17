@@ -62,7 +62,7 @@ crans_encode(struct crans *ch, const uint8_t *p, size_t len,
                 rans_prob_t b_s = rans_b(ps->ls, sym);
                 rans_prob_t l_s = ps->ls[sym];
                 if (need_rans_init) {
-                        enc->x = RANS_I_SYM_MIN(l_s);
+                        rans_encode_init_with_prob(enc, l_s);
                         need_rans_init = false;
                 }
                 rans_encode_sym(enc, sym, b_s, l_s, bo);
