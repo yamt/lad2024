@@ -60,6 +60,8 @@ LZHUFF_TEST_OBJS = lzhuff_test.o
 
 RANS_TEST_OBJS = rans_test.o
 
+CRANS_TEST_OBJS = crans_test.o
+
 HASH_TEST_OBJS = hash_test.o
 
 ANALYZE_TEST_OBJS = analyze_test.o
@@ -110,6 +112,7 @@ OBJS += rans_common.o
 OBJS += rans_encode.o
 OBJS += rans_decode.o
 OBJS += crans.o
+OBJS += crans_decode.o
 
 ALL_OBJS += ${OBJS}
 ALL_OBJS += ${SOLVER_OBJS}
@@ -122,12 +125,14 @@ ALL_OBJS += ${HUFF_TEST_OBJS}
 ALL_OBJS += ${CHUFF_TEST_OBJS}
 ALL_OBJS += ${LZ_TEST_OBJS}
 ALL_OBJS += ${LZHUFF_TEST_OBJS}
+ALL_OBJS += ${RANS_TEST_OBJS}
+ALL_OBJS += ${CRANS_TEST_OBJS}
 ALL_OBJS += ${HASH_TEST_OBJS}
 ALL_OBJS += ${ANALYZE_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 ALL_OBJS += ${PACK_STAGES_OBJS}
 
-BINS = solver generator refiner dumper dumper_raw rng_test huff_test chuff_test lz_test lzhuff_test rans_test hash_test analyze_test stage_uniq pack_stages
+BINS = solver generator refiner dumper dumper_raw rng_test huff_test chuff_test lz_test lzhuff_test rans_test crans_test hash_test analyze_test stage_uniq pack_stages
 
 .PHONY: all
 all: $(BINS)
@@ -186,6 +191,11 @@ rans_test: $(RANS_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(RANS_TEST_OBJS) $(OBJS)
+
+crans_test: $(CRANS_TEST_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(CRANS_TEST_OBJS) $(OBJS)
 
 hash_test: $(HASH_TEST_OBJS) $(OBJS)
 	$(CC) \
