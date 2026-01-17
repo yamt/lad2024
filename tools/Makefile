@@ -46,6 +46,8 @@ REFINER_OBJS = refine_main.o
 
 DUMPER_OBJS = dump_main.o
 
+DUMPER_RAW_OBJS = dump_raw_main.o
+
 RNG_TEST_OBJS = rng_test.o
 
 HUFF_TEST_OBJS = huff_test.o
@@ -114,6 +116,7 @@ ALL_OBJS += ${SOLVER_OBJS}
 ALL_OBJS += ${GENERATOR_OBJS}
 ALL_OBJS += ${REFINER_OBJS}
 ALL_OBJS += ${DUMPER_OBJS}
+ALL_OBJS += ${DUMPER_RAW_OBJS}
 ALL_OBJS += ${RNG_TEST_OBJS}
 ALL_OBJS += ${HUFF_TEST_OBJS}
 ALL_OBJS += ${CHUFF_TEST_OBJS}
@@ -124,7 +127,7 @@ ALL_OBJS += ${ANALYZE_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 ALL_OBJS += ${PACK_STAGES_OBJS}
 
-BINS = solver generator refiner dumper rng_test huff_test chuff_test lz_test lzhuff_test rans_test hash_test analyze_test stage_uniq pack_stages
+BINS = solver generator refiner dumper dumper_raw rng_test huff_test chuff_test lz_test lzhuff_test rans_test hash_test analyze_test stage_uniq pack_stages
 
 .PHONY: all
 all: $(BINS)
@@ -148,6 +151,11 @@ dumper: $(DUMPER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(DUMPER_OBJS) $(OBJS)
+
+dumper_raw: $(DUMPER_RAW_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(DUMPER_RAW_OBJS) $(OBJS)
 
 rng_test: $(RNG_TEST_OBJS) $(OBJS)
 	$(CC) \
