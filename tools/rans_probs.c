@@ -10,6 +10,12 @@
 #include "rans_common.h"
 #include "rans_probs.h"
 
+static double
+calc_bits1(size_t dist, size_t dist_sum, size_t count)
+{
+        return log2((double)dist_sum / dist) * count;
+}
+
 double
 calc_bits(const size_t dist[RANS_NSYMS], size_t dist_sum,
           const size_t real_ps[RANS_NSYMS])
@@ -19,8 +25,7 @@ calc_bits(const size_t dist[RANS_NSYMS], size_t dist_sum,
         for (i = 0; i < RANS_NSYMS; i++) {
                 if (real_ps[i] > 0) {
                         assert(dist[i] <= dist_sum);
-                        bits_sum +=
-                                log2((double)dist_sum / dist[i]) * real_ps[i];
+                        bits_sum += calc_bits1(dist[i], dist_sum, real_ps[i]);
                 }
         }
         return bits_sum;
@@ -35,6 +40,41 @@ calc_sum(const size_t ps[RANS_NSYMS])
                 psum += ps[i];
         }
         return psum;
+}
+
+static bool
+adjust(size_t ls[RANS_NSYMS], size_t ls_sum, int inc,
+       const size_t counts[RANS_NSYMS])
+{
+        assert(inc == 1 || inc == -1);
+        double cand_d = 0;
+        unsigned int cand_i = RANS_NSYMS;
+        unsigned int i;
+        for (i = 0; i < RANS_NSYMS; i++) {
+                if (inc > 0 && ls[i] == RANS_M - 1) {
+                        /*
+                         * note: this implies all other ls[] are 0.
+                         */
+                        assert(ls_sum == RANS_M - 1);
+                        return true;
+                }
+                if (ls[i] == 0 || (inc < 0 && ls[i] == 1)) {
+                        continue;
+                }
+                double cur = calc_bits1(ls[i], ls_sum, counts[i]);
+                double next = calc_bits1(ls[i] + inc, ls_sum, counts[i]);
+                assert((inc > 0 && cur >= next) || (inc < 0 && cur >= next));
+                double d = next - cur;
+                if (cand_d == 0 || d < cand_d) {
+                        cand_i = i;
+                        cand_d = d;
+                }
+        }
+        assert(cand_i != RANS_NSYMS);
+        ls[cand_i] += inc;
+        assert(1 <= ls[cand_i]);
+        assert(RANS_M - 1 >= ls[cand_i]);
+        return false;
 }
 
 void
@@ -57,38 +97,29 @@ rans_probs_init(struct rans_probs *ps, const size_t ops[RANS_NSYMS])
         size_t ls[RANS_NSYMS];
         unsigned int i;
         for (i = 0; i < RANS_NSYMS; i++) {
-                size_t n = (ops[i] * RANS_M + psum - 1) / psum;
-                assert((ops[i] > 0) == (n > 0));
-                if (n == RANS_M) {
+                size_t n = ops[i] * RANS_M / psum;
+                if (n == 0 && ops[i] != 0) {
+                        n = 1;
+                }
+                if (n > RANS_M - 1) {
                         n = RANS_M - 1;
                 }
-                assert(n < RANS_M);
                 ls[i] = n;
-                assert(ls[i] < RANS_M);
         }
 
-        psum = calc_sum(ls);
-        assert(psum > 0);
-        if (psum != RANS_M) {
-                int diff = RANS_M - psum;
-                i = 0;
-                while (diff > 0) {
-                        if (ls[i] == psum) {
-                                ls[i] = RANS_M - 1;
+        while (1) {
+                psum = calc_sum(ls);
+                assert(psum > 0);
+                if (psum == RANS_M) {
+                        break;
+                }
+                if (psum < RANS_M) {
+                        if (adjust(ls, psum, 1, ops)) {
                                 break;
                         }
-                        if (ls[i] != 0 && ls[i] < RANS_M - 1) {
-                                ls[i]++;
-                                diff--;
-                        }
-                        i = (i + 1) % RANS_NSYMS;
                 }
-                while (diff < 0) {
-                        if (ls[i] != 0 && ls[i] > 1) {
-                                ls[i]--;
-                                diff++;
-                        }
-                        i = (i + 1) % RANS_NSYMS;
+                if (psum > RANS_M) {
+                        adjust(ls, psum, -1, ops);
                 }
         }
         assert(calc_sum(ls) == RANS_M || calc_sum(ls) == RANS_M - 1);
