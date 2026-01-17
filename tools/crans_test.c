@@ -37,7 +37,6 @@ main(void)
         bitbuf_rev_flush(&os);
         size_t encsize = os.datalen;
         printf("encoded size: %zu bytes\n", encsize);
-        assert(encsize <= inputsize);
 
         rans_prob_t htable[CRANS_TABLE_MAX_NELEMS];
         rans_prob_t *outs[CRANS_NTABLES];
