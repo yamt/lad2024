@@ -18,6 +18,9 @@ crans_init(struct crans *ch)
 void
 crans_update(struct crans *ch, const uint8_t *p, size_t len)
 {
+        if (len == 0) {
+                return;
+        }
         const uint8_t *ep = p + len;
         while (p < ep) {
                 count_syms(ch->counts[ch->context], p, 1);
@@ -41,6 +44,9 @@ void
 crans_encode(struct crans *ch, const uint8_t *p, size_t len,
              struct rans_encode_state *enc, struct bitbuf *bo)
 {
+        if (len == 0) {
+                return;
+        }
         size_t i = len;
         while (1) {
                 i--;
