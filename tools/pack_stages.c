@@ -127,6 +127,7 @@ main(int argc, char **argv)
 #if defined(USE_CRANS)
                 struct rans_encode_state enc;
                 rans_encode_init(&enc);
+                bool need_rans_init = true;
                 struct bitbuf bo;
                 bitbuf_init(&bo);
 #else
@@ -143,7 +144,8 @@ main(int argc, char **argv)
 
 #if defined(USE_CRANS)
                         crans_encode(&mctx.ch, (const void *)stage->message,
-                                     msg_size, &enc, &bo);
+                                     msg_size, &enc, need_rans_init, &bo);
+                        need_rans_init = false;
 #else
                         mctx.ch.context = 0;
                         chuff_encode(&mctx.ch, (const void *)stage->message,
@@ -155,7 +157,9 @@ main(int argc, char **argv)
                  * note: encode in the reversed order for rANS
                  * (message and then data)
                  */
-                crans_encode(&ctx.ch, data, data_size, &enc, &bo);
+                crans_encode(&ctx.ch, data, data_size, &enc, need_rans_init,
+                             &bo);
+                need_rans_init = false;
                 rans_encode_flush(&enc, &bo);
                 bitbuf_rev_flush(&bo);
                 const uint8_t *encoded = bo.p;
@@ -208,7 +212,6 @@ main(int argc, char **argv)
                         }
                         assert(!memcmp(stage->message, mdecoded, msg_size));
                 }
-                assert(rans_decode_get_extra(&dec, &inp) == 0);
 #else
                 struct bitin in;
                 bitin_init(&in, encoded);

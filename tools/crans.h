@@ -19,7 +19,8 @@ void crans_init(struct crans *c);
 void crans_update(struct crans *c, const uint8_t *p, size_t len);
 void crans_build(struct crans *c);
 void crans_encode(struct crans *c, const uint8_t *p, size_t len,
-                  struct rans_encode_state *enc, struct bitbuf *bo);
+                  struct rans_encode_state *enc, bool need_rans_init,
+                  struct bitbuf *bo);
 
 #define CRANS_TABLE_MAX_NELEMS (CRANS_NTABLES * RANS_TABLE_MAX_NELEMS)
 void crans_table(const struct crans *c, rans_prob_t *out,

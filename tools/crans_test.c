@@ -32,7 +32,7 @@ main(void)
         struct bitbuf os;
         bitbuf_init(&os);
         t.context = 0;
-        crans_encode(&t, input, inputsize, &enc, &os);
+        crans_encode(&t, input, inputsize, &enc, true, &os);
         rans_encode_flush(&enc, &os);
         bitbuf_rev_flush(&os);
         size_t encsize = os.datalen;
