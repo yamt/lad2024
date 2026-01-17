@@ -126,7 +126,6 @@ main(int argc, char **argv)
                 size_t data_size = stage_data_size(data);
 #if defined(USE_CRANS)
                 struct rans_encode_state enc;
-                rans_encode_init(&enc);
                 bool need_rans_init = true;
                 struct bitbuf bo;
                 bitbuf_init(&bo);
