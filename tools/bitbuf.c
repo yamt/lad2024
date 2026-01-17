@@ -45,6 +45,10 @@ bitbuf_flush1(struct bitbuf *s, unsigned int thresh)
 void
 bitbuf_write(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 {
+#if !defined(NDEBUG)
+        assert(s->direction >= 0);
+        s->direction = 1;
+#endif
         /*
          * input: the least significant "nbits" of "bits".
          * output: s->buf is filled from MSBs.
@@ -65,6 +69,10 @@ bitbuf_write(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 void
 bitbuf_write_multi(struct bitbuf *s, const uint8_t *bits, size_t nbits)
 {
+#if !defined(NDEBUG)
+        assert(s->direction >= 0);
+        s->direction = 1;
+#endif
         assert(bits != NULL);
         assert(nbits != 0);
         while (nbits > 8) {
@@ -77,6 +85,10 @@ bitbuf_write_multi(struct bitbuf *s, const uint8_t *bits, size_t nbits)
 void
 bitbuf_flush(struct bitbuf *s)
 {
+#if !defined(NDEBUG)
+        assert(s->direction >= 0);
+        s->direction = 1;
+#endif
         bitbuf_flush1(s, 1);
 }
 
@@ -127,6 +139,10 @@ bitbuf_rev_flush1(struct bitbuf *s, unsigned int thresh)
 void
 bitbuf_rev_write(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 {
+#if !defined(NDEBUG)
+        assert(s->direction <= 0);
+        s->direction = -1;
+#endif
         /*
          * input: the least significant "nbits" of "bits".
          * output: s->buf is filled from LSBs.
@@ -147,7 +163,14 @@ bitbuf_rev_write(struct bitbuf *s, uint16_t bits, uint8_t nbits)
 void
 bitbuf_rev_flush(struct bitbuf *s)
 {
+#if !defined(NDEBUG)
+        assert(s->direction <= 0);
+        s->direction = -1;
+#endif
         bitbuf_rev_flush1(s, 1);
+        if (s->datalen == 0) {
+                return;
+        }
         assert((s->datalen_bits + 7) / 8 == s->datalen);
         unsigned int shift = (-s->datalen_bits) % 8;
 
@@ -168,4 +191,40 @@ bitbuf_rev_flush(struct bitbuf *s)
                 cp++;
                 *dp++ = (b << shift) | (next >> (8 - shift));
         }
+        assert(dp == s->p + s->datalen);
+        assert((s->datalen_bits % 8) == 0 ||
+               (s->p[s->datalen - 1] & (0xff >> (s->datalen_bits % 8))) == 0);
 }
+
+#if defined(TEST)
+int
+main(void)
+{
+        struct bitbuf b;
+        unsigned int i;
+        for (i = 0; i <= 256; i++) {
+                bitbuf_init(&b);
+                unsigned int j;
+                for (j = 0; j < i; j++) {
+                        bitbuf_rev_write(&b, 1, 1);
+                }
+                bitbuf_rev_flush(&b);
+                assert(b.datalen == (i + 7) / 8);
+                assert(b.datalen_bits == i);
+                if (b.datalen > 0) {
+                        for (j = 0; j < b.datalen - 1; j++) {
+                                assert(b.p[j] == 0xff);
+                        }
+                        unsigned int bits = b.datalen_bits % 8;
+                        uint8_t last_byte;
+                        if (bits == 0) {
+                                last_byte = 0xff;
+                        } else {
+                                last_byte = 0xff << (8 - bits);
+                        }
+                        assert(b.p[b.datalen - 1] == last_byte);
+                }
+                bitbuf_clear(&b);
+        }
+}
+#endif

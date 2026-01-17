@@ -13,17 +13,24 @@ rans_encode_init(struct rans_encode_state *st)
 }
 
 void
+rans_encode_init_with_prob(struct rans_encode_state *st, rans_prob_t l_s)
+{
+        st->x = RANS_I_SYM_MIN(l_s);
+#if defined(RANS_DEBUG)
+        printf("enc init with prob %u (x=%08x)\n", l_s, st->x);
+#endif
+        assert(st->x <= RANS_I_MAX);
+}
+
+void
 rans_encode_set_extra(struct rans_encode_state *st, rans_I extra)
 {
-        assert(st->x >= RANS_I_MIN);
         assert(st->x <= RANS_I_MAX);
-#if defined(RANS_DEBUG)
-        printf("enc set extra %08x + %08x -> %08x\n", st->x, extra,
-               st->x + extra);
-#endif
         assert(extra <= RANS_EXTRA_MAX);
+#if defined(RANS_DEBUG)
+        printf("enc set extra %08x (x=%08x)\n", extra, st->x + extra);
+#endif
         st->x += extra;
-        assert(st->x >= RANS_I_MIN);
         assert(st->x <= RANS_I_MAX);
 }
 
