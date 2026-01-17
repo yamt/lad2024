@@ -56,6 +56,8 @@ LZ_TEST_OBJS = lz_test.o
 
 LZHUFF_TEST_OBJS = lzhuff_test.o
 
+RANS_TEST_OBJS = rans_test.o
+
 HASH_TEST_OBJS = hash_test.o
 
 ANALYZE_TEST_OBJS = analyze_test.o
@@ -122,7 +124,7 @@ ALL_OBJS += ${ANALYZE_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 ALL_OBJS += ${PACK_STAGES_OBJS}
 
-BINS = solver generator refiner dumper rng_test huff_test chuff_test lz_test lzhuff_test hash_test analyze_test stage_uniq pack_stages
+BINS = solver generator refiner dumper rng_test huff_test chuff_test lz_test lzhuff_test rans_test hash_test analyze_test stage_uniq pack_stages
 
 .PHONY: all
 all: $(BINS)
@@ -171,6 +173,11 @@ lzhuff_test: $(LZHUFF_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(LZHUFF_TEST_OBJS) $(OBJS)
+
+rans_test: $(RANS_TEST_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(RANS_TEST_OBJS) $(OBJS)
 
 hash_test: $(HASH_TEST_OBJS) $(OBJS)
 	$(CC) \
