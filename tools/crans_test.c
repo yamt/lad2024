@@ -58,6 +58,8 @@ main(void)
 
         printf("test decoding...\n");
         struct crans_decode_context dec;
+        dec.ctx = 0;
+        rans_decode_init(&dec.dec);
 #if defined(RANS_DECODE_BITS)
         bitin_init(&dec.inp, os.p);
 #else
