@@ -18,6 +18,10 @@ struct bitbuf {
         size_t datalen;
         size_t allocated;
         size_t datalen_bits;
+
+#if !defined(NDEBUG)
+        int direction;
+#endif
 };
 
 void bitbuf_init(struct bitbuf *s);

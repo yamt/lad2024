@@ -20,21 +20,24 @@
 /* --- test */
 
 static void
-test_encode(rans_I extra, const void *input, size_t inputsize,
-            const struct rans_probs *ps, struct bitbuf *bo)
+test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
+            struct bitbuf *bo)
 {
         printf("encoding...\n");
         struct rans_encode_state st0;
         struct rans_encode_state *st = &st0;
+        bool need_init = true;
 
-        rans_encode_init(st);
-        rans_encode_set_extra(st, extra);
         size_t i = inputsize;
         while (1) {
                 i--;
                 uint8_t sym = ((const uint8_t *)input)[i];
                 rans_prob_t b_s = rans_b(ps->ls, sym);
                 rans_prob_t l_s = ps->ls[sym];
+                if (need_init) {
+                        rans_encode_init_with_prob(st, l_s);
+                        need_init = false;
+                }
                 rans_encode_sym(st, sym, b_s, l_s, bo);
                 if (i == 0) {
                         break;
@@ -97,11 +100,9 @@ test(void)
         struct rans_probs ps;
         rans_probs_init(&ps, counts);
 
-        rans_I extra = 0;
-
         struct bitbuf bo;
         bitbuf_init(&bo);
-        test_encode(extra, input, inputsize, &ps, &bo);
+        test_encode(input, inputsize, &ps, &bo);
         bitbuf_rev_flush(&bo);
 
         rans_prob_t table[RANS_TABLE_MAX_NELEMS];
@@ -113,21 +114,15 @@ test(void)
         rans_sym_t ctrans[RANS_NSYMS];
         rans_probs_table_with_trans(&ps, ctable, ctrans, &ctablesize);
 
-        rans_I dextra;
-
         struct byteout bo_dec;
         byteout_init(&bo_dec);
-        dextra =
-                test_decode(bo.p, bo.datalen, inputsize, table, NULL, &bo_dec);
-        assert(extra == dextra);
+        test_decode(bo.p, bo.datalen, inputsize, table, NULL, &bo_dec);
         assert(bo_dec.actual == inputsize);
         assert(!memcmp(bo_dec.p, input, inputsize));
         byteout_clear(&bo_dec);
 
         byteout_init(&bo_dec);
-        dextra = test_decode(bo.p, bo.datalen, inputsize, ctable, ctrans,
-                             &bo_dec);
-        assert(extra == dextra);
+        test_decode(bo.p, bo.datalen, inputsize, ctable, ctrans, &bo_dec);
         assert(bo_dec.actual == inputsize);
         assert(!memcmp(bo_dec.p, input, inputsize));
         byteout_clear(&bo_dec);
