@@ -146,7 +146,7 @@ rans_probs_init(struct rans_probs *ps, const size_t ops[RANS_NSYMS])
 #if defined(RANS_DEBUG)
         double bits = calc_bits(ops, opsum, ops);
         double bits_with_our_dist = calc_bits(ls, RANS_M, ops);
-        printf("scaling increased the entropy by %f\n",
+        printf("entropy after scaling: %.3f (%+.3f)\n", bits_with_our_dist,
                bits_with_our_dist - bits);
 
         for (i = 0; i < RANS_NSYMS; i++) {
@@ -158,7 +158,7 @@ rans_probs_init(struct rans_probs *ps, const size_t ops[RANS_NSYMS])
                 double ent = log2((double)RANS_M / l_s);
                 double oent = log2((double)opsum / ops[i]);
                 printf("[%3x] l_s=%5u, %5u-%5u Is={%08x,...,%08x} ent %.3f "
-                       "(%+.8f)\n",
+                       "(err %+.3f)\n",
                        i, l_s, b_s, b_s + l_s - 1, RANS_I_SYM_MIN(l_s),
                        RANS_I_SYM_MAX(l_s), ent, ent - oent);
         }
