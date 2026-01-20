@@ -191,7 +191,16 @@ main(int argc, char **argv)
 #endif
                 uint8_t ch = 0;
                 for (j = 0; j < data_size; j++) {
-                        ch = rans_decode_sym(&dec, ctx.tables[ch], &inp);
+                        while (rans_decode_need_more(&dec)) {
+#if defined(RANS_DECODE_BITS)
+                                uint16_t bits =
+                                        binin_get_bits(&inp, RANS_B_BITS);
+#else
+                                uint8_t bits = *inp++;
+#endif
+                                rans_decode_feed(&dec, bits);
+                        }
+                        ch = rans_decode_sym(&dec, ctx.tables[ch]);
                         decoded[j] = ch;
                 }
                 assert(!memcmp(data, decoded, data_size));
@@ -204,8 +213,16 @@ main(int argc, char **argv)
                                         mctx.tables[ch] - mctx.table;
                                 size_t sz = mctx.tablesizes[ch];
                                 assert(sz > 0);
-                                ch = rans_decode_sym(&dec, mctx.tables[ch],
-                                                     &inp);
+                                while (rans_decode_need_more(&dec)) {
+#if defined(RANS_DECODE_BITS)
+                                        uint16_t bits = binin_get_bits(
+                                                &inp, RANS_B_BITS);
+#else
+                                        uint8_t bits = *inp++;
+#endif
+                                        rans_decode_feed(&dec, bits);
+                                }
+                                ch = rans_decode_sym(&dec, mctx.tables[ch]);
                                 assert(ch < sz);
                                 mdecoded[j] = ch = msg_trans[off + ch];
                         }
