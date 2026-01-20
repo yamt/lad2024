@@ -55,7 +55,7 @@ int
 main(int argc, char **argv)
 {
         size_t curoff = 0;
-        size_t offset[nstages];
+        size_t offset[nstages + 1];
         size_t maxmlen = 0;
 
         struct ctx ctx;
@@ -246,6 +246,7 @@ main(int argc, char **argv)
                 bitbuf_clear(&os);
 #endif
         }
+        offset[i] = curoff; /* total size */
         printf("};\n");
 
         printf("const struct hstage packed_stages[] = {\n");
@@ -263,6 +264,10 @@ main(int argc, char **argv)
                 }
                 printf("\t},\n");
         }
+        printf("\t[%u] = {\n", i);
+        assert(offset[i] < 0x8000);
+        printf("\t\t.data_offset = %zu,\n", offset[i]);
+        printf("\t},\n");
         printf("};\n");
 
         /*
