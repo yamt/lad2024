@@ -27,7 +27,7 @@ main(void)
         crans_update(&t, input, inputsize);
         crans_build(&t);
 
-		struct rans_encode_state enc;
+        struct rans_encode_state enc;
         rans_encode_init(&enc);
         struct bitbuf os;
         bitbuf_init(&os);
@@ -53,8 +53,9 @@ main(void)
         assert(htablesize <= sizeof(htable));
 
         printf("total compression ratio: (%zu + %zu) / %zu = %.4f\n", encsize,
-               htablesize * sizeof(rans_prob_t) , inputsize,
-               (double)(encsize + htablesize * sizeof(rans_prob_t)) / inputsize);
+               htablesize * sizeof(rans_prob_t), inputsize,
+               (double)(encsize + htablesize * sizeof(rans_prob_t)) /
+                       inputsize);
 
         printf("test decoding...\n");
         struct crans_decode_context dec;
@@ -63,11 +64,12 @@ main(void)
 #if defined(RANS_DECODE_BITS)
         bitin_init(&dec.inp, os.p);
 #else
-		dec.inp = os.p;
+        dec.inp = os.p;
 #endif
         dec.ctx = 0;
         for (i = 0; i < inputsize; i++) {
-                uint8_t actual = crans_decode_byte(&dec, htable, NULL, indexes);
+                uint8_t actual =
+                        crans_decode_byte(&dec, htable, NULL, indexes);
                 uint8_t expected = input[i];
                 if (actual != expected) {
                         printf("unexpected data at offset %zu, expected %02x, "
