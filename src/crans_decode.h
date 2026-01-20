@@ -9,6 +9,7 @@ struct crans_decode_context {
 #else
         const uint8_t *inp;
 #endif
+        size_t nbits;
 };
 
 uint8_t crans_decode_byte(struct crans_decode_context *ctx,

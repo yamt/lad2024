@@ -26,8 +26,11 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         rans_decode_init(&ctx.dec);
 #if defined(RANS_DECODE_BITS)
         bitin_init(&ctx.inp, &stages_huff_data[offset]);
+#error not implemented
+        /* XXX ctx.nbits */
 #else
         ctx.inp = &stages_huff_data[offset];
+        ctx.nbits = (stage[1].data_offset - offset) * 8;
 #endif
 #else
         struct chuff_decode_context ctx;
@@ -91,7 +94,4 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         } else {
                 info->message = NULL;
         }
-#if defined(USE_CRANS)
-        ASSERT(rans_decode_get_extra(&ctx.dec, &ctx.inp) == 0);
-#endif
 }

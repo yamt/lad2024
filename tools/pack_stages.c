@@ -21,6 +21,8 @@
 #include "maputil.h"
 #include "stages.h"
 
+#define USE_RANS_ENCODE_INIT_ZERO
+
 size_t
 stage_data_size(const uint8_t *p)
 {
@@ -126,7 +128,12 @@ main(int argc, char **argv)
                 size_t data_size = stage_data_size(data);
 #if defined(USE_CRANS)
                 struct rans_encode_state enc;
+#if defined(USE_RANS_ENCODE_INIT_ZERO)
+                rans_encode_init_zero(&enc);
+                bool need_rans_init = false;
+#else
                 bool need_rans_init = true;
+#endif
                 struct bitbuf bo;
                 bitbuf_init(&bo);
 #else
@@ -163,6 +170,7 @@ main(int argc, char **argv)
                 bitbuf_rev_flush(&bo);
                 const uint8_t *encoded = bo.p;
                 size_t encoded_len = bo.datalen;
+                size_t nbits = bo.datalen_bits;
 #else
                 bitbuf_flush(&os);
                 const uint8_t *encoded = os.p;
@@ -191,7 +199,8 @@ main(int argc, char **argv)
 #endif
                 uint8_t ch = 0;
                 for (j = 0; j < data_size; j++) {
-                        while (rans_decode_need_more(&dec)) {
+                        while (rans_decode_need_more(&dec) &&
+                               nbits >= RANS_B_BITS) {
 #if defined(RANS_DECODE_BITS)
                                 uint16_t bits =
                                         binin_get_bits(&inp, RANS_B_BITS);
@@ -199,6 +208,7 @@ main(int argc, char **argv)
                                 uint8_t bits = *inp++;
 #endif
                                 rans_decode_feed(&dec, bits);
+                                nbits -= RANS_B_BITS;
                         }
                         ch = rans_decode_sym(&dec, ctx.tables[ch]);
                         decoded[j] = ch;
@@ -213,7 +223,8 @@ main(int argc, char **argv)
                                         mctx.tables[ch] - mctx.table;
                                 size_t sz = mctx.tablesizes[ch];
                                 assert(sz > 0);
-                                while (rans_decode_need_more(&dec)) {
+                                while (rans_decode_need_more(&dec) &&
+                                       nbits >= RANS_B_BITS) {
 #if defined(RANS_DECODE_BITS)
                                         uint16_t bits = binin_get_bits(
                                                 &inp, RANS_B_BITS);
@@ -221,6 +232,7 @@ main(int argc, char **argv)
                                         uint8_t bits = *inp++;
 #endif
                                         rans_decode_feed(&dec, bits);
+                                        nbits -= RANS_B_BITS;
                                 }
                                 ch = rans_decode_sym(&dec, mctx.tables[ch]);
                                 assert(ch < sz);

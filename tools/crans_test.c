@@ -28,11 +28,17 @@ main(void)
         crans_build(&t);
 
         struct rans_encode_state enc;
+#if defined(RANS_DECODE_BITS)
         rans_encode_init(&enc);
+        bool need_init = true;
+#else
+        rans_encode_init_zero(&enc);
+        bool need_init = false;
+#endif
         struct bitbuf os;
         bitbuf_init(&os);
         t.context = 0;
-        crans_encode(&t, input, inputsize, &enc, true, &os);
+        crans_encode(&t, input, inputsize, &enc, need_init, &os);
         rans_encode_flush(&enc, &os);
         bitbuf_rev_flush(&os);
         size_t encsize = os.datalen;
@@ -63,10 +69,11 @@ main(void)
         rans_decode_init(&dec.dec);
 #if defined(RANS_DECODE_BITS)
         bitin_init(&dec.inp, os.p);
+        dec.nbits = SIZE_MAX;
 #else
         dec.inp = os.p;
+        dec.nbits = os.datalen_bits;
 #endif
-        dec.ctx = 0;
         for (i = 0; i < inputsize; i++) {
                 uint8_t actual =
                         crans_decode_byte(&dec, htable, NULL, indexes);
