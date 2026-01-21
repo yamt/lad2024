@@ -30,7 +30,8 @@ decode_huff_stage(uint32_t stage_number, map_t map, struct map_info *info)
         /* XXX ctx.nbits */
 #else
         ctx.inp = &stages_huff_data[offset];
-        ctx.nbits = (stage[1].data_offset - offset) * 8;
+        uint16_t next_offset = stage[1].data_offset & ~HSTAGE_HAS_MESSAGE;
+        ctx.nbits = (next_offset - offset) * 8;
 #endif
 #else
         struct chuff_decode_context ctx;
