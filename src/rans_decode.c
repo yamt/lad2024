@@ -43,16 +43,21 @@ rans_decode_init(struct rans_decode_state *st)
  * s(x) in the paper.
  * also calculate b_s and return it via *bp.
  *
- * a dumb implementation. probably a plenty of rooms for optimization.
+ * this is a simple and dumb implementation.
+ * in case you want to optimize for speed, it's trivial to use a table,
+ * especially for a small RANS_M.
  */
 static rans_sym_t
-find_sym_and_b(const rans_prob_t ls[RANS_NSYMS], rans_I r, rans_prob_t *bp)
+find_sym_and_b(const rans_prob_t ls[RANS_NSYMS], rans_prob_t r,
+               rans_prob_t *bp)
 {
-        RANS_ASSERT(r < RANS_M);
         rans_prob_t b = 0;
         unsigned int i;
         for (i = 0; i < RANS_NSYMS - 1; i++) {
                 rans_prob_t p = ls[i];
+                /*
+                 * b+p can be up to RANS_M, which might not fit rans_prob_t.
+                 */
                 if (r < (rans_I)b + p) {
                         break;
                 }
@@ -78,7 +83,7 @@ rans_decode_feed(struct rans_decode_state *st, uint16_t input)
         RANS_ASSERT((input & (0xffff << RANS_B_BITS)) == 0);
         rans_I newx = st->x * RANS_B + input;
 #if defined(RANS_DEBUG)
-        printf("dec normalize in=%02x, %08x -> %08x\n", in, st->x, newx);
+        printf("dec normalize in=%02x, %08x -> %08x\n", input, st->x, newx);
 #endif
         st->x = newx;
 }
@@ -88,7 +93,7 @@ rans_decode_sym(struct rans_decode_state *st, const rans_prob_t ls[RANS_NSYMS])
 {
         RANS_ASSERT(st->x <= RANS_I_MAX);
         rans_I q_x_m = st->x / RANS_M;
-        rans_I mod_x_m = st->x % RANS_M;
+        rans_prob_t mod_x_m = (rans_prob_t)(st->x % RANS_M);
         rans_prob_t b_s;
         rans_sym_t s = find_sym_and_b(ls, mod_x_m, &b_s);
         rans_prob_t l_s = ls[s];

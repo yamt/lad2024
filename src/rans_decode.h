@@ -103,6 +103,13 @@ void rans_decode_feed(struct rans_decode_state *st, uint16_t input);
  */
 rans_sym_t rans_decode_sym(struct rans_decode_state *st,
                            const rans_prob_t ls[RANS_NSYMS]);
+
+/*
+ * rans_decode_get_extra: get the extra set by rans_encode_set_extra
+ *
+ * after decoding all symbols from the stream, you may call this to
+ * extract the value from rans_encode_set_extra.
+ */
 rans_I rans_decode_get_extra(struct rans_decode_state *st);
 
 #endif /* defined(_RANS_DECODE_H_) */

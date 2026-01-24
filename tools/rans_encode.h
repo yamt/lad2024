@@ -47,9 +47,10 @@ struct rans_encode_state {
  * rans_encode_zero allows even better compression. a downside is
  * that it requires the decoder know the exact size of the encoded bits.
  *
- * note: "better compression" here means up to a few bytes differences.
- * if your data is large enough, maybe the difference is negligible.
- * in that case, just use rans_encode_init as it's simplest to use.
+ * note: "better compression" here usually means up to a few bytes
+ * differences. if your data is large enough, maybe the difference is
+ * negligible. in that case, just use rans_encode_init as it's simplest
+ * to use.
  */
 void rans_encode_init(struct rans_encode_state *st);
 void rans_encode_init_zero(struct rans_encode_state *st);
@@ -60,6 +61,8 @@ void rans_encode_init_with_prob(struct rans_encode_state *st, rans_prob_t l_s);
  * decoder later can extract it with rans_decode_get_extra.
  * this mechanism can be used to compensate the cost to store the final
  * state of the encoding.
+ * rans_encode_set_extra should be called before encoding any symbols.
+ * otoh, rans_decode_get_extra should be called after decodinf all symbols.
  *
  * note: the current implementation is incompatible with
  * rans_encode_init_zero/rans_encode_init_with_prob.

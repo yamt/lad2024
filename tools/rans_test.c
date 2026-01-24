@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "rans_common.h"
@@ -51,6 +52,8 @@ enum mode {
         test_mode_zero,
 };
 
+#define EXTRA 0
+
 static void
 test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
             struct bitbuf *bo, enum mode mode)
@@ -63,6 +66,7 @@ test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
         switch (mode) {
         case test_mode_normal:
                 rans_encode_init(st);
+                rans_encode_set_extra(st, EXTRA);
                 break;
         case test_mode_prob:
                 need_init = true;
@@ -90,7 +94,7 @@ test_encode(const void *input, size_t inputsize, const struct rans_probs *ps,
         rans_encode_flush(st, bo);
 }
 
-static rans_I
+static void
 test_decode(const void *input, size_t inputsize_bits, size_t origsize,
             const rans_prob_t *ps, const rans_sym_t *trans, struct byteout *bo,
             enum mode mode)
@@ -141,7 +145,18 @@ test_decode(const void *input, size_t inputsize_bits, size_t origsize,
                 rans_decode_feed(st, d);
                 inputsize_bits -= RANS_B_BITS;
         }
-        return rans_decode_get_extra(st);
+        if (mode == test_mode_normal) {
+                rans_I extra = rans_decode_get_extra(st);
+                assert(extra == EXTRA);
+        }
+}
+
+uint64_t
+timestamp_ns(void)
+{
+        struct timespec tv;
+        clock_gettime(CLOCK_REALTIME, &tv);
+        return (uint64_t)tv.tv_sec * 1000000000 + tv.tv_nsec;
 }
 
 static void
@@ -156,10 +171,15 @@ test(const void *input, size_t inputsize, enum mode mode)
         struct rans_probs ps;
         rans_probs_init(&ps, counts);
 
+        uint64_t start_time = timestamp_ns();
         struct bitbuf bo;
         bitbuf_init(&bo);
         test_encode(input, inputsize, &ps, &bo, mode);
         bitbuf_rev_flush(&bo);
+        uint64_t end_time = timestamp_ns();
+        printf("encoding speed %.3f MB/s\n",
+               ((double)inputsize / (end_time - start_time)) * 1000000000 /
+                       1000000);
 
         rans_prob_t table[RANS_TABLE_MAX_NELEMS];
         size_t tablesize;
@@ -170,18 +190,28 @@ test(const void *input, size_t inputsize, enum mode mode)
         rans_sym_t ctrans[RANS_NSYMS];
         rans_probs_table_with_trans(&ps, ctable, ctrans, &ctablesize);
 
+        start_time = timestamp_ns();
         struct byteout bo_dec;
         byteout_init(&bo_dec);
         test_decode(bo.p, bo.datalen_bits, inputsize, table, NULL, &bo_dec,
                     mode);
         assert(bo_dec.actual == inputsize);
+        end_time = timestamp_ns();
+        printf("decoding speed %.3f MB/s\n",
+               ((double)inputsize / (end_time - start_time)) * 1000000000 /
+                       1000000);
         assert(!memcmp(bo_dec.p, input, inputsize));
         byteout_clear(&bo_dec);
 
+        start_time = timestamp_ns();
         byteout_init(&bo_dec);
         test_decode(bo.p, bo.datalen_bits, inputsize, ctable, ctrans, &bo_dec,
                     mode);
         assert(bo_dec.actual == inputsize);
+        end_time = timestamp_ns();
+        printf("decoding speed %.3f MB/s\n",
+               ((double)inputsize / (end_time - start_time)) * 1000000000 /
+                       1000000);
         assert(!memcmp(bo_dec.p, input, inputsize));
         byteout_clear(&bo_dec);
 

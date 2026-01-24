@@ -51,12 +51,26 @@ bitin_get_bit(struct bitin *in)
 uint16_t
 bitin_get_bits(struct bitin *in, unsigned int nbits)
 {
+        RANS_ASSERT(in->bitoff < 8);
         RANS_ASSERT(nbits <= 16);
-        uint16_t bits = 0;
-        unsigned int i;
-        for (i = 0; i < nbits; i++) {
-                bits <<= 1;
-                bits |= bitin_get_bit(in);
+        unsigned int bitoff = in->bitoff;
+        uint32_t u = 0;
+        while (nbits > 0) {
+                uint8_t mask = 0xff >> bitoff;
+                u += *in->p & mask;
+                if (bitoff + nbits < 8) {
+                        bitoff += nbits;
+                        break;
+                }
+                /* advance to the next byte */
+                nbits -= 8 - bitoff;
+                bitoff = 0;
+                in->p++;
+                u <<= 8;
         }
-        return bits;
+        in->bitoff = bitoff;
+        RANS_ASSERT(u <= 0xffffff);
+        u >>= 8 - bitoff;
+        RANS_ASSERT(u <= 0xffff);
+        return (uint16_t)u;
 }

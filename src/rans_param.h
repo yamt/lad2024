@@ -69,14 +69,14 @@ typedef RANS_I_TYPE rans_I;
 #define RANS_B (1 << RANS_B_BITS) /* b in the paper */
 #endif
 #if !defined(RANS_L)
-#define RANS_L (128 * RANS_M) /* l in the paper */
+#define RANS_L (256 * RANS_M) /* l in the paper */
 #endif
 #if !defined(RANS_M)
 #define RANS_M 65536 /* m in the paper */
 #endif
 
 #define RANS_I_SYM_MIN(l_s) ((rans_I)RANS_L / RANS_M * l_s)
-#define RANS_I_SYM_MAX(l_s) ((rans_I)RANS_B * RANS_L / RANS_M * l_s - 1)
+#define RANS_I_SYM_MAX(l_s) ((rans_I)RANS_B * (RANS_L / RANS_M) * l_s - 1)
 
 #define RANS_I_MIN ((rans_I)RANS_L)
 #define RANS_I_MAX ((rans_I)RANS_L * RANS_B - 1)
@@ -119,5 +119,7 @@ typedef RANS_I_TYPE rans_I;
 
 ctassert((rans_prob_t)(RANS_M - 1) == RANS_M - 1);
 ctassert((rans_I)RANS_I_MAX == RANS_I_MAX);
+ctassert(RANS_I_MAX / RANS_L == RANS_B - 1);
+ctassert(RANS_I_MAX / RANS_B == RANS_L - 1);
 
 #endif /* !defined(_RANS_PARAM_H_) */
