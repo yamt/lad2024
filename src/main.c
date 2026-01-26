@@ -918,9 +918,11 @@ halve_color(unsigned int a)
 static unsigned int
 beam_color(void)
 {
-        unsigned int phase = frame / 8;
-        unsigned int v = ((phase & 0x04) != 0 ? -phase - 1 : phase) & 0x03;
-        return 0x111100 * (v + 2);
+        unsigned int phase = frame;
+        /* 00 01 .. 1e 1f 1f 1e ... 01 00 */
+        unsigned int v = ((phase & 0x20) != 0 ? -phase - 1 : phase) & 0x1f;
+        /* 20 22 .. 5c 5e 5e 5c ... 22 20 */
+        return 0x202000 + 0x020200 * v;
 }
 
 static void
