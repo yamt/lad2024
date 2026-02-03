@@ -34,8 +34,10 @@ ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -g -DLIST_DISABLE_HEAVY_CHECK
 CLINKFLAGS += -g
 else
-CFLAGS += -flto=full -O3 -Wno-unused-variable
-CLINKFLAGS = -flto=full
+CFLAGS += -flto -O3 -Wno-unused-variable
+CFLAGS += -Wno-unknown-warning-option
+CFLAGS += -Wno-error=use-after-free
+CLINKFLAGS = -flto
 endif
 
 CFLAGS += -I../src
@@ -137,88 +139,90 @@ ALL_OBJS += ${PACK_STAGES_OBJS}
 
 BINS = solver generator refiner dumper dumper_raw rng_test huff_test chuff_test lz_test lzhuff_test rans_test crans_test hash_test analyze_test stage_uniq pack_stages
 
+LIBS = -lm
+
 .PHONY: all
 all: $(BINS)
 
 solver: $(SOLVER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(SOLVER_OBJS) $(OBJS)
+	-o $@ $(SOLVER_OBJS) $(OBJS) $(LIBS)
 
 generator: $(GENERATOR_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(GENERATOR_OBJS) $(OBJS)
+	-o $@ $(GENERATOR_OBJS) $(OBJS) $(LIBS)
 
 refiner: $(REFINER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(REFINER_OBJS) $(OBJS)
+	-o $@ $(REFINER_OBJS) $(OBJS) $(LIBS)
 
 dumper: $(DUMPER_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(DUMPER_OBJS) $(OBJS)
+	-o $@ $(DUMPER_OBJS) $(OBJS) $(LIBS)
 
 dumper_raw: $(DUMPER_RAW_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(DUMPER_RAW_OBJS) $(OBJS)
+	-o $@ $(DUMPER_RAW_OBJS) $(OBJS) $(LIBS)
 
 rng_test: $(RNG_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(RNG_TEST_OBJS) $(OBJS)
+	-o $@ $(RNG_TEST_OBJS) $(OBJS) $(LIBS)
 
 huff_test: $(HUFF_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(HUFF_TEST_OBJS) $(OBJS)
+	-o $@ $(HUFF_TEST_OBJS) $(OBJS) $(LIBS)
 
 chuff_test: $(CHUFF_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(CHUFF_TEST_OBJS) $(OBJS)
+	-o $@ $(CHUFF_TEST_OBJS) $(OBJS) $(LIBS)
 
 lz_test: $(LZ_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(LZ_TEST_OBJS) $(OBJS)
+	-o $@ $(LZ_TEST_OBJS) $(OBJS) $(LIBS)
 
 lzhuff_test: $(LZHUFF_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(LZHUFF_TEST_OBJS) $(OBJS)
+	-o $@ $(LZHUFF_TEST_OBJS) $(OBJS) $(LIBS)
 
 rans_test: $(RANS_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(RANS_TEST_OBJS) $(OBJS)
+	-o $@ $(RANS_TEST_OBJS) $(OBJS) $(LIBS)
 
 crans_test: $(CRANS_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(CRANS_TEST_OBJS) $(OBJS)
+	-o $@ $(CRANS_TEST_OBJS) $(OBJS) $(LIBS)
 
 hash_test: $(HASH_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(HASH_TEST_OBJS) $(OBJS)
+	-o $@ $(HASH_TEST_OBJS) $(OBJS) $(LIBS)
 
 analyze_test: $(ANALYZE_TEST_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(ANALYZE_TEST_OBJS) $(OBJS)
+	-o $@ $(ANALYZE_TEST_OBJS) $(OBJS) $(LIBS)
 
 stage_uniq: $(STAGE_UNIQ_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(STAGE_UNIQ_OBJS) $(OBJS)
+	-o $@ $(STAGE_UNIQ_OBJS) $(OBJS) $(LIBS)
 
 pack_stages: $(PACK_STAGES_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
-	-o $@ $(PACK_STAGES_OBJS) $(OBJS)
+	-o $@ $(PACK_STAGES_OBJS) $(OBJS) $(LIBS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<

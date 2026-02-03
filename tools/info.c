@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <errno.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -21,7 +22,9 @@ siginfo_set_message(const char *fmt, ...)
         va_list ap;
         va_start(ap, fmt);
         sigemptyset(&set);
+#if defined(SIGINFO)
         sigaddset(&set, SIGINFO);
+#endif
         ret = sigprocmask(SIG_BLOCK, &set, &oset);
         if (ret == -1) {
                 fprintf(stderr, "sigprocmask failed with %d (%s)\n", errno,
@@ -51,6 +54,7 @@ siginfo_clear_message(void)
         g_msg = NULL;
 }
 
+#if defined(SIGINFO)
 static void
 handler(int sig)
 {
@@ -60,6 +64,7 @@ handler(int sig)
                 g_pending = true;
         }
 }
+#endif
 
 bool
 siginfo_latch_pending(void)
@@ -72,5 +77,7 @@ siginfo_latch_pending(void)
 void
 siginfo_setup_handler(void)
 {
+#if defined(SIGINFO)
         signal(SIGINFO, handler);
+#endif
 }

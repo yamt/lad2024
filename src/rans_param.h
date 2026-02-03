@@ -109,6 +109,10 @@ typedef RANS_I_TYPE rans_I;
 #define RANS_DECODE_BITS
 #endif
 
+#if !defined(__has_extension)
+#define __has_extension(a) 0
+#endif
+
 #if !defined(ctassert)
 #if __STDC_VERSION__ >= 201112L || __has_extension(c_static_assert)
 #define ctassert(e) _Static_assert(e, #e)
