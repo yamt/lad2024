@@ -128,6 +128,13 @@ calc_stage_meta(map_t map, struct stage_meta *meta)
         meta->nbombs = nbombs;
 }
 
+/*
+ * if commit=false, perform a dry-run without modifying meta, p, map.
+ *
+ * this function does never update beam_map. it's caller's responsibily
+ * to update it (typically by calling calc_beam) when the returned flag
+ * contains MOVE_BEAM.
+ */
 move_flags_t
 player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
             map_t map, const map_t beam_map, bool commit)
