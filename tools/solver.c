@@ -286,7 +286,7 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
         map_copy(root->map, root_map);
 #endif
         root->parent = NULL;
-        root->steps = 0;
+        root->steps = 0; /* note: steps == 0 means the root */
         root->flags = 0;
         SLIST_INSERT_TAIL(&todo, root, q);
         stats.queued++;
@@ -407,11 +407,18 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                         struct player *p = &meta.players[i];
                         enum diridx dir;
                         for (dir = 0; dir < 4; dir++) {
+                                /*
+                                 * a quick check with commit=false before
+                                 * creating a new node
+                                 */
                                 move_flags_t flags = player_move(
                                         &meta, p, dir, map, beam_map, false);
                                 if ((flags & MOVE_OK) == 0) {
                                         continue;
                                 }
+                                /*
+                                 * create a copy of the current node.
+                                 */
                                 struct node *n2 = alloc_node();
 #if defined(SMALL_NODE)
                                 map_t map2;
@@ -420,8 +427,14 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
 #endif
                                 map_copy(map2, map);
                                 struct stage_meta meta2 = meta;
-                                player_move(&meta2, &meta2.players[i], dir,
-                                            map2, beam_map, true);
+                                /*
+                                 * make a move.
+                                 */
+                                move_flags_t flags2 =
+                                        player_move(&meta2, &meta2.players[i],
+                                                    dir, map2, beam_map, true);
+                                assert(flags == flags2);
+                                assert(map2[p->loc] == _);
                                 if (add(root_map, n2, map2)) {
                                         stats.duplicated++;
                                         free_node(n2);
