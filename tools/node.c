@@ -54,7 +54,7 @@ pushed_obj_loc(const struct node *n)
 bool
 is_trivial(const struct node *n, const map_t map, const map_t beam)
 {
-        if ((n->flags & (MOVE_PUSH | MOVE_GET_BOMB)) != 0) {
+        if (n->steps == 0 || (n->flags & (MOVE_PUSH | MOVE_GET_BOMB)) != 0) {
                 return false;
         }
         loc_t nloc = next_loc(n);
@@ -91,6 +91,7 @@ prev_map(const struct node *n, const map_t node_map, map_t map)
 void
 node_apply(const struct node *n, map_t map)
 {
+        assert(n->steps > 0);
         if ((n->flags & MOVE_PUSH) != 0) {
                 move_object(map, pushed_obj_loc(n), next_loc(n));
         }
@@ -103,7 +104,9 @@ node_recursively_apply(const struct node *n, map_t map)
         if (n->steps > 1) {
                 node_recursively_apply(n->parent, map);
         }
-        node_apply(n, map);
+        if (n->steps > 0) {
+                node_apply(n, map);
+        }
 }
 
 void

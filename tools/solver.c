@@ -391,7 +391,7 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                 calc_stage_meta(map, &meta);
                 assert(meta.nplayers > 0);
                 assert(meta.nplayers <= max_players);
-                if (n->steps > 0) {
+                if (n->steps > 1) {
                         /* prefer to continue moving the same player */
                         struct player *p = player_at(&meta, next_loc(n));
                         assert(p != NULL);
