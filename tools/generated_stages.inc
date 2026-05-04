@@ -12,8 +12,8 @@
             END, END,
         },
         .message =
-        "Stage 51-1316 are\n"
-        "machine-generated."
+        " Stage 51-1316 are\n"
+        " machine-generated."
     },
     /* stage 52 */
     {
