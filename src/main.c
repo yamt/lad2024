@@ -11,6 +11,7 @@
 #include "rule.h"
 #include "scores.h"
 #include "sprite.h"
+#include "state.h"
 #include "util.h"
 #include "wasm4.h"
 #include "wasm4util.h"
@@ -33,8 +34,8 @@ static struct proj {
 #define sprite(x) (&sprites[proj.scale_idx][(x) << (proj.scale_idx * 2 + 3)])
 
 #define unscale(x) ((x) >> (proj.scale_idx + 3))
-#define unscale_x(x) unscale((x)-proj.x_offset)
-#define unscale_y(y) unscale((y)-proj.y_offset)
+#define unscale_x(x) unscale((x) - proj.x_offset)
+#define unscale_y(y) unscale((y) - proj.y_offset)
 
 static unsigned int beamidx = 0;
 static unsigned int cur_player_idx;
@@ -84,15 +85,6 @@ static struct stage_draw_info {
         unsigned int message_y;
         const char *message;
 } draw_info;
-
-#define max_stages 1400
-#define save_data_version 1
-struct save_data {
-        uint32_t version;
-        uint32_t cur_stage;
-        uint32_t cleared_stages;
-        uint32_t clear_bitmap[(max_stages + 32 - 1) / 32];
-} state;
 
 static map_t map;
 static map_t beam[2];
@@ -692,75 +684,6 @@ load_stage()
         update_beam();
 
         music_change(pick_score(rng_rand_u32(&rng)));
-}
-
-static void
-validate_state(void)
-{
-        CHECK(state.cur_stage < nstages);
-        CHECK(state.cleared_stages <= nstages);
-        unsigned int n = 0;
-        unsigned int i;
-        for (i = 0; i < max_stages; i++) {
-                if ((state.clear_bitmap[i / 32] & (1 << (i % 32))) != 0) {
-                        n++;
-                }
-        }
-        CHECK(state.cleared_stages == n);
-}
-
-void
-load_state()
-{
-        memset(&state, 0, sizeof(state));
-        diskr(&state, sizeof(state));
-        if (state.version == 0) {
-                /*
-                 * initial state. (all zero)
-                 *
-                 * or maybe a save data from a version older than
-                 * the first public release. (20240831)
-                 */
-                unsigned int i;
-                for (i = 0; i < sizeof(state); i++) {
-                        CHECK(((const uint8_t *)&state)[i] == 0);
-                }
-                return;
-        }
-        CHECK(state.version > 0 && state.version <= save_data_version);
-        validate_state();
-        if (state.version != save_data_version) {
-                memset(&state, 0, sizeof(state));
-        }
-}
-
-void
-save_state()
-{
-        /*
-         * although this cart currently has nothing for netplay,
-         * wasm-4 doesn't have a way for a cart to prevent users from
-         * starting a netplay.
-         *
-         * if netplay is enabled, only perform diskw for the first player,
-         * which is the host of the netplay.
-         * in case of netplay, other players merely have a copy of the in-core
-         * disk buffer from the first player. do not risk overwriting the
-         * local storage with it.
-         *
-         * as this cart loads the data from the disk buffer only on start(),
-         * it's ok to leave the disk buffer contents stale here.
-         *
-         * this can be even considered as a security measure as a bad person
-         * can attempt to overwrite your save data by sending a netplay url.
-         *
-         * cf. https://github.com/aduros/wasm4/issues/837
-         */
-        if ((*NETPLAY & 3) != 0) {
-                return;
-        }
-        state.version = save_data_version;
-        diskw(&state, sizeof(state));
 }
 
 move_flags_t
