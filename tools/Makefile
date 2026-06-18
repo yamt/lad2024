@@ -75,10 +75,13 @@ STAGE_UNIQ_OBJS = stage_uniq.o
 
 PACK_STAGES_OBJS = pack_stages.o
 
+DUMP_STATE_OBJS = dump_state.o
+
 OBJS = hash.o
 OBJS += rule.o
 OBJS += loader.o
 OBJS += stages.o
+OBJS += state_util.o
 OBJS += list.o
 OBJS += slist.o
 OBJS += maputil.o
@@ -136,8 +139,9 @@ ALL_OBJS += ${HASH_TEST_OBJS}
 ALL_OBJS += ${ANALYZE_TEST_OBJS}
 ALL_OBJS += ${STAGE_UNIQ_OBJS}
 ALL_OBJS += ${PACK_STAGES_OBJS}
+ALL_OBJS += ${DUMP_STATE_OBJS}
 
-BINS = solver generator refiner dumper dumper_raw rng_test huff_test chuff_test lz_test lzhuff_test rans_test crans_test hash_test analyze_test stage_uniq pack_stages
+BINS = solver generator refiner dumper dumper_raw rng_test huff_test chuff_test lz_test lzhuff_test rans_test crans_test hash_test analyze_test stage_uniq pack_stages dump_state
 
 LIBS = -lm
 
@@ -223,6 +227,11 @@ pack_stages: $(PACK_STAGES_OBJS) $(OBJS)
 	$(CC) \
 	$(CLINKFLAGS) \
 	-o $@ $(PACK_STAGES_OBJS) $(OBJS) $(LIBS)
+
+dump_state: $(DUMP_STATE_OBJS) $(OBJS)
+	$(CC) \
+	$(CLINKFLAGS) \
+	-o $@ $(DUMP_STATE_OBJS) $(OBJS) $(LIBS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<

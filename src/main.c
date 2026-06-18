@@ -52,6 +52,9 @@ static bool animation_all_cleared = false;
 #define moving_nsteps 8
 static unsigned int moving_speed;
 static unsigned int moving_step = 0;
+static uint32_t stage_ticks; /* 32-bit can hold more than 2 years */
+static uint32_t stage_undo_count;
+static uint32_t stage_move_count;
 static bool undoing = false;
 #define moving_dir undos[undo_idx].dir
 #define moving_pushing ((undos[undo_idx].flags & MOVE_PUSH) != 0)
@@ -665,6 +668,9 @@ load_stage()
         undo_idx = 0;
         undoing = false;
         bomb_animate_step = 0;
+        stage_ticks = 0;
+        stage_undo_count = 0;
+        stage_move_count = 0;
 
         calc_stage_meta(map, &meta);
         meta.stage_height = info.h + (unsigned int)dy;
@@ -707,16 +713,40 @@ bumping_cleared_percentage(unsigned int *npercentp)
         return opercent != npercent;
 }
 
+static void
+update_clear_record(struct stage_clear_record *ts, uint32_t value)
+{
+        unsigned int i;
+        for (i = 0; i < NRECORDS; i++) {
+                struct stage_clear_record *t = &ts[i];
+                if (t->value < value) {
+                        if (i < NRECORDS - 1) {
+                                memmove(t + 1, t,
+                                        (NRECORDS - 1 - 1) * sizeof(*t));
+                        }
+                        t->stage = state.cur_stage;
+                        t->value = value;
+                        break;
+                }
+        }
+}
+
 void
 stage_clear()
 {
         // trace("clear");
         uint32_t mask = 1 << (state.cur_stage % 32);
         if ((state.clear_bitmap[state.cur_stage / 32] & mask) == 0) {
+                state.clear_bitmap[state.cur_stage / 32] |= mask;
                 state.cleared_stages++;
+                update_clear_record(state.ticks_records, stage_ticks);
+                update_clear_record(state.undo_records, stage_undo_count);
+                update_clear_record(state.move_records, stage_move_count);
+        } else {
+                STAT(CLEAR_AGAIN)++;
         }
-        state.clear_bitmap[state.cur_stage / 32] |= mask;
         state.cur_stage = (state.cur_stage + 1) % nstages;
+
         save_state();
         load_stage();
 }
@@ -1001,6 +1031,7 @@ update()
                                      TONE_TRIANGLE);
                                 animation_mode = GAVEUP;
                                 animation_frame = 0;
+                                STAT(GIVEUP_COUNT)++;
                                 return;
                         } else if (dir == DOWN) {
                                 const struct move *undo = &undos[undo_idx];
@@ -1040,6 +1071,9 @@ update()
                                         moving_speed = 2;
                                         moving_step =
                                                 moving_nsteps - moving_speed;
+
+                                        STAT(UNDO_COUNT)++;
+                                        stage_undo_count++;
                                 }
                         }
                 } else if (dir != NONE) {
@@ -1057,7 +1091,8 @@ update()
 
                                 moving_speed = 2;
                                 loc_t cur_loc = cur_player()->loc;
-                                if (map[cur_loc] == A) {
+                                const bool is_A = map[cur_loc] == A;
+                                if (is_A) {
                                         static unsigned int toggle;
                                         toggle = 1 - toggle;
                                         tone(TONE_FREQ(110 + 100 * toggle,
@@ -1097,14 +1132,38 @@ update()
                                                          (VOLUME * 6 / 16)),
                                              TONE_NOISE);
                                         explosion_animate_step = 1;
+                                        STAT(GET_BOMB_COUNT)++;
                                 }
                                 moving_step += moving_speed;
+                                if (is_A) {
+                                        if (automove) {
+                                                STAT(AUTOMOVE_A_COUNT)++;
+                                        } else {
+                                                STAT(MOVE_A_COUNT)++;
+                                        }
+                                        stage_move_count++;
+                                        if ((flags & MOVE_PUSH)) {
+                                                STAT(PUSH_A_COUNT)++;
+                                        }
+                                } else {
+                                        if (automove) {
+                                                STAT(AUTOMOVE_P_COUNT)++;
+                                        } else {
+                                                STAT(MOVE_P_COUNT)++;
+                                        }
+                                        stage_move_count++;
+                                        if ((flags & MOVE_PUSH)) {
+                                                STAT(PUSH_P_COUNT)++;
+                                        }
+                                }
                         }
                 }
                 mark_redraw_cur_player();
         }
 
         frame++;
+        stage_ticks++;
+        STAT(TOTAL_TICK)++;
         if (animation_mode == CLEARED) {
                 update_alt_palette();
         } else {
@@ -1221,5 +1280,10 @@ update()
                         }
                         animation_frame = 1;
                 }
+        }
+
+        /* save stats time to time */
+        if ((frame % 4096) == 0) { /* about once a minute */
+                save_state();
         }
 }

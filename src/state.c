@@ -1,29 +1,20 @@
-#include "state.h"
+#include <string.h>
+
 #include "defs.h"
-#include "string.h"
+#include "state.h"
 #include "util.h"
+
 #include "wasm4.h"
 
 struct save_data state;
 
-static void
-validate_state(void)
-{
-        CHECK(state.cur_stage < nstages);
-        CHECK(state.cleared_stages <= nstages);
-        unsigned int n = 0;
-        unsigned int i;
-        for (i = 0; i < max_stages; i++) {
-                if ((state.clear_bitmap[i / 32] & (1 << (i % 32))) != 0) {
-                        n++;
-                }
-        }
-        CHECK(state.cleared_stages == n);
-}
-
 void
 load_state(void)
 {
+        /*
+         * assumption: older versions are smaller.
+         * NUM_STATS and max_stages monotonically increase.
+         */
         memset(&state, 0, sizeof(state));
         diskr(&state, sizeof(state));
         if (state.version == 0) {
@@ -32,18 +23,17 @@ load_state(void)
                  *
                  * or maybe a save data from a version older than
                  * the first public release. (20240831)
+                 * that version didn't have version field. we don't
+                 * bother to handle that version anymore.
                  */
                 unsigned int i;
                 for (i = 0; i < sizeof(state); i++) {
                         CHECK(((const uint8_t *)&state)[i] == 0);
                 }
-                return;
+                state.version = 1;
         }
-        CHECK(state.version > 0 && state.version <= save_data_version);
+        upgrade_state();
         validate_state();
-        if (state.version != save_data_version) {
-                memset(&state, 0, sizeof(state));
-        }
 }
 
 void
