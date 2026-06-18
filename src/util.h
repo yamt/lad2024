@@ -1,3 +1,8 @@
+/*
+ * CHECK: always enabled check
+ * ASSERT: can be a no-op for NDEBUG
+ */
+
 #if defined(NDEBUG)
 #define CHECK(cond)                                                           \
         do {                                                                  \
