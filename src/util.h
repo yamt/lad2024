@@ -11,6 +11,7 @@
                 }                                                             \
         } while (0)
 #else /* defined(NDEBUG) */
+#if defined(__wasm__)
 #define CHECK(cond)                                                           \
         do {                                                                  \
                 if (!(cond)) {                                                \
@@ -19,6 +20,17 @@
                         __builtin_trap();                                     \
                 }                                                             \
         } while (0)
+#else /* defined(__wasm__) */
+#include <stdio.h>
+#define CHECK(cond)                                                           \
+        do {                                                                  \
+                if (!(cond)) {                                                \
+                        fprintf(stderr, "assertion (%s) failed at %s:%d\n",   \
+                                #cond, __FILE__, __LINE__);                   \
+                        __builtin_trap();                                     \
+                }                                                             \
+        } while (0)
+#endif /* defined(__wasm__) */
 #endif /* defined(NDEBUG) */
 
 #if defined(NDEBUG)
