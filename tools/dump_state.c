@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -18,9 +19,11 @@ print_records(const struct stage_clear_record *ts)
         for (i = 0; i < NRECORDS; i++) {
                 const struct stage_clear_record *t = &ts[i];
                 if (t->value == 0) {
-                        break;
+                        assert(t->stage == 0);
+                        printf("[%2d] ----\n", i + 1);
+                        continue;
                 }
-                printf("[%d] stage %d value %d\n", i + 1, t->stage + 1,
+                printf("[%2d] stage %d value %d\n", i + 1, t->stage + 1,
                        t->value);
         }
 }
