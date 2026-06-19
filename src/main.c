@@ -1142,7 +1142,7 @@ update()
                                                 STAT(MOVE_A_COUNT)++;
                                         }
                                         stage_move_count++;
-                                        if ((flags & MOVE_PUSH)) {
+                                        if ((flags & MOVE_PUSH) != 0) {
                                                 STAT(PUSH_A_COUNT)++;
                                         }
                                 } else {
@@ -1152,7 +1152,7 @@ update()
                                                 STAT(MOVE_P_COUNT)++;
                                         }
                                         stage_move_count++;
-                                        if ((flags & MOVE_PUSH)) {
+                                        if ((flags & MOVE_PUSH) != 0) {
                                                 STAT(PUSH_P_COUNT)++;
                                         }
                                 }
