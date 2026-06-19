@@ -1073,6 +1073,8 @@ update()
                                         moving_step =
                                                 moving_nsteps - moving_speed;
 
+                                        ASSERT(stage_move_count > 0);
+                                        stage_move_count--;
                                         STAT(UNDO_COUNT)++;
                                         stage_undo_count++;
                                 }
