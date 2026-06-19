@@ -736,8 +736,9 @@ stage_clear()
 {
         // trace("clear");
         uint32_t mask = 1 << (state.cur_stage % 32);
-        if ((state.clear_bitmap[state.cur_stage / 32] & mask) == 0) {
-                state.clear_bitmap[state.cur_stage / 32] |= mask;
+        uint32_t idx = state.cur_stage / 32;
+        if ((state.clear_bitmap[idx] & mask) == 0) {
+                state.clear_bitmap[idx] |= mask;
                 state.cleared_stages++;
                 update_clear_record(state.ticks_records, stage_ticks);
                 update_clear_record(state.undo_records, stage_undo_count);
@@ -1135,13 +1136,13 @@ update()
                                         STAT(GET_BOMB_COUNT)++;
                                 }
                                 moving_step += moving_speed;
+                                stage_move_count++;
                                 if (is_A) {
                                         if (automove) {
                                                 STAT(AUTOMOVE_A_COUNT)++;
                                         } else {
                                                 STAT(MOVE_A_COUNT)++;
                                         }
-                                        stage_move_count++;
                                         if ((flags & MOVE_PUSH) != 0) {
                                                 STAT(PUSH_A_COUNT)++;
                                         }
@@ -1151,7 +1152,6 @@ update()
                                         } else {
                                                 STAT(MOVE_P_COUNT)++;
                                         }
-                                        stage_move_count++;
                                         if ((flags & MOVE_PUSH) != 0) {
                                                 STAT(PUSH_P_COUNT)++;
                                         }
