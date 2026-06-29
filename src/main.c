@@ -722,7 +722,7 @@ update_clear_record(struct stage_clear_record *ts, uint32_t value)
                 if (t->value < value) {
                         if (i < NRECORDS - 1) {
                                 memmove(t + 1, t,
-                                        (NRECORDS - 1 - 1) * sizeof(*t));
+                                        (NRECORDS - 1 - i) * sizeof(*t));
                         }
                         t->stage = state.cur_stage;
                         t->value = value;
