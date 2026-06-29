@@ -58,6 +58,9 @@ dump_state(void)
         PRINT_STAT(PUSH_P_COUNT);
         PRINT_STAT(GET_BOMB_COUNT);
         PRINT_STAT(CLEAR_AGAIN);
+        PRINT_STAT(TOTAL_CLEAR_TICK);
+        PRINT_STAT(TOTAL_CLEAR_UNDO);
+        PRINT_STAT(TOTAL_CLEAR_MOVE);
 
         printf("=== clear_bitmap ===\n");
 
