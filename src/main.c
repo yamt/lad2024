@@ -743,6 +743,9 @@ stage_clear()
                 update_clear_record(state.ticks_records, stage_ticks);
                 update_clear_record(state.undo_records, stage_undo_count);
                 update_clear_record(state.move_records, stage_move_count);
+                STAT(TOTAL_CLEAR_TICK) += stage_ticks;
+                STAT(TOTAL_CLEAR_UNDO) += stage_undo_count;
+                STAT(TOTAL_CLEAR_MOVE) += stage_move_count;
         } else {
                 STAT(CLEAR_AGAIN)++;
         }

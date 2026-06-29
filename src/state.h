@@ -20,6 +20,9 @@ enum stat {
         STAT_PUSH_P_COUNT,
         STAT_GET_BOMB_COUNT,
         STAT_CLEAR_AGAIN, /* clear already-cleared stage again */
+        STAT_TOTAL_CLEAR_TICK, /* the sum of stage_ticks for cleared stages */
+        STAT_TOTAL_CLEAR_UNDO, /* the sum of stage_undo_count for cleared stages */
+        STAT_TOTAL_CLEAR_MOVE, /* the sum of stage_move_count for cleared stages */
 
         NUM_STATS,
 };
