@@ -104,10 +104,11 @@ validate_slow(const map_t map, struct solution *solution,
               const struct solver_param *param, bool verbose,
               struct solution *new_solution)
 {
+        char msg[128];
         detach_solution(solution);
         solve_cleanup();
-        unsigned int result =
-                solve("validating", map, param, false, new_solution);
+        snprintf(msg, sizeof(msg), "validating (%u moves)", solution->nmoves);
+        unsigned int result = solve(msg, map, param, false, new_solution);
         if (result != SOLVE_SOLVED) {
                 return true;
         }
