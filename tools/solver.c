@@ -632,12 +632,20 @@ skip:
                         return SOLVE_GIVENUP;
                 }
         }
+#if defined(USE_BLOOM_FILTER)
         /*
          * note: this "impossible" claim can be a false positive unless
          * bloom_filter_stats.reclaimed == 0.
          * maybe it makes more sense to turn this SOLVE_GIVENUP.
          */
-        printf("impossible\n");
+        if (bloom_filter_stats.reclaimed == 0) {
+                printf("impossible (proven)\n");
+        } else {
+                printf("impossible (given up)\n");
+        }
+#else
+        printf("impossible (proven)\n");
+#endif
         solution->stat.iterations += stats.processed;
         return SOLVE_IMPOSSIBLE;
 }
