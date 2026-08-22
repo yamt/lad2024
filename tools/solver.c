@@ -43,6 +43,11 @@ static struct {
         uint32_t add;
         uint32_t n;
         uint32_t false_positive;
+
+        /*
+         * the number of forget_unreachable attempts.
+         * XXX this is not really about bloom filter.
+         */
         uint32_t reclaimed;
 } bloom_filter_stats;
 #if !defined(BLOOM_FILTER_K)
@@ -78,6 +83,13 @@ add(const map_t root, struct node *n, const map_t node_map)
         uint32_t h[8];
         sha256(node_map, map_size, h);
         const bool dup = add_filter(h);
+        /*
+         * if bloom_filter_stats.reclaimed > 0, the hash-based
+         * dedup is not reliable. in that case, just trust
+         * the bloom filter.
+         * otherwise, check the hash to detect false positives
+         * in the bloom filter. (bloom_filter_stats.false_positive)
+         */
         if (dup && bloom_filter_stats.reclaimed) {
                 return true;
         }
@@ -161,6 +173,11 @@ dump_hash(void)
 }
 
 #if !defined(SMALL_NODE)
+/*
+ * note: this is incompatible with SMALL_NODE because,
+ * SMALL_NODE only record the diff from the parent, assuming
+ * the availability of the entire chain from the root.
+ */
 unsigned int
 forget_old(unsigned int thresh)
 {
@@ -183,11 +200,19 @@ forget_old(unsigned int thresh)
 #endif
 
 #if defined(SMALL_NODE)
+/*
+ * forget unreachable nodes.
+ *
+ * "unreachable" here means "can not be a part of a solution".
+ */
 unsigned int
 forget_unreachable(const struct node_slist *todo)
 {
         unsigned int removed = 0;
         unsigned int i;
+        /*
+         * mark all hashed nodes.
+         */
         for (i = 0; i < HASH_SIZE; i++) {
                 struct node_hashlist *h = &hash_heads[i];
                 struct node *n;
@@ -195,6 +220,9 @@ forget_unreachable(const struct node_slist *todo)
                         n->flags |= 0x80;
                 }
         }
+        /*
+         * unmark nodes reachable from nodes on the todo list.
+         */
         struct node *n;
         SLIST_FOREACH(n, todo, q) {
                 struct node *m;
@@ -205,6 +233,9 @@ forget_unreachable(const struct node_slist *todo)
                         m->flags &= ~0x80;
                 }
         }
+        /*
+         * remove marked nodes.
+         */
         for (i = 0; i < HASH_SIZE; i++) {
                 struct node_hashlist *h = &hash_heads[i];
                 struct node *n;
@@ -687,16 +718,16 @@ solve_cleanup(void)
 #endif
 }
 
+/*
+ * make a copy of nodes using malloc so that it's independent
+ * from the global solver state. (thus usable after solve_cleanup)
+ */
 void
 detach_solution(struct solution *solution)
 {
         if (solution->detached) {
                 return;
         }
-        /*
-         * make a copy of nodes using malloc so that it's independent
-         * from the solver state (thus usable after solve_cleanup)
-         */
         struct node_slist h;
         SLIST_HEAD_INIT(&h);
         struct node *n;
