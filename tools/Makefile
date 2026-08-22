@@ -38,6 +38,7 @@ CFLAGS += -flto -O3 -Wno-unused-variable
 CFLAGS += -Wno-unknown-warning-option
 CFLAGS += -Wno-error=use-after-free
 CLINKFLAGS = -flto
+#CLINKFLAGS += -fuse-ld=lld
 endif
 
 CFLAGS += -I../src
