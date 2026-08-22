@@ -679,6 +679,8 @@ solve(const char *msg, const map_t map, const struct solver_param *param,
                 detach_solution(&solution2);
                 solve_cleanup();
                 assert(solution->detached == solution2.detached);
+                assert(SLIST_FIRST(&solution->moves)->parent == NULL);
+                SLIST_FIRST(&solution->moves)->parent = SLIST_LAST(&solution2.moves, struct node, q);
                 SLIST_SPLICE_HEAD(&solution->moves, &solution2.moves, q);
         }
 #endif
