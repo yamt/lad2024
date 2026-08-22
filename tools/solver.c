@@ -45,7 +45,7 @@ static struct {
         uint32_t false_positive;
 
         /*
-         * the number of forget_unreachable attempts.
+         * the number of forget_unreachable/forget_old attempts.
          * XXX this is not really about bloom filter.
          */
         uint32_t reclaimed;
@@ -76,6 +76,12 @@ add_filter(const uint32_t h[8])
 }
 #endif
 
+/*
+ * record a new node. if a duplicate is detected, return true.
+ *
+ * this function can return false positives if defined(USE_BLOOM_FILTER)
+ * and bloom_filter_stats.reclaimed > 0.
+ */
 bool
 add(const map_t root, struct node *n, const map_t node_map)
 {
