@@ -770,12 +770,12 @@ clear_solution(struct solution *solution)
          * free malloc'ed nodes
          */
         struct node *n;
-        struct node *np = NULL;
+        uintptr_t np = 0;
         while ((n = SLIST_FIRST(&solution->moves)) != NULL) {
-                assert(n->parent == np);
+                assert((uintptr_t)n->parent == np);
                 SLIST_REMOVE(&solution->moves, (struct node *)NULL, n, q);
+                np = (uintptr_t)n;
                 free(n);
-                np = n;
         }
 }
 
