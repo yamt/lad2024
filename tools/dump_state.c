@@ -10,8 +10,6 @@
 
 #include "state.h"
 
-struct save_data state;
-
 static void
 print_records(const struct stage_clear_record *ts)
 {

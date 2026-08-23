@@ -83,6 +83,7 @@ OBJS += rule.o
 OBJS += loader.o
 OBJS += stages.o
 OBJS += state_util.o
+OBJS += state.o
 OBJS += list.o
 OBJS += slist.o
 OBJS += maputil.o
