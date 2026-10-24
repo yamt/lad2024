@@ -12,6 +12,23 @@
 #include "solver.h"
 #include "validate.h"
 
+/* return >0 if a is a better than b */
+static int
+compare_solutions(const struct solution *a, const struct solution *b)
+{
+        /*
+         * we don't want to apply a refinement which decreases
+         * the number of steps.
+         *
+         * REVISIT: it might be better to perform the full evaluation
+         * and compare scores.
+         */
+        if (b->nmoves < a->nmoves) {
+                return 1;
+        }
+        return 0;
+}
+
 static void
 update_solution(struct solution *solution, struct solution *new_solution)
 {
@@ -129,11 +146,18 @@ refine(map_t map, bool eager, struct solution *solution,
                                  * fast validation might fail even when
                                  * the refinement attempt improved the stage.
                                  */
+                                bool should_revert = false;
                                 struct solution new_solution;
-                                if (/* validate(map, solution, false, false) ||
-                                     */
-                                    validate_slow(map, solution, param, false,
+                                if (validate_slow(map, solution, param, false,
                                                   &new_solution)) {
+                                        should_revert = true;
+                                } else if (compare_solutions(solution,
+                                                             &new_solution) >
+                                           0) {
+                                        should_revert = true;
+                                        clear_solution(&new_solution);
+                                }
+                                if (should_revert) {
                                         map[loc] = objidx; /* revert */
                                         printf("a refinement attempt has been "
                                                "reverted\n");
@@ -202,45 +226,52 @@ try_refine1(map_t map, struct solution *solution,
          * simplification step might have degraded the solution steps
          * a lot.
          */
-        if (removed) {
-                struct solution alt_solution;
-                if (validate_slow(map, solution, param, false,
-                                  &alt_solution)) {
-                        /*
-                         * must be a bug unless USE_BLOOM_FILTER.
-                         *
-                         * with USE_BLOOM_FILTER,
-                         * as a bloom filter allows false positives,
-                         * any changes to the stage can make it unsolvable.
-                         * it's ok as far as it's rare.
-                         * we still dump it for later examination though.
-                         */
-                        printf("refinement changed the solution!\n");
-                        printf("====== orig\n");
-                        dump_map(orig);
-                        printf("====== refined\n");
-                        dump_map(refinedmap);
-                        printf("====== simplified\n");
-                        dump_map(map);
-                        dump_map_c_fmt(orig, "refine-bug-%" PRIx64 "-orig",
-                                       solution->id);
-                        dump_map_c_fmt(refinedmap,
-                                       "refine-bug-%" PRIx64 "-refined",
-                                       solution->id);
-                        dump_map_c_fmt(map,
-                                       "refine-bug-%" PRIx64 "-simplified",
-                                       solution->id);
+        struct solution alt_solution;
+        if (validate_slow(map, solution, param, false, &alt_solution)) {
+                /*
+                 * must be a bug unless USE_BLOOM_FILTER.
+                 *
+                 * with USE_BLOOM_FILTER,
+                 * as a bloom filter allows false positives,
+                 * any changes to the stage can make it unsolvable.
+                 * it's ok as far as it's rare.
+                 * we still dump it for later examination though.
+                 */
+                printf("refinement changed the solution!\n");
+                printf("====== orig\n");
+                dump_map(orig);
+                printf("====== refined\n");
+                dump_map(refinedmap);
+                printf("====== simplified\n");
+                dump_map(map);
+                dump_map_c_fmt(orig, "refine-bug-%" PRIx64 "-orig",
+                               solution->id);
+                dump_map_c_fmt(refinedmap, "refine-bug-%" PRIx64 "-refined",
+                               solution->id);
+                dump_map_c_fmt(map, "refine-bug-%" PRIx64 "-simplified",
+                               solution->id);
 #if !defined(USE_BLOOM_FILTER)
-                        exit(1);
+                exit(1);
 #endif
-                        /* revert the map and give up */
-                        printf("giving up refinement\n");
-                        map_copy(map, orig);
-                        return false;
-                } else {
-                        update_solution(solution, &alt_solution);
-                }
+                /* revert the map and give up */
+                printf("giving up refinement\n");
+                map_copy(map, orig);
+                return false;
         }
+
+        if (compare_solutions(solution, &alt_solution) > 0) {
+                /*
+                 * sadly, our refinement attempt degraded a map.
+                 * it sometimes happens because the above simplify()
+                 * can remove the isolated parts of the map.
+                 *
+                 * XXX should we notice the caller to abandon this map?
+                 */
+                clear_solution(&alt_solution);
+                return false;
+        }
+
+        update_solution(solution, &alt_solution);
         return true;
 }
 

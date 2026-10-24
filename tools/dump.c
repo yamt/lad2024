@@ -7,6 +7,7 @@
 #include "defs.h"
 #include "dump.h"
 #include "maputil.h"
+#include "simplify.h"
 
 void
 dump_map_raw(const map_t map)
@@ -68,8 +69,12 @@ dump_map(const map_t map)
 }
 
 void
-dump_map_c_to(const map_t map, FILE *fp)
+dump_map_c_to(const map_t omap, FILE *fp)
 {
+        map_t map;
+        map_copy(map, omap);
+        align_to_top_left(map);
+
         int x;
         int y;
         fprintf(fp, "    {\n");

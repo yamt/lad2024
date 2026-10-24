@@ -97,7 +97,8 @@ validate(const map_t omap, const struct solution *solution, bool verbose,
  * validate a solution by solving the stage again.
  *
  * when returning false, it's the caller's responsibility to clear
- * new_solution.
+ * new_solution. (typically either by calling clear_solution or
+ * update_solution.)
  */
 bool
 validate_slow(const map_t map, struct solution *solution,
@@ -110,17 +111,6 @@ validate_slow(const map_t map, struct solution *solution,
         snprintf(msg, sizeof(msg), "validating (%u moves)", solution->nmoves);
         unsigned int result = solve(msg, map, param, false, new_solution);
         if (result != SOLVE_SOLVED) {
-                return true;
-        }
-        if (new_solution->nmoves < solution->nmoves) {
-                /*
-                 * we don't want to apply a refinement which decreases
-                 * the number of steps.
-                 *
-                 * REVISIT: it might be better to perform the full evaluation
-                 * and compare scores.
-                 */
-                clear_solution(new_solution);
                 return true;
         }
 #if 1
