@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "bb.h"
 #include "defs.h"
@@ -125,6 +127,18 @@ replace_obj(uint8_t *p, void *arg)
 void
 rect(map_t map, int rx, int ry, int rw, int rh, uint8_t objidx)
 {
+        if (objidx == W) {
+                if (rx + rw > map_width || ry + rh > map_height) {
+                        printf("out of map rect()\n");
+                        abort();
+                }
+        } else {
+                if (rx <= 0 || ry <= 0 || rx + rw >= map_width ||
+                    ry + rh >= map_height) {
+                        printf("out of map rect()\n");
+                        abort();
+                }
+        }
         int x;
         int y;
         for (y = 0; y < rh; y++) {
