@@ -146,21 +146,22 @@ refine(map_t map, bool eager, struct solution *solution,
                                  * fast validation might fail even when
                                  * the refinement attempt improved the stage.
                                  */
-                                bool should_revert = false;
                                 struct solution new_solution;
+                                const char *revert_reason = NULL;
                                 if (validate_slow(map, solution, param, false,
                                                   &new_solution)) {
-                                        should_revert = true;
+                                        revert_reason = "unsolvable";
                                 } else if (compare_solutions(solution,
                                                              &new_solution) >
                                            0) {
-                                        should_revert = true;
+                                        revert_reason = "no improvement";
                                         clear_solution(&new_solution);
                                 }
-                                if (should_revert) {
+                                if (revert_reason != NULL) {
                                         map[loc] = objidx; /* revert */
                                         printf("a refinement attempt has been "
-                                               "reverted\n");
+                                               "reverted. reason: %s\n",
+                                               revert_reason);
                                         revert++;
                                 } else {
                                         modified = true;
