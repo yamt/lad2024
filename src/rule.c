@@ -128,6 +128,13 @@ calc_stage_meta(map_t map, struct stage_meta *meta)
         meta->nbombs = nbombs;
 }
 
+bool
+player_is_powered(struct player *p, const map_t map, const map_t beam_map)
+{
+        bool is_robot = map[p->loc] == A;
+        return (beam_map[p->loc] != 0) == is_robot;
+}
+
 /*
  * if commit=false, perform a dry-run without modifying meta, p, map.
  *
@@ -142,7 +149,7 @@ player_move(struct stage_meta *meta, struct player *p, enum diridx dir,
         bool is_robot = map[p->loc] == A;
         const struct dir *d = &dirs[dir];
         loc_t loc_diff = d->loc_diff;
-        if ((beam_map[p->loc] != 0) != is_robot) {
+        if (!player_is_powered(p, map, beam_map)) {
                 return 0;
         }
         loc_t loc = p->loc + loc_diff;

@@ -124,7 +124,11 @@ cur_player()
 void
 switch_player()
 {
-        cur_player_idx = (cur_player_idx + 1) % meta.nplayers;
+        unsigned int start = cur_player_idx;
+        do {
+                cur_player_idx = (cur_player_idx + 1) % meta.nplayers;
+        } while (cur_player_idx != start &&
+                 !player_is_powered(cur_player(), map, beam[beamidx]));
 }
 
 void
@@ -662,7 +666,6 @@ load_stage()
          * rng: no need to reset
          * bomb_animate_loc: no need to reset
          */
-        cur_player_idx = 0;
         moving_step = 0;
         memset(undos, 0, sizeof(undos));
         undo_idx = 0;
@@ -688,6 +691,10 @@ load_stage()
 
         mark_redraw_all();
         update_beam();
+
+        /* pick the first movable player */
+        cur_player_idx = meta.nplayers - 1;
+        switch_player();
 
         music_change(pick_score(rng_rand_u32(&rng)));
 }

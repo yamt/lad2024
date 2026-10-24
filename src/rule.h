@@ -67,5 +67,7 @@ typedef uint8_t move_flags_t;
 move_flags_t player_move(struct stage_meta *meta, struct player *p,
                          enum diridx dir, map_t map, const map_t beam_map,
                          bool commit);
+bool player_is_powered(struct player *p, const map_t map,
+                       const map_t beam_map);
 
 #endif /* !defined(_LAD_RULE_H) */
