@@ -302,6 +302,7 @@ unsigned int
 solve1(const char *msg, const map_t root_map, const struct solver_param *param,
        bool verbose, const map_t goal, struct solution *solution)
 {
+        printf("solve1...\n");
         time_t start = time(NULL);
         siginfo_clear_message();
         solution->detached = false;
