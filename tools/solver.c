@@ -521,7 +521,22 @@ solve1(const char *msg, const map_t root_map, const struct solver_param *param,
                                                        solution->nmoves);
                                                 return SOLVE_SOLVABLE;
                                         }
-                                        printf("solved!\n");
+#if defined(USE_BLOOM_FILTER)
+                                        if (bloom_filter_stats.reclaimed ==
+                                            0) {
+                                                printf("solved! (step=%u, "
+                                                       "proven minimum)\n",
+                                                       solution->nmoves);
+                                        } else {
+                                                printf("solved! (step=%u at "
+                                                       "most)\n",
+                                                       solution->nmoves);
+                                        }
+#else
+                                        printf("solved! (step=%u, proven "
+                                               "minimum)\n",
+                                               solution->nmoves);
+#endif
                                         // dump_hash();
                                         return SOLVE_SOLVED;
                                 } else if (goal != NULL &&
