@@ -282,12 +282,13 @@ return_solution(struct node *n, struct node_slist *solution,
  * this function performs a simple width-first traversal of every possible
  * moves of A and P.
  *
- * it would be more space-efficient to only create nodes for non-trivial moves.
- * for example, when pushing an object. such a strategy should work well for
- * sokoban. unfortunately, it isn't obvious for me how it can be applied to
- * this game. for example, consider the following stage. to solve it, you need
- * to move P right twice. neither of these two moves are not obivously
- * non-trivial.
+ * it would be more space-efficient if we only create nodes for non-trivial
+ * moves. such a strategy works well for games like sokoban. for sokoban,
+ * non-trivial moves are moves which might not be reverted easily. for example,
+ * a move which pushes an object.
+ * unfortunately, it isn't obvious for me how it can be applied to this game.
+ * for example, consider the following stage. to solve it, you need to move P
+ * right twice. neither of these two moves are not obivously non-trivial.
  *
  *  ___W
  *  __WXW
