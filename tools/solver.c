@@ -279,14 +279,15 @@ return_solution(struct node *n, struct node_slist *solution,
 #define BRANCH_HIST_NBUCKETS 10
 
 /*
- * this function performs a simple width-first traversal of every possible moves
- * of A and P.
+ * this function performs a simple width-first traversal of every possible
+ * moves of A and P.
  *
  * it would be more space-efficient to only create nodes for non-trivial moves.
  * for example, when pushing an object. such a strategy should work well for
  * sokoban. unfortunately, it isn't obvious for me how it can be applied to
  * this game. for example, consider the following stage. to solve it, you need
- * to move P right twice. neither of these two moves are not obivously non-trivial.
+ * to move P right twice. neither of these two moves are not obivously
+ * non-trivial.
  *
  *  ___W
  *  __WXW
@@ -694,7 +695,8 @@ solve(const char *msg, const map_t map, const struct solver_param *param,
                 solve_cleanup();
                 assert(solution->detached == solution2.detached);
                 assert(SLIST_FIRST(&solution->moves)->parent == NULL);
-                SLIST_FIRST(&solution->moves)->parent = SLIST_LAST(&solution2.moves, struct node, q);
+                SLIST_FIRST(&solution->moves)->parent =
+                        SLIST_LAST(&solution2.moves, struct node, q);
                 SLIST_SPLICE_HEAD(&solution->moves, &solution2.moves, q);
         }
 #endif
